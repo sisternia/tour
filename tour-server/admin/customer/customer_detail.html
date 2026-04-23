@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Admin - Chi tiết khách hàng</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface">
+    <!-- Component Containers -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content Wrapper -->
+    <main class="ml-72 min-h-screen flex flex-col">
+        <div id="topbar-container"></div>
+
+        <!-- Content Area -->
+        <div class="p-10 max-w-7xl mx-auto w-full space-y-8">
+            <!-- Breadcrumb & Back -->
+            <div class="flex flex-col gap-4">
+                <button onclick="window.location.href='customer.html'"
+                    class="flex items-center gap-2 text-primary hover:gap-3 transition-all w-fit group">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    <span class="font-semibold text-sm">Quay lại danh sách khách hàng</span>
+                </button>
+                <nav class="flex items-center gap-2 text-on-surface-variant text-sm">
+                    <span>Khách hàng</span>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="text-primary font-medium">Chi tiết hồ sơ</span>
+                </nav>
+            </div>
+
+            <!-- Profile Header Section -->
+            <section class="relative">
+                <!-- Cover Image -->
+                <div class="h-64 w-full rounded-xl overflow-hidden relative">
+                    <img id="customer-cover" alt="Travel background" class="w-full h-full object-cover"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOJZf9Z-hYWkJEdL2-vXSC4OTnmc5rrJOxZ0YHrzjWo_j3GBDfnN7dvvnr8BE-R8qdUnHAEjue3WcMxEU24GYncO1NeAjB6tnQjrYDD1-owiOJEN0-fEiPt_5GNvR6TTYGwPYdpsUZ-ChGA5pi54ZMWINa7nzn-EyRA4Ztxr8-Pajbv0oZnegTVAmbSVJHH1IlAEZxzOUsXkk1uwdJdGSV9ZPGk2pwAnymk00I8UFqhmWfMkdmy6U_mHs_C5uW2PM47OwBvsjmyV4" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                </div>
+                <!-- Avatar Overlay -->
+                <div class="absolute -bottom-16 left-12 flex items-end gap-6">
+                    <div class="relative">
+                        <div class="p-1.5 bg-surface rounded-full shadow-lg">
+                            <div id="customer-initials"
+                                class="hidden w-40 h-40 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-5xl font-headline border-4 border-surface-container-lowest shadow-xl">
+                            </div>
+                            <img id="customer-avatar" alt="Customer Avatar"
+                                class="w-40 h-40 rounded-full object-cover border-4 border-surface-container-lowest shadow-xl"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsHRuOhtXyKlqv4rraaqbGLF6EG2oC3tFPX07ssx_LLEhDsjCS79KdwPGBQrNzuQ-_R9rz3lkGoRj47GVmyJ3wGmTHDTFXhRrA9DPmqGAdsZD2Vqeh6Z5jUrsrScFQ-VJgdSPtsENv1EladD2i4lnveQsunYj5yUQYo1QnYTYVHMbMT-XkjmJFHIWCSjgPIxHONnq0PGW4UgSgZV_RolD7SeIdNsJQ--js8Q1BX1MIR1DiTuuirWmvVY2UVsy2ifdNchA9wuvp9no" />
+                        </div>
+                        <div
+                            class="absolute bottom-3 right-3 w-6 h-6 bg-green-500 border-4 border-surface rounded-full">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Primary Info Card -->
+            <div class="pt-16 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <!-- Left Sidebar: Main Identification -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-surface-container-lowest p-8 rounded-lg shadow-sm space-y-6">
+                        <div class="space-y-1">
+                            <h2 id="customer-name"
+                                class="text-3xl font-headline font-bold text-on-surface tracking-tight">...
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                <span id="customer-status-badge"
+                                    class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">...</span>
+                                <span id="member-since" class="text-on-surface-variant text-xs font-medium">• Thành viên từ ...</span>
+                            </div>
+                        </div>
+                        <div class="space-y-4 pt-4 border-t border-surface-container">
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-xl">mail</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-on-surface-variant font-medium">Địa chỉ Email</p>
+                                    <p id="customer-email" class="text-sm font-semibold text-on-surface">
+                                        ...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-xl">call</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-on-surface-variant font-medium">Số điện thoại</p>
+                                    <p id="customer-phone" class="text-sm font-semibold text-on-surface">...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-xl">cake</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-on-surface-variant font-medium">Ngày sinh</p>
+                                    <p id="customer-dob" class="text-sm font-semibold text-on-surface">...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-xl">location_on</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-on-surface-variant font-medium">Địa chỉ chính</p>
+                                    <p id="customer-address" class="text-sm font-semibold text-on-surface">...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            class="w-full bg-primary text-white py-3 rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-container transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-sm">edit</span>
+                            Chỉnh sửa hồ sơ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Content: Bio & Details -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Biography Section -->
+                    <div class="bg-surface-container-lowest p-8 rounded-lg shadow-sm">
+                        <h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary"
+                                style="font-variation-settings: 'FILL' 1;">history_edu</span>
+                            Tiểu sử khách hàng
+                        </h3>
+                        <p id="customer-bio"
+                            class="text-on-surface-variant leading-relaxed text-base italic border-l-4 border-primary-fixed-dim pl-6 py-2">
+                            ...
+                        </p>
+                    </div>
+
+                    <!-- Asymmetric Bento-style Info Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm border-b-4 border-primary">
+                            <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Tổng
+                                chi tiêu</h4>
+                            <div class="flex items-end gap-2">
+                                <span class="text-4xl font-headline font-extrabold text-primary">$0</span>
+                            </div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm">
+                            <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Tour đã
+                                hoàn thành</h4>
+                            <div class="flex items-center gap-4">
+                                <span class="text-4xl font-headline font-extrabold text-on-surface">0</span>
+                                <div class="flex -space-x-2">
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-xs text-tertiary">hiking</span>
+                                    </div>
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-xs text-secondary">flight</span>
+                                    </div>
+                                    <div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-xs text-primary">kayaking</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm md:col-span-2">
+                            <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-6">Lịch sử
+                                hoạt động gần đây</h4>
+                            <div id="activity-timeline" class="relative space-y-8">
+                                <p class="text-sm text-on-surface-variant">Chưa có hoạt động gần đây</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/customer.js"></script>
+</body>
+
+</html>

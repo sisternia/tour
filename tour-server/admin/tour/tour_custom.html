@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin - Du lịch tự túc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-on-surface">
+    <!-- Dynamic Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Wrapper -->
+    <div class="ml-72 flex flex-col min-h-screen">
+        <!-- Dynamic TopAppBar -->
+        <div id="topbar-container"></div>
+
+        <!-- Page Content -->
+        <main class="p-10 flex flex-col gap-8">
+            <!-- Header Section -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold font-headline tracking-tight text-primary">Quản lý Tour tự túc</h2>
+                    <p class="text-on-surface-variant mt-1">Theo dõi và phê duyệt các hành trình du lịch do khách hàng tự thiết kế.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-6 py-2.5 bg-surface-container-high text-primary font-semibold rounded-lg flex items-center gap-2 transition-all hover:bg-surface-container-highest">
+                        <span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+                        Lọc dữ liệu
+                    </button>
+                    <button class="px-6 py-2.5 bg-gradient-to-r from-primary to-primary-container text-on-primary font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center gap-2 transition-all hover:scale-[1.02]">
+                        <span class="material-symbols-outlined" data-icon="download">download</span>
+                        Xuất báo cáo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex gap-4 border-b border-surface-container">
+                <a href="tour_standard.html" class="pb-4 px-2 font-bold text-sm text-on-surface-variant hover:text-primary transition-all">Du lịch theo Tour</a>
+                <a href="tour_custom.html" class="pb-4 px-2 font-bold text-sm text-primary border-b-2 border-primary transition-all">Du lịch tự túc</a>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
+                    <span class="text-on-surface-variant text-sm font-medium">Tổng số yêu cầu</span>
+                    <span class="text-4xl font-extrabold font-headline text-primary">124</span>
+                    <div class="flex items-center gap-1 text-green-600 text-xs font-bold mt-2">
+                        <span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+                        <span>+12% tháng này</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
+                    <span class="text-on-surface-variant text-sm font-medium">Đang chờ xử lý</span>
+                    <span class="text-4xl font-extrabold font-headline text-tertiary">18</span>
+                    <p class="text-on-surface-variant text-xs mt-2 italic">Cần phê duyệt sớm</p>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
+                    <span class="text-on-surface-variant text-sm font-medium">Đã phê duyệt</span>
+                    <span class="text-4xl font-extrabold font-headline text-green-700">92</span>
+                    <div class="flex items-center gap-1 text-green-600 text-xs font-bold mt-2">
+                        <span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                        <span>Tỉ lệ 74%</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
+                    <span class="text-on-surface-variant text-sm font-medium">Doanh thu dự kiến</span>
+                    <span class="text-3xl font-extrabold font-headline text-primary">₫1.2B</span>
+                    <p class="text-on-surface-variant text-xs mt-2">Từ các tour tiềm năng</p>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low border-b-0">
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider">Tên Tour</th>
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider">Khách hàng</th>
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr class="hover:bg-surface-container-high transition-colors group">
+                                <td class="px-6 py-6">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-primary">Khám phá Tây Bắc 7 ngày</span>
+                                        <span class="text-xs text-on-surface-variant mt-1 line-clamp-1">Hà Giang - Đồng Văn - Lũng Cú...</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 text-sm">Nguyễn Lan</td>
+                                <td class="px-6 py-6 text-center">
+                                    <button class="p-2 hover:bg-primary/10 text-primary rounded-full transition-all">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Highlights and Activity Log -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-surface-container-low p-8 rounded-lg flex flex-col gap-6 relative overflow-hidden">
+                    <h3 class="text-2xl font-bold">Tour Di Sản Miền Trung</h3>
+                    <button class="py-3 bg-primary text-on-primary font-bold rounded-lg">Phê duyệt nhanh</button>
+                </div>
+                <div class="bg-surface-container-lowest p-8 rounded-lg flex flex-col gap-6 border border-outline-variant/10">
+                    <h3 class="text-xl font-bold">Hoạt động gần đây</h3>
+                    <div class="space-y-4 text-sm">
+                        <p><strong>Phê duyệt Tour "Khám phá Tây Bắc"</strong> - 10 phút trước</p>
+                        <p><strong>Yêu cầu mới: "Tour Trăng Mật Phú Quốc"</strong> - 45 phút trước</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin - Quản lý hướng dẫn viên</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #191c1d;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .editorial-shadow {
+            box-shadow: 0px 12px 32px rgba(25, 28, 29, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+    <!-- Component Containers -->
+    <div id="sidebar-container"></div>
+    
+    <!-- Main Content Wrapper -->
+    <div class="ml-72 min-h-screen">
+        <div id="topbar-container"></div>
+        
+        <main class="p-10">
+            <!-- Header & Stats Bento -->
+            <div class="grid grid-cols-12 gap-6 mb-10 items-end">
+                <div class="col-span-12 lg:col-span-6">
+
+                    <h1 class="text-4xl font-extrabold font-headline tracking-tight text-on-surface">Quản lý hướng dẫn viên</h1>
+                    <p class="text-on-surface-variant mt-2 text-lg font-body max-w-xl">Điều phối và theo dõi hiệu suất của đội ngũ hướng dẫn viên chuyên nghiệp trên toàn hệ thống.</p>
+                </div>
+                <div class="col-span-12 lg:col-span-6 flex justify-end gap-4">
+                    <button class="flex items-center gap-2 px-6 py-3 bg-surface-container-high text-primary font-headline font-bold rounded-lg hover:bg-surface-container-highest transition-all active:scale-95">
+                        <span class="material-symbols-outlined">file_download</span>
+                        Xuất báo cáo
+                    </button>
+                    <button onclick="window.location.href='guide_add.html'" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-lg shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
+                        <span class="material-symbols-outlined">person_add</span>
+                        Thêm hướng dẫn viên
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div class="bg-surface-container-lowest p-6 rounded-lg editorial-shadow flex flex-col gap-4">
+                    <div class="w-12 h-12 bg-secondary-fixed rounded-xl flex items-center justify-center text-on-secondary-fixed">
+                        <span class="material-symbols-outlined">groups</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-on-surface-variant">Tổng hướng dẫn viên</p>
+                        <p class="text-3xl font-extrabold font-headline">124</p>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs text-green-600 font-bold">
+                        <span class="material-symbols-outlined text-xs">trending_up</span>
+                        +12% so với tháng trước
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-lg editorial-shadow flex flex-col gap-4">
+                    <div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center text-on-primary-fixed">
+                        <span class="material-symbols-outlined">event_available</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-on-surface-variant">Đang sẵn sàng</p>
+                        <p class="text-3xl font-extrabold font-headline">86</p>
+                    </div>
+                    <div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+                        <div class="bg-primary h-full rounded-full" style="width: 70%"></div>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-lg editorial-shadow flex flex-col gap-4">
+                    <div class="w-12 h-12 bg-tertiary-fixed rounded-xl flex items-center justify-center text-on-tertiary-fixed">
+                        <span class="material-symbols-outlined">star</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-on-surface-variant">Xếp hạng trung bình</p>
+                        <p class="text-3xl font-extrabold font-headline">4.92</p>
+                    </div>
+                    <div class="flex gap-0.5 text-orange-400">
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-lowest p-6 rounded-lg editorial-shadow flex flex-col gap-4">
+                    <div class="w-12 h-12 bg-error-container rounded-xl flex items-center justify-center text-on-error-container">
+                        <span class="material-symbols-outlined">schedule</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-on-surface-variant">Lịch bận hôm nay</p>
+                        <p class="text-3xl font-extrabold font-headline">38</p>
+                    </div>
+                    <p class="text-xs text-on-surface-variant font-medium">Chiếm 31% tổng nhân sự</p>
+                </div>
+            </div>
+
+            <!-- Main Data Table -->
+            <div class="bg-surface-container-lowest rounded-xl editorial-shadow overflow-hidden">
+                <div class="p-6 flex justify-between items-center bg-surface-container-low/30 border-b border-outline-variant/10">
+                    <div class="flex items-center gap-6">
+                        <h3 class="font-headline font-bold text-xl">Danh sách nhân sự</h3>
+                        <div class="flex items-center gap-2 bg-surface-container-high rounded-lg p-1">
+                            <button class="px-4 py-1.5 text-xs font-bold bg-white rounded-md shadow-sm text-primary">Tất cả</button>
+                            <button class="px-4 py-1.5 text-xs font-bold text-on-surface-variant hover:text-on-surface">Available</button>
+                            <button class="px-4 py-1.5 text-xs font-bold text-on-surface-variant hover:text-on-surface">Busy</button>
+                        </div>
+                    </div>
+                    <button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-lg">filter_list</span>
+                        <span class="text-sm font-bold">Bộ lọc nâng cao</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low/50">
+                                <th class="px-8 py-5 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Hướng dẫn viên</th>
+                                <th class="px-6 py-5 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Liên hệ</th>
+                                <th class="px-6 py-5 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Địa chỉ</th>
+                                <th class="px-6 py-5 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Tiểu sử</th>
+                                <th class="px-6 py-5 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant text-center">Tình trạng</th>
+                                <th class="px-8 py-5 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guide-list" class="divide-y divide-outline-variant/5">
+                            <!-- Data will be populated by guide.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/guide.js"></script>
+</body>
+</html>

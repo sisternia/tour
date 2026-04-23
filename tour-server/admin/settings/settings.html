@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Admin - Cài đặt hệ thống</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .headline {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface flex min-h-screen">
+    <!-- Sidebar Placeholder -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Canvas -->
+    <main class="ml-72 flex-1 flex flex-col min-h-screen">
+        <!-- TopAppBar Placeholder -->
+        <div id="topbar-container"></div>
+
+        <!-- Content Area -->
+        <div class="p-10 max-w-6xl mx-auto w-full">
+            <div class="mb-10">
+                <h2 class="text-3xl font-extrabold font-['Manrope'] text-primary mb-2 tracking-tight">Cài đặt hệ thống</h2>
+                <p class="text-on-surface-variant font-medium">Quản lý cấu hình, bảo mật và thông tin tài khoản admin.</p>
+            </div>
+
+            <!-- Bento Grid Settings Layout -->
+            <div class="grid grid-cols-12 gap-6">
+                <!-- Section: Thông tin Admin (Large Card) -->
+                <section class="col-span-12 lg:col-span-8 bg-surface-container-lowest p-8 rounded-xl flex flex-col gap-8 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-surface-container pb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-primary/10 p-3 rounded-lg">
+                                <span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+                            </div>
+                            <h3 class="text-xl font-bold font-['Manrope']">Thông tin Admin</h3>
+                        </div>
+                        <button class="bg-primary text-on-primary px-6 py-2 rounded font-semibold text-sm hover:opacity-90 transition-opacity">Lưu thay đổi</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest px-1">Họ và tên</label>
+                            <input class="w-full bg-surface-container-low border-none rounded p-3 text-on-surface focus:ring-1 focus:ring-primary/20" type="text" value="Nguyễn Văn Quản Trị" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest px-1">Email liên hệ</label>
+                            <input class="w-full bg-surface-container-low border-none rounded p-3 text-on-surface focus:ring-1 focus:ring-primary/20" type="email" value="admin@voyager.travel" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest px-1">Số điện thoại</label>
+                            <input class="w-full bg-surface-container-low border-none rounded p-3 text-on-surface focus:ring-1 focus:ring-primary/20" type="text" value="+84 901 234 567" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest px-1">Vai trò</label>
+                            <input class="w-full bg-surface-container-high border-none rounded p-3 text-on-surface-variant cursor-not-allowed" disabled="" type="text" value="Quản trị viên cấp cao" />
+                        </div>
+                    </div>
+                    <div class="bg-surface-container-low p-6 rounded-lg flex items-center gap-6">
+                        <div class="relative group cursor-pointer">
+                            <img alt="Admin Avatar" class="w-20 h-20 rounded-full border-4 border-surface-container-lowest shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQTzPHuNc0e_7BZfVjfZ-O6TI1F-Eh33-C1Fsjlv5nRono2g4mb4AYRIFKzTzRoMF81-GS88CyEm2Znx0v-f5tVIsg2nsWj05D9ciaeeCT13LIecxGFUWaFA-xc8C4iehlQxpXPgw_KbeQ2pJYfO6QTMEkqW6ik69LnFplt91N2LKXsrgfdmHaCpIsbFJQvfKXxPRY85tzzelttLqsRT7N2imQFU2OypFz0-xD6ssnnoV0LqSdl0iA29D57o9T8zpRTFmHpJGcW_A" />
+                            <div class="absolute inset-0 bg-on-surface/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="material-symbols-outlined text-surface text-xl" data-icon="photo_camera">photo_camera</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm mb-1">Ảnh đại diện</h4>
+                            <p class="text-xs text-on-surface-variant mb-3 leading-relaxed">Tải lên ảnh mới (JPG, PNG). Kích thước khuyến nghị 400x400px.</p>
+                            <div class="flex gap-2">
+                                <button class="text-xs font-bold text-primary bg-surface-container-lowest px-4 py-1.5 rounded border border-outline-variant/30 hover:bg-surface-container-high transition-colors">Tải ảnh mới</button>
+                                <button class="text-xs font-bold text-error bg-surface-container-lowest px-4 py-1.5 rounded border border-outline-variant/30 hover:bg-error-container/20 transition-colors">Gỡ bỏ</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Bảo mật (Small Side Card) -->
+                <section class="col-span-12 lg:col-span-4 bg-slate-900 text-white p-8 rounded-xl flex flex-col gap-6 shadow-xl">
+                    <div class="flex items-center gap-4 border-b border-white/10 pb-4">
+                        <span class="material-symbols-outlined text-blue-400" data-icon="shield">shield</span>
+                        <h3 class="text-xl font-bold font-['Manrope']">Bảo mật</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <button class="w-full flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group">
+                            <div class="text-left">
+                                <p class="text-sm font-bold mb-0.5">Đổi mật khẩu</p>
+                                <p class="text-[10px] text-slate-400">Cập nhật mật khẩu định kỳ</p>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+                        </button>
+                        <button class="w-full flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group">
+                            <div class="text-left">
+                                <p class="text-sm font-bold mb-0.5">Xác thực 2 yếu tố</p>
+                                <p class="text-[10px] text-blue-400 font-bold">Đang bật (Ưu tiên)</p>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+                        </button>
+                        <button class="w-full flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group">
+                            <div class="text-left">
+                                <p class="text-sm font-bold mb-0.5">Nhật ký đăng nhập</p>
+                                <p class="text-[10px] text-slate-400">Xem các phiên hoạt động</p>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+                        </button>
+                    </div>
+                    <div class="mt-auto p-4 bg-blue-600/20 border border-blue-500/30 rounded-lg">
+                        <div class="flex gap-3 items-start">
+                            <span class="material-symbols-outlined text-blue-400" data-icon="info">info</span>
+                            <p class="text-[11px] leading-relaxed text-blue-100/80">Tài khoản của bạn đã được bảo vệ bởi các lớp bảo mật nâng cao từ Voyager Security.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Cấu hình hệ thống (Medium Card) -->
+                <section class="col-span-12 lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="bg-secondary/10 p-3 rounded-lg text-secondary">
+                            <span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+                        </div>
+                        <h3 class="text-xl font-bold font-['Manrope']">Cấu hình hệ thống</h3>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg">
+                            <div>
+                                <h4 class="font-bold text-sm">Chế độ bảo trì</h4>
+                                <p class="text-xs text-on-surface-variant">Tạm dừng truy cập từ phía người dùng</p>
+                            </div>
+                            <div class="relative inline-flex items-center cursor-pointer">
+                                <input class="sr-only peer" type="checkbox" />
+                                <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg">
+                            <div>
+                                <h4 class="font-bold text-sm">Tự động sao lưu dữ liệu</h4>
+                                <p class="text-xs text-on-surface-variant">Thực hiện hàng ngày lúc 02:00 AM</p>
+                            </div>
+                            <div class="relative inline-flex items-center cursor-pointer">
+                                <input checked="" class="sr-only peer" type="checkbox" />
+                                <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest px-1">Ngôn ngữ mặc định</label>
+                            <select class="w-full bg-surface-container-low border-none rounded p-3 text-sm font-medium">
+                                <option>Tiếng Việt (VN)</option>
+                                <option>English (US)</option>
+                                <option>Français (FR)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Thông báo (Medium Card) -->
+                <section class="col-span-12 lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="bg-tertiary-container/10 p-3 rounded-lg text-tertiary">
+                            <span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+                        </div>
+                        <h3 class="text-xl font-bold font-['Manrope']">Thông báo</h3>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4 p-4 border-l-4 border-blue-500 bg-surface-container-low rounded-r-lg">
+                            <span class="material-symbols-outlined text-blue-600 mt-1" data-icon="mail" style="font-variation-settings: 'FILL' 1;">mail</span>
+                            <div>
+                                <h4 class="font-bold text-sm">Thông báo qua Email</h4>
+                                <p class="text-xs text-on-surface-variant leading-relaxed">Nhận báo cáo tổng hợp hàng tuần về doanh thu và lượt đặt tour vào hộp thư chính.</p>
+                                <button class="mt-3 text-xs font-bold text-primary hover:underline">Chỉnh sửa danh sách nhận tin</button>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 border-l-4 border-slate-300 bg-surface-container-low rounded-r-lg opacity-80">
+                            <span class="material-symbols-outlined text-slate-500 mt-1" data-icon="sms" style="font-variation-settings: 'FILL' 1;">sms</span>
+                            <div>
+                                <h4 class="font-bold text-sm">Thông báo qua SMS</h4>
+                                <p class="text-xs text-on-surface-variant leading-relaxed">Cảnh báo tức thì khi có giao dịch bất thường hoặc lỗi hệ thống nghiêm trọng.</p>
+                                <div class="mt-3 flex items-center gap-2">
+                                    <span class="text-[10px] bg-surface-container-highest px-2 py-0.5 rounded font-bold uppercase">Chưa kích hoạt</span>
+                                    <button class="text-xs font-bold text-primary hover:underline">Kích hoạt ngay</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <h4 class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest px-1 mb-4">Các loại sự kiện</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-secondary-fixed text-on-secondary-fixed px-3 py-1.5 rounded-full text-xs font-semibold">Đơn hàng mới</span>
+                                <span class="bg-secondary-fixed text-on-secondary-fixed px-3 py-1.5 rounded-full text-xs font-semibold">Khách hàng phản hồi</span>
+                                <span class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full text-xs font-semibold">+ Thêm loại tin</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Footer Meta -->
+            <footer class="mt-16 pt-8 border-t border-surface-container flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-on-surface-variant">© 2024 Voyager Travel Concierge. Admin Dashboard v4.2.0</p>
+                <div class="flex gap-6">
+                    <a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Điều khoản dịch vụ</a>
+                    <a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Chính sách bảo mật</a>
+                    <a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Hỗ trợ kỹ thuật</a>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+</body>
+
+</html>

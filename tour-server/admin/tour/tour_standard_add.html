@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin - Thêm Tour mới</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        
+        .stepper-line {
+            height: 2px;
+            flex-grow: 1;
+            background-color: #e1e3e4;
+        }
+        .timeline-dashed {
+            background-image: linear-gradient(to bottom, #c3c6d6 50%, transparent 50%);
+            background-position: left;
+            background-size: 2px 12px;
+            background-repeat: repeat-y;
+            width: 2px;
+            margin-left: 11px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container/30">
+    <!-- Component Containers -->
+    <div id="sidebar-container"></div>
+    
+    <!-- Main Content Canvas -->
+    <main class="ml-72 min-h-screen">
+        <div id="topbar-container"></div>
+
+        <div class="max-w-5xl mx-auto py-10 px-8">
+            <!-- Dynamic Stepper -->
+            <div id="stepper" class="flex items-center justify-between mb-12 px-12">
+                <!-- Step 1 Indicator -->
+                <div class="step-indicator flex flex-col items-center gap-2" data-step="1">
+                    <div class="step-icon w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg shadow-primary/20">1</div>
+                    <span class="step-label text-xs font-bold text-primary">Thông tin cơ bản</span>
+                </div>
+                <div class="stepper-line mx-4 bg-surface-container-highest transition-colors duration-500" data-line="1"></div>
+                <!-- Step 2 Indicator -->
+                <div class="step-indicator flex flex-col items-center gap-2" data-step="2">
+                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">2</div>
+                    <span class="step-label text-xs font-medium text-on-surface-variant">Lịch trình</span>
+                </div>
+                <div class="stepper-line mx-4 bg-surface-container-highest" data-line="2"></div>
+                <!-- Step 3 Indicator -->
+                <div class="step-indicator flex flex-col items-center gap-2" data-step="3">
+                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">3</div>
+                    <span class="step-label text-xs font-medium text-on-surface-variant">Hướng dẫn viên</span>
+                </div>
+                <div class="stepper-line mx-4 bg-surface-container-highest" data-line="3"></div>
+                <!-- Step 4 Indicator -->
+                <div class="step-indicator flex flex-col items-center gap-2" data-step="4">
+                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">4</div>
+                    <span class="step-label text-xs font-medium text-on-surface-variant">Xác nhận</span>
+                </div>
+            </div>
+
+            <!-- STEP 1: GENERAL INFO -->
+            <div id="step-1-content" class="space-y-8">
+                <div class="grid grid-cols-12 gap-8">
+                    <!-- Main Form Section -->
+                    <div class="col-span-12 lg:col-span-8 space-y-8">
+                        <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10">
+                            <div class="mb-8">
+                                <h3 class="text-2xl font-extrabold text-on-surface tracking-tight mb-2">Chi tiết cơ bản</h3>
+                                <p class="text-on-surface-variant text-sm">Xác định danh tính cốt lõi cho gói tour du lịch cao cấp mới của bạn.</p>
+                            </div>
+                            <div class="space-y-6">
+                                <!-- Tour Name -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Tên Tour</label>
+                                    <input class="w-full h-12 px-4 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline" placeholder="VD: Khám phá bí ẩn vùng biển Amalfi" type="text"/>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Tour Type -->
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-on-surface-variant">Loại Tour</label>
+                                        <div class="flex h-12 bg-surface-container-low p-1 rounded-lg w-full">
+                                            <button class="flex-1 flex items-center justify-center gap-2 rounded-md bg-surface-container-lowest text-primary font-bold shadow-sm transition-all">
+                                                <span class="material-symbols-outlined text-[18px]">public</span>
+                                                Quốc tế
+                                            </button>
+                                            <button class="flex-1 flex items-center justify-center gap-2 rounded-md text-on-surface-variant font-medium hover:text-on-surface transition-all">
+                                                <span class="material-symbols-outlined text-[18px]">home</span>
+                                                Trong nước
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Duration -->
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-on-surface-variant">Thời lượng (Số ngày)</label>
+                                        <div class="relative">
+                                            <input id="duration-days" class="w-full h-12 pl-12 pr-36 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all font-bold" placeholder="3" type="number" min="1" value="3"/>
+                                            <span class="material-symbols-outlined absolute left-4 top-3 text-primary">schedule</span>
+                                            <div class="absolute right-2 top-2 h-8 flex items-center px-3 bg-surface-container-lowest rounded-md shadow-sm border border-outline-variant/10">
+                                                <span id="duration-display" class="text-[11px] font-extrabold text-primary uppercase tracking-tight">3 ngày 2 đêm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Destination (Map) -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Địa điểm (Tìm kiếm & Bản đồ)</label>
+                                    <div class="relative">
+                                        <input id="search-input" class="w-full h-12 pl-12 pr-32 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" placeholder="Nhập tên địa điểm để tìm kiếm..." type="text"/>
+                                        <span class="material-symbols-outlined absolute left-4 top-3 text-primary">search</span>
+                                        <div class="absolute right-3 top-2 flex gap-2">
+                                            <button id="search-btn" class="px-4 py-1.5 bg-primary text-on-primary text-xs font-bold rounded-md shadow-sm hover:opacity-90 transition-all">
+                                                Tìm kiếm
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="map" class="aspect-video w-full rounded-xl border border-outline-variant/20 z-0 shadow-inner bg-surface-container-low"></div>
+                                    
+                                    <!-- Coordinate Display -->
+                                    <div class="flex gap-4 p-3 bg-surface-container-low rounded-lg border border-outline-variant/10">
+                                        <div class="flex-1 space-y-1">
+                                            <p class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Kinh độ (Longitude)</p>
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-sm text-secondary">explore</span>
+                                                <span id="lng-display" class="font-mono text-sm font-bold text-primary">108.202200</span>
+                                            </div>
+                                        </div>
+                                        <div class="w-px h-8 bg-outline-variant/20 self-center"></div>
+                                        <div class="flex-1 space-y-1">
+                                            <p class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Vĩ độ (Latitude)</p>
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-sm text-secondary">explore</span>
+                                                <span id="lat-display" class="font-mono text-sm font-bold text-primary">16.054400</span>
+                                            </div>
+                                        </div>
+                                        <button id="get-location" class="px-3 py-1 bg-white text-on-surface-variant text-[10px] font-bold rounded border border-outline-variant/30 hover:bg-surface transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs">my_location</span>
+                                            Vị trí của tôi
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Mô tả</label>
+                                    <textarea class="w-full p-4 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-outline resize-none" placeholder="Mô tả không gian, tính độc bản và các điểm nhấn chính..." rows="4"></textarea>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Right Sidebar -->
+                    <div class="col-span-12 lg:col-span-4 space-y-8">
+                        <!-- Pricing & Capacity -->
+                        <section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+                            <div class="mb-6">
+                                <h3 class="text-xl font-extrabold text-on-surface tracking-tight mb-1">Hậu cần & Giá cả</h3>
+                                <p class="text-xs text-on-surface-variant">Thiết lập chi phí và giới hạn số lượng.</p>
+                            </div>
+                            <div class="space-y-4">
+                                <!-- Adult Price -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Giá người lớn</label>
+                                    <div class="relative">
+                                        <input class="w-full h-11 pl-10 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all font-bold text-primary" placeholder="4,500,000" type="text"/>
+                                        <span class="absolute left-3.5 top-2.5 font-bold text-on-surface-variant text-sm">₫</span>
+                                    </div>
+                                </div>
+                                <!-- Child Price -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Giá trẻ em (dưới 12 tuổi)</label>
+                                    <div class="relative">
+                                        <input class="w-full h-11 pl-10 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all font-bold text-primary" placeholder="3,200,000" type="text"/>
+                                        <span class="absolute left-3.5 top-2.5 font-bold text-on-surface-variant text-sm">₫</span>
+                                    </div>
+                                </div>
+                                <!-- Capacity -->
+                                <div class="space-y-2 pt-2 border-t border-outline-variant/10">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Sức chứa tối đa (người)</label>
+                                    <div class="relative">
+                                        <input class="w-full h-11 pl-10 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" placeholder="12" type="number"/>
+                                        <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-on-surface-variant text-sm">groups</span>
+                                    </div>
+                                    <p class="text-[10px] text-on-surface-variant italic leading-tight">* Tổng số người bao gồm cả người lớn và trẻ em.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10 h-fit">
+                            <div class="mb-6">
+                                <h3 class="text-xl font-extrabold text-on-surface tracking-tight mb-1">Hình ảnh trực quan</h3>
+                                <p class="text-xs text-on-surface-variant">Ảnh bìa và bộ sưu tập ảnh.</p>
+                            </div>
+                            <div class="group cursor-pointer relative border-2 border-dashed border-outline-variant/30 hover:border-primary/50 bg-surface-container-low hover:bg-surface-container rounded-xl p-8 transition-all text-center">
+                                <div class="w-16 h-16 bg-surface-container-lowest rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                                    <span class="material-symbols-outlined text-primary text-3xl">add_a_photo</span>
+                                </div>
+                                <h4 class="text-sm font-bold mb-1">Tải ảnh Tour lên</h4>
+                                <p class="text-[11px] text-on-surface-variant leading-relaxed">Kéo thả ảnh JPG hoặc PNG chất lượng cao (Tối đa 10MB)</p>
+                                <input class="absolute inset-0 opacity-0 cursor-pointer" type="file"/>
+                            </div>
+                            <div class="mt-6 grid grid-cols-2 gap-3">
+                                <div class="aspect-square bg-surface-container rounded-lg flex items-center justify-center border border-outline-variant/10">
+                                    <span class="material-symbols-outlined text-outline-variant">image</span>
+                                </div>
+                                <div class="aspect-square bg-surface-container rounded-lg flex items-center justify-center border border-outline-variant/10">
+                                    <span class="material-symbols-outlined text-outline-variant">image</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1 Footer -->
+                <div class="mt-12 pt-8 flex items-center justify-between border-t border-outline-variant/10">
+                    <button class="px-8 py-3 rounded-lg font-bold text-on-surface-variant hover:bg-surface-container-high transition-all">
+                        Hủy bản nháp
+                    </button>
+                    <div class="flex items-center gap-4">
+                        <button class="px-8 py-3 rounded-lg font-bold text-primary hover:bg-primary/5 transition-all">
+                            Lưu bản nháp
+                        </button>
+                        <button onclick="goToStep(2)" class="px-10 py-3 rounded-lg font-bold bg-gradient-to-r from-primary to-surface-tint text-on-primary shadow-lg shadow-primary/20 flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
+                            Tiếp tục bước 2
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: ITINERARY -->
+            <div id="step-2-content" class="hidden space-y-8">
+                <!-- Date Range Picker Section -->
+                <section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
+                    <h3 class="font-headline text-2xl font-bold mb-6 text-on-surface">Thời gian diễn ra Tour</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-on-surface-variant px-1">Ngày bắt đầu</label>
+                            <div class="flex items-center bg-surface-container-low rounded-lg p-3 gap-3 border border-transparent focus-within:border-primary/30 transition-all">
+                                <span class="material-symbols-outlined text-primary">calendar_today</span>
+                                <input id="start-date" class="bg-transparent border-none focus:ring-0 w-full text-on-surface font-medium" type="date"/>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-on-surface-variant px-1">Ngày kết thúc</label>
+                            <div class="flex items-center bg-surface-container-low rounded-lg p-3 gap-3 border border-transparent focus-within:border-primary/30 transition-all">
+                                <span class="material-symbols-outlined text-primary">calendar_month</span>
+                                <input id="end-date" class="bg-transparent border-none focus:ring-0 w-full text-on-surface font-medium" type="date" readonly/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center gap-3 p-4 bg-primary/5 rounded-lg border border-primary/10">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        <p class="text-sm text-on-surface font-medium">Tour này dự kiến diễn ra trong <span id="duration-info" class="font-bold text-primary">3 ngày 2 đêm</span>.</p>
+                    </div>
+                </section>
+
+                <!-- Dynamic Itinerary Timeline -->
+                <section class="relative">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 class="font-headline text-2xl font-bold text-on-surface">Lịch trình chi tiết</h3>
+                        <button class="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-lg font-bold shadow-md hover:opacity-90 transition-all">
+                            <span class="material-symbols-outlined text-lg">add_circle</span>
+                            Thêm ngày mới
+                        </button>
+                    </div>
+
+                    <!-- Timeline Container -->
+                    <div id="itinerary-timeline" class="space-y-0">
+                        <!-- Days will be generated here -->
+                    </div>
+                </section>
+
+                <!-- Step 2 Footer -->
+                <div class="mt-16 flex items-center justify-between pt-8 border-t border-outline-variant/20">
+                    <button onclick="goToStep(1)" class="flex items-center gap-2 text-on-surface-variant font-bold hover:text-primary transition-all py-3 px-6">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span>
+                        Quay lại Bước 1
+                    </button>
+                    <div class="flex gap-4">
+                        <button class="px-8 py-3 text-primary font-bold hover:bg-primary/5 rounded-lg transition-all">Lưu bản nháp</button>
+                        <button onclick="goToStep(3)" class="px-10 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2">
+                            Tiếp tục bước 3
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: GUIDE SELECTION -->
+            <div id="step-3-content" class="hidden space-y-8">
+                <!-- Page Title Area -->
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold font-headline text-on-surface tracking-tight mb-2">Phân bổ Hướng dẫn viên</h2>
+                    <p class="text-on-surface-variant max-w-xl">Lựa chọn chuyên gia đồng hành để đảm bảo trải nghiệm cao cấp nhất cho khách hàng của bạn.</p>
+                </div>
+                
+                <!-- Filter Bar -->
+                <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm flex flex-wrap items-end gap-6">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Ngôn ngữ thông thạo</label>
+                        <div class="relative">
+                            <select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 appearance-none font-medium">
+                                <option>Đa ngôn ngữ (Anh, Pháp, Đức)</option>
+                                <option>Tiếng Anh</option>
+                                <option>Tiếng Việt & Tiếng Anh</option>
+                                <option>Tiếng Nhật & Tiếng Hàn</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Lĩnh vực chuyên môn</label>
+                        <div class="relative">
+                            <select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 appearance-none font-medium">
+                                <option>Ẩm thực & Rượu vang</option>
+                                <option>Kiến trúc Lịch sử</option>
+                                <option>Thể thao Mạo hiểm</option>
+                                <option>Nghệ thuật & Bảo tàng</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none">expand_more</span>
+                        </div>
+                    </div>
+                    <button class="bg-surface-container-high px-6 py-3 rounded-lg text-sm font-bold text-primary hover:bg-surface-container-highest transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">tune</span>
+                        Áp dụng bộ lọc
+                    </button>
+                </div>
+
+                <!-- Guides Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                    <!-- Guide Card 1 -->
+                    <div class="group relative bg-surface-container-lowest p-6 rounded-xl hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer border border-outline-variant/10 hover:border-primary/30">
+                        <div class="flex items-start justify-between mb-6">
+                            <div class="flex gap-4">
+                                <img alt="Marcus Chen" class="w-16 h-16 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 shadow-sm" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop"/>
+                                <div>
+                                    <h3 class="font-headline font-bold text-lg text-on-surface">Marcus Chen</h3>
+                                    <p class="text-xs text-on-surface-variant font-medium">Quản lý cấp cao • 8 năm kinh nghiệm</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded-full text-[10px] font-bold">
+                                <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.9
+                            </div>
+                        </div>
+                        <div class="mb-6 space-y-3">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-outline tracking-widest block mb-1">Ngôn ngữ</span>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-medium">Tiếng Anh (Bản ngữ)</span>
+                                    <span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-medium">Tiếng Trung</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-surface-container-low rounded-lg">
+                                <p class="text-[11px] text-on-surface-variant leading-relaxed">Chuyên gia về lịch sử địa phương và các hầm rượu vang bí mật. Được đánh giá cao về khả năng kể chuyện.</p>
+                            </div>
+                        </div>
+                        <label class="flex items-center justify-between p-3 rounded-lg border-2 border-outline-variant/20 group-hover:border-primary/40 cursor-pointer transition-all">
+                            <span class="text-xs font-bold text-on-surface group-hover:text-primary">Chọn làm dẫn đoàn</span>
+                            <input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="guide_select" type="radio"/>
+                        </label>
+                    </div>
+
+                    <!-- Guide Card 2 (Active/Selected State) -->
+                    <div class="group relative bg-surface-container-lowest p-6 rounded-xl shadow-xl shadow-primary/10 transition-all cursor-pointer border-2 border-primary">
+                        <div class="absolute -top-3 right-6 bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-bold shadow-lg shadow-primary/30 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                            ĐÃ CHỌN
+                        </div>
+                        <div class="flex items-start justify-between mb-6">
+                            <div class="flex gap-4">
+                                <img alt="Elena Rodriguez" class="w-16 h-16 rounded-full object-cover shadow-sm" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"/>
+                                <div>
+                                    <h3 class="font-headline font-bold text-lg text-on-surface">Elena Rodriguez</h3>
+                                    <p class="text-xs text-on-surface-variant font-medium">Trưởng nhóm chuyên gia • 12 năm kinh nghiệm</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded-full text-[10px] font-bold">
+                                <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+                                5.0
+                            </div>
+                        </div>
+                        <div class="mb-6 space-y-3">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-outline tracking-widest block mb-1">Ngôn ngữ</span>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-medium">Tiếng Tây Ban Nha</span>
+                                    <span class="bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-medium">Tiếng Anh</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-primary/5 rounded-lg">
+                                <p class="text-[11px] text-primary leading-relaxed font-medium italic">"Elena là một bậc thầy về lịch sử nghệ thuật. Khách hàng thường xuyên yêu cầu cô ấy cho các tour cao cấp."</p>
+                            </div>
+                        </div>
+                        <label class="flex items-center justify-between p-3 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer transition-all">
+                            <span class="text-xs font-bold text-primary">Đã chỉ định</span>
+                            <input checked="" class="w-4 h-4 text-primary focus:ring-primary border-primary" name="guide_select" type="radio"/>
+                        </label>
+                    </div>
+
+                    <!-- Guide Card 3 -->
+                    <div class="group relative bg-surface-container-lowest p-6 rounded-xl hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer border border-outline-variant/10 hover:border-primary/30 opacity-70 hover:opacity-100">
+                        <div class="flex items-start justify-between mb-6">
+                            <div class="flex gap-4">
+                                <img alt="Arthur Sterling" class="w-16 h-16 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 shadow-sm" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"/>
+                                <div>
+                                    <h3 class="font-headline font-bold text-lg text-on-surface">Arthur Sterling</h3>
+                                    <p class="text-xs text-on-surface-variant font-medium">Chuyên gia Văn hóa • 15 năm kinh nghiệm</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded-full text-[10px] font-bold">
+                                <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.8
+                            </div>
+                        </div>
+                        <div class="mb-6 space-y-3">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-outline tracking-widest block mb-1">Ngôn ngữ</span>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-medium">Tiếng Anh</span>
+                                    <span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-medium">Tiếng Đức</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-surface-container-low rounded-lg">
+                                <p class="text-[11px] text-on-surface-variant leading-relaxed">Chuyên sâu về kiến trúc Châu Âu hậu chiến và điêu khắc hiện đại. Quản lý hậu cần hoàn hảo.</p>
+                            </div>
+                        </div>
+                        <label class="flex items-center justify-between p-3 rounded-lg border-2 border-outline-variant/20 group-hover:border-primary/40 cursor-pointer transition-all">
+                            <span class="text-xs font-bold text-on-surface group-hover:text-primary">Chọn làm dẫn đoàn</span>
+                            <input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="guide_select" type="radio"/>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Step 3 Footer -->
+                <div class="flex items-center justify-between border-t border-outline-variant/20 pt-8 mt-12">
+                    <button onclick="goToStep(2)" class="flex items-center gap-2 text-on-surface-variant font-bold hover:text-primary transition-colors py-3 px-6">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span>
+                        Quay lại Bước 2
+                    </button>
+                    <div class="flex gap-4">
+                        <button class="bg-surface-container-high text-primary font-bold px-8 py-3 rounded-lg hover:bg-surface-container-highest transition-all">
+                            Lưu bản nháp
+                        </button>
+                        <button onclick="goToStep(4)" class="bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold px-10 py-3 rounded-lg shadow-lg shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all">
+                            Hoàn tất & Xuất bản Tour
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: REVIEW & PUBLISH -->
+            <div id="step-4-content" class="hidden space-y-8">
+                <!-- Row 1: Main Header (Full Width) -->
+                <div class="bg-surface-container-lowest rounded-3xl p-10 shadow-sm border border-outline-variant/10 overflow-hidden relative">
+                    <div class="absolute top-0 right-0 p-8">
+                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Kiểm tra bản nháp
+                        </span>
+                    </div>
+                    <div class="relative z-10">
+                        <span class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-lg text-[11px] font-bold tracking-[0.2em] uppercase mb-6">Tour Cao cấp Quốc tế</span>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                            <div>
+                                <h2 class="text-4xl font-extrabold text-on-surface tracking-tight leading-tight mb-4" id="review-tour-name">Parisian Art & Culture Escape</h2>
+                                <p class="text-on-surface-variant text-lg font-medium leading-relaxed mb-6">Khám phá linh hồn thủ đô nước Pháp qua hành trình được thiết kế riêng biệt.</p>
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                            <span class="material-symbols-outlined">schedule</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Thời lượng</p>
+                                            <p class="text-sm font-extrabold text-on-surface" id="review-duration-text">-- ngày -- đêm</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                            <span class="material-symbols-outlined">calendar_today</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Thời gian dự kiến</p>
+                                            <p class="text-sm font-extrabold text-on-surface"><span id="review-start-date">15/09/2026</span> — <span id="review-end-date">18/09/2026</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                            <span class="material-symbols-outlined">location_on</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Địa điểm xuất phát</p>
+                                            <p class="text-sm font-extrabold text-on-surface truncate max-w-[300px]" id="review-location">Đang cập nhật...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm h-full min-h-[200px]">
+                                <div id="review-map" class="h-full w-full z-0 bg-surface-container-low"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Two Columns Grid -->
+                <div class="grid grid-cols-12 gap-8">
+                    <!-- Left Column (4): Logistics & Images -->
+                    <div class="col-span-12 lg:col-span-4 space-y-8">
+                        <!-- Logistics & Pricing -->
+                        <section class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-outline-variant/10">
+                            <div class="mb-6">
+                                <h3 class="text-xl font-extrabold text-on-surface tracking-tight mb-1">Hậu cần & Giá cả</h3>
+                                <p class="text-xs text-on-surface-variant">Chi phí và sức chứa dự kiến.</p>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Giá người lớn</label>
+                                    <div class="relative">
+                                        <div id="review-adult-price" class="flex items-center w-full h-11 pl-10 bg-surface-container-low rounded-lg font-bold text-primary text-sm">4,500,000</div>
+                                        <span class="absolute left-3.5 top-2.5 font-bold text-on-surface-variant text-sm">₫</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Giá trẻ em</label>
+                                    <div class="relative">
+                                        <div id="review-child-price" class="flex items-center w-full h-11 pl-10 bg-surface-container-low rounded-lg font-bold text-primary text-sm">3,200,000</div>
+                                        <span class="absolute left-3.5 top-2.5 font-bold text-on-surface-variant text-sm">₫</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 pt-2 border-t border-outline-variant/10">
+                                    <label class="block text-sm font-semibold text-on-surface-variant">Sức chứa tối đa</label>
+                                    <div class="relative">
+                                        <div id="review-capacity" class="flex items-center w-full h-11 pl-10 bg-surface-container-low rounded-lg font-bold text-on-surface text-sm">12</div>
+                                        <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-on-surface-variant text-sm">groups</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Tour Images -->
+                        <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/10">
+                            <h3 class="text-sm font-black text-on-surface mb-4 uppercase tracking-wider">Ảnh Tour</h3>
+                            <div class="aspect-video rounded-xl overflow-hidden bg-surface-container-low mb-3">
+                                <img id="review-cover-image" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&h=300&fit=crop" alt="Cover"/>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="aspect-square rounded-lg bg-surface-container-low border border-outline-variant/5"></div>
+                                <div class="aspect-square rounded-lg bg-surface-container-low border border-outline-variant/5"></div>
+                                <div class="aspect-square rounded-lg bg-surface-container-low border border-outline-variant/5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (8): Itinerary & Guide -->
+                    <div class="col-span-12 lg:col-span-8 space-y-8">
+                        <!-- Itinerary Flow -->
+                        <div class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/10">
+                            <div class="flex justify-between items-center mb-8">
+                                <h3 class="text-lg font-extrabold text-on-surface">Luồng Lịch trình</h3>
+                                <div class="px-3 py-1.5 bg-surface-container-low rounded-lg flex items-center gap-2 border border-outline-variant/5">
+                                    <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+                                    <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Đã lập lịch trình chi tiết</span>
+                                </div>
+                            </div>
+                            <div class="relative pl-8 space-y-10">
+                                <div class="absolute left-[13px] top-2 bottom-2 w-0.5 bg-outline-variant/20"></div>
+                                <div class="relative">
+                                    <div class="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full border-2 border-surface bg-primary shadow-sm z-10"></div>
+                                    <div>
+                                        <span class="text-[9px] font-black text-primary uppercase tracking-widest mb-1 block">Ngày 01</span>
+                                        <h4 class="text-base font-bold text-on-surface">Khởi hành & Trải nghiệm ban đầu</h4>
+                                        <p class="text-xs text-on-surface-variant mt-1 italic">Vận chuyển, nhận phòng và tham gia buổi tối chào mừng.</p>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <div class="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full border-2 border-surface bg-primary shadow-sm z-10"></div>
+                                    <div>
+                                        <span class="text-[9px] font-black text-primary uppercase tracking-widest mb-1 block">Ngày 02</span>
+                                        <h4 class="text-base font-bold text-on-surface">Khám phá trọng tâm văn hóa</h4>
+                                        <p class="text-xs text-on-surface-variant mt-1 italic">Tham quan các địa danh biểu tượng và tham gia hoạt động chính.</p>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <div class="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full border-2 border-surface bg-outline-variant/30 z-10"></div>
+                                    <div class="px-4 py-3 bg-surface-container-low rounded-xl border border-outline-variant/5 text-xs font-bold text-on-surface-variant">
+                                        Và các ngày tiếp theo theo lịch trình đã thiết lập...
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="goToStep(2)" class="w-full mt-10 py-3.5 text-xs font-bold text-primary hover:bg-primary/5 rounded-2xl border-2 border-dashed border-outline-variant/20 transition-all">
+                                Xem toàn bộ Lịch trình Editor
+                            </button>
+                        </div>
+
+                        <!-- Guide Profile -->
+                        <div class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/10">
+                            <div class="flex flex-col md:flex-row items-center gap-8">
+                                <div class="relative group shrink-0">
+                                    <img alt="Guide" class="w-32 h-32 rounded-3xl object-cover shadow-lg ring-4 ring-primary/5" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"/>
+                                </div>
+                                <div class="flex-1 text-center md:text-left">
+                                    <span class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Chuyên gia đồng hành</span>
+                                    <h3 class="text-2xl font-extrabold text-on-surface mb-1">Elena Rodriguez</h3>
+                                    <p class="text-on-surface-variant font-medium text-sm mb-4">Chuyên gia Nghệ thuật & Di sản Văn hóa</p>
+                                    <p class="text-sm text-on-surface-variant leading-relaxed max-w-xl">"Chúng tôi cam kết mang lại trải nghiệm tinh tế nhất qua từng điểm chạm kiến trúc và văn hóa địa phương."</p>
+                                </div>
+                                <button onclick="goToStep(3)" class="px-6 py-3 rounded-2xl border-2 border-outline-variant/20 text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-lg">sync</span>
+                                    Đổi HDV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 Footer -->
+                <footer class="mt-12 bg-surface-container-low/50 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-outline-variant/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></div>
+                        <div>
+                            <p class="text-xs font-bold text-on-surface leading-none">Đã sẵn sàng xuất bản</p>
+                            <p class="text-[10px] text-on-surface-variant mt-1">Trạng thái: Tất cả các trường bắt buộc đã hoàn tất.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                    <button onclick="goToStep(3)" class="flex items-center gap-2 text-on-surface-variant font-bold hover:text-primary transition-all py-3 px-6">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span>
+                        Quay lại Bước 3
+                    </button>
+                        <button class="flex-1 md:flex-none px-8 py-3.5 text-sm font-bold text-white bg-primary hover:bg-primary-container shadow-xl shadow-primary/25 rounded-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+                            Xác nhận & Xuất bản Tour
+                            <span class="material-symbols-outlined text-sm">rocket_launch</span>
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </main>
+
+    <!-- ACTIVITY MODAL -->
+    <div id="activity-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+        
+        <!-- Modal Content -->
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-all border border-slate-200">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-slate-100 px-8 py-6">
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900">Thêm hoạt động mới</h3>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1" id="modal-day-label">Ngày 01 - Lịch trình</p>
+                    </div>
+                    <button onclick="closeActivityModal()" class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <div class="px-8 py-6 space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700">Tên hoạt động</label>
+                        <input id="activity-name" type="text" placeholder="Ví dụ: Tham quan bảo tàng Louvre" class="w-full h-12 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 font-medium px-4">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700">Thời gian bắt đầu</label>
+                            <input id="activity-start" type="time" class="w-full h-12 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 font-bold px-4">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700">Thời gian kết thúc</label>
+                            <input id="activity-end" type="time" class="w-full h-12 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 font-bold px-4">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700">Mô tả chi tiết</label>
+                        <textarea id="activity-desc" rows="3" placeholder="Mô tả các điểm tham quan hoặc lưu ý đặc biệt..." class="w-full bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 font-medium px-4 py-3"></textarea>
+                    </div>
+
+                    <!-- Map Selection -->
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700">Địa điểm hoạt động</label>
+                        <div class="flex gap-2 mb-2">
+                            <div class="flex-1 relative">
+                                <input id="activity-search" type="text" placeholder="Tìm kiếm địa điểm..." class="w-full h-10 bg-slate-50 border-none rounded-lg focus:ring-2 focus:ring-primary/20 text-sm px-10">
+                                <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-lg">search</span>
+                            </div>
+                            <button onclick="searchActivityLocation()" class="px-4 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-container transition-all">Tìm</button>
+                        </div>
+                        <div class="rounded-xl overflow-hidden border border-slate-200 h-48 relative shadow-inner">
+                            <div id="activity-map" class="h-full w-full z-0"></div>
+                            <div class="absolute bottom-3 right-3 z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+                                <p class="text-[10px] font-bold text-slate-600">Lat: <span id="act-lat">--</span>, Lng: <span id="act-lng">--</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex items-center justify-end gap-3 border-t border-slate-100 px-8 py-6 bg-slate-50/50">
+                    <button onclick="closeActivityModal()" class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 transition-all">Hủy bỏ</button>
+                    <button onclick="saveActivity()" class="px-10 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">Lưu hoạt động</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Leaflet Map
+            const map = L.map('map').setView([16.0544, 108.2022], 13); // Default to Da Nang
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            let marker;
+            const latDisplay = document.getElementById('lat-display');
+            const lngDisplay = document.getElementById('lng-display');
+            const searchInput = document.getElementById('search-input');
+
+            function updateCoords(lat, lng) {
+                latDisplay.textContent = lat.toFixed(6);
+                lngDisplay.textContent = lng.toFixed(6);
+            }
+
+            async function updateAddress(lat, lng) {
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                    const data = await response.json();
+                    if (data && data.display_name) {
+                        searchInput.value = data.display_name;
+                    }
+                } catch (error) {
+                    console.error('Reverse geocoding error:', error);
+                }
+            }
+
+            function setLocation(lat, lng, zoom = 16) {
+                const coords = [lat, lng];
+                map.setView(coords, zoom);
+                if (marker) {
+                    marker.setLatLng(coords);
+                } else {
+                    marker = L.marker(coords).addTo(map);
+                }
+                updateCoords(lat, lng);
+                updateAddress(lat, lng);
+            }
+
+            // Handle map click
+            map.on('click', async function(e) {
+                const { lat, lng } = e.latlng;
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng).addTo(map);
+                }
+                updateCoords(lat, lng);
+                updateAddress(lat, lng);
+            });
+
+            // Nominatim Search Function
+            async function searchLocation() {
+                const query = searchInput.value;
+                if (!query) return;
+
+                const searchBtn = document.getElementById('search-btn');
+                const originalText = searchBtn.textContent;
+                searchBtn.disabled = true;
+                searchBtn.textContent = '...';
+
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                    const data = await response.json();
+
+                    if (data && data.length > 0) {
+                        const { lat, lon } = data[0];
+                        setLocation(parseFloat(lat), parseFloat(lon));
+                    } else {
+                        alert('Không tìm thấy địa điểm này!');
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    alert('Lỗi khi tìm kiếm địa điểm!');
+                } finally {
+                    searchBtn.disabled = false;
+                    searchBtn.textContent = originalText;
+                }
+            }
+
+            document.getElementById('search-btn').addEventListener('click', searchLocation);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchLocation();
+                }
+            });
+
+            // Get current location
+            document.getElementById('get-location').addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        setLocation(position.coords.latitude, position.coords.longitude);
+                    });
+                }
+            });
+
+            // Duration Calculation
+            const durationInput = document.getElementById('duration-days');
+            const durationDisplay = document.getElementById('duration-display');
+
+            function updateDuration() {
+                const days = parseInt(durationInput.value) || 0;
+                if (days <= 0) {
+                    durationDisplay.textContent = '---';
+                    return;
+                }
+                
+                if (days === 1) {
+                    durationDisplay.textContent = '1 ngày (Trong ngày)';
+                } else {
+                    const nights = days - 1;
+                    durationDisplay.textContent = `${days} ngày ${nights} đêm`;
+                }
+            }
+
+            durationInput.addEventListener('input', updateDuration);
+            updateDuration();
+
+            // --- Itinerary Automation ---
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const durationInfo = document.getElementById('duration-info');
+            const timelineContainer = document.getElementById('itinerary-timeline');
+
+            // Set default start date to today
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.value = today;
+
+            function calculateEndDate() {
+                const days = parseInt(durationInput.value) || 0;
+                if (!startDateInput.value || days <= 0) return;
+
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + days);
+                
+                endDateInput.value = endDate.toISOString().split('T')[0];
+                
+                const nights = days > 1 ? days - 1 : 0;
+                durationInfo.textContent = days === 1 ? '1 ngày (Trong ngày)' : `${days} ngày ${nights} đêm`;
+            }
+
+            function generateTimeline() {
+                const days = parseInt(durationInput.value) || 0;
+                if (days <= 0) return;
+
+                timelineContainer.innerHTML = '';
+                
+                for (let i = 1; i <= days; i++) {
+                    const dayHtml = `
+                        <div class="flex gap-6 group">
+                            <div class="flex flex-col items-center">
+                                <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center z-10 border-4 border-surface ${i === 1 ? 'ring-2 ring-primary/20' : ''}">
+                                    <div class="w-2 h-2 rounded-full bg-on-primary"></div>
+                                </div>
+                                ${i < days ? '<div class="timeline-dashed flex-1"></div>' : ''}
+                            </div>
+                            <div class="flex-1 pb-10">
+                                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-outline-variant/5 hover:border-outline-variant/20">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <span class="text-[10px] font-black text-primary tracking-widest uppercase">Ngày ${i}</span>
+                                            <h4 class="text-xl font-bold text-on-surface font-headline">Lịch trình ngày thứ ${i}</h4>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <button class="p-2 text-outline-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+                                            <button class="p-2 text-outline-variant hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4" id="day-${i}-activities">
+                                        <p class="text-sm text-on-surface-variant italic">Chưa có hoạt động nào cho ngày này.</p>
+                                    </div>
+                                    <button onclick="openActivityModal(${i})" class="mt-6 w-full py-3 border-2 border-dashed border-outline-variant/30 rounded-xl text-on-surface-variant font-bold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-sm bg-surface-container-low/30">
+                                        <span class="material-symbols-outlined text-lg">add</span>
+                                        Thêm hoạt động
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    timelineContainer.insertAdjacentHTML('beforeend', dayHtml);
+                }
+            }
+
+            startDateInput.addEventListener('change', calculateEndDate);
+
+            // Initialize Review Map
+            let reviewMap;
+            function initReviewMap(lat, lng) {
+                if (!reviewMap) {
+                    reviewMap = L.map('review-map', {
+                        zoomControl: false,
+                        attributionControl: false,
+                        dragging: false,
+                        touchZoom: false,
+                        scrollWheelZoom: false,
+                        doubleClickZoom: false
+                    }).setView([lat, lng], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(reviewMap);
+                } else {
+                    reviewMap.setView([lat, lng], 14);
+                }
+                
+                reviewMap.eachLayer((layer) => {
+                    if (layer instanceof L.Marker) reviewMap.removeLayer(layer);
+                });
+                L.marker([lat, lng]).addTo(reviewMap);
+            }
+
+            // Export to window for button access
+            window.goToStep = function(step) {
+                const step1Content = document.getElementById('step-1-content');
+                const step2Content = document.getElementById('step-2-content');
+                const step3Content = document.getElementById('step-3-content');
+                const step4Content = document.getElementById('step-4-content');
+                
+                if (step === 2) {
+                    calculateEndDate();
+                    generateTimeline();
+                }
+
+                if (step === 4) {
+                    // Update review fields from Step 1 & 2
+                    const tourName = document.querySelector('input[placeholder*="Amalfi"]').value;
+                    const adultPrice = document.querySelector('input[placeholder="4,500,000"]').value;
+                    const childPrice = document.querySelector('input[placeholder="3,200,000"]').value;
+                    const capacity = document.querySelector('input[placeholder="12"]').value;
+                    
+                    document.getElementById('review-tour-name').textContent = tourName || 'Tên Tour chưa đặt';
+                    document.getElementById('review-adult-price').textContent = adultPrice || '0';
+                    document.getElementById('review-child-price').textContent = childPrice || '0';
+                    document.getElementById('review-capacity').textContent = capacity || '0';
+                    document.getElementById('review-duration-text').textContent = durationDisplay.textContent;
+                    document.getElementById('review-start-date').textContent = startDateInput.value ? new Date(startDateInput.value).toLocaleDateString('vi-VN') : '--/--/----';
+                    document.getElementById('review-end-date').textContent = endDateInput.value ? new Date(endDateInput.value).toLocaleDateString('vi-VN') : '--/--/----';
+                    document.getElementById('review-location').textContent = searchInput.value || 'Chưa xác định';
+                    
+                    // Update Map in Review
+                    const lat = parseFloat(latDisplay.textContent);
+                    const lng = parseFloat(lngDisplay.textContent);
+                    initReviewMap(lat, lng);
+
+                    setTimeout(() => {
+                        reviewMap.invalidateSize();
+                    }, 100);
+                }
+
+                // Update Visibility
+                step1Content.classList.toggle('hidden', step !== 1);
+                step2Content.classList.toggle('hidden', step !== 2);
+                step3Content.classList.toggle('hidden', step !== 3);
+                step4Content.classList.toggle('hidden', step !== 4);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Update Stepper UI
+                document.querySelectorAll('.step-indicator').forEach(indicator => {
+                    const s = parseInt(indicator.getAttribute('data-step'));
+                    const icon = indicator.querySelector('.step-icon');
+                    const label = indicator.querySelector('.step-label');
+
+                    if (s < step) {
+                        // Completed Steps
+                        icon.innerHTML = '<span class="material-symbols-outlined">check</span>';
+                        icon.className = 'step-icon w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold';
+                        label.className = 'step-label text-xs font-bold text-primary';
+                    } else if (s === step) {
+                        // Current Step
+                        icon.innerHTML = s;
+                        icon.className = 'step-icon w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg shadow-primary/20';
+                        label.className = 'step-label text-xs font-bold text-primary';
+                    } else {
+                        // Future Steps
+                        icon.innerHTML = s;
+                        icon.className = 'step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold';
+                        label.className = 'step-label text-xs font-medium text-on-surface-variant';
+                    }
+                });
+
+                // Update Lines
+                document.querySelectorAll('.stepper-line').forEach(line => {
+                    const l = parseInt(line.getAttribute('data-line'));
+                    if (l < step) {
+                        line.classList.add('bg-primary');
+                        line.classList.remove('bg-surface-container-highest');
+                    } else {
+                        line.classList.remove('bg-primary');
+                        line.classList.add('bg-surface-container-highest');
+                    }
+                });
+            };
+
+            // --- Activity Modal Logic ---
+            let currentDayForActivity = null;
+            let activityMap;
+            let activityMarker;
+            const activityModal = document.getElementById('activity-modal');
+            const actLatDisplay = document.getElementById('act-lat');
+            const actLngDisplay = document.getElementById('act-lng');
+            const activitySearchInput = document.getElementById('activity-search');
+
+            window.openActivityModal = function(dayIndex) {
+                currentDayForActivity = dayIndex;
+                document.getElementById('modal-day-label').textContent = `Ngày ${dayIndex.toString().padStart(2, '0')} - Lịch trình`;
+                activityModal.classList.remove('hidden');
+                
+                // Initialize Modal Map if not done
+                if (!activityMap) {
+                    activityMap = L.map('activity-map').setView([16.0544, 108.2022], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(activityMap);
+                    
+                    activityMap.on('click', function(e) {
+                        setActivityLocation(e.latlng.lat, e.latlng.lng);
+                    });
+                }
+                
+                setTimeout(() => {
+                    activityMap.invalidateSize();
+                }, 100);
+            };
+
+            window.closeActivityModal = function() {
+                activityModal.classList.add('hidden');
+                // Clear inputs
+                document.getElementById('activity-name').value = '';
+                document.getElementById('activity-start').value = '';
+                document.getElementById('activity-end').value = '';
+                document.getElementById('activity-desc').value = '';
+                activitySearchInput.value = '';
+            };
+
+            function setActivityLocation(lat, lng) {
+                const coords = [lat, lng];
+                activityMap.setView(coords, 16);
+                if (activityMarker) {
+                    activityMarker.setLatLng(coords);
+                } else {
+                    activityMarker = L.marker(coords).addTo(activityMap);
+                }
+                actLatDisplay.textContent = lat.toFixed(6);
+                actLngDisplay.textContent = lng.toFixed(6);
+            }
+
+            window.searchActivityLocation = async function() {
+                const query = activitySearchInput.value;
+                if (!query) return;
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        const { lat, lon } = data[0];
+                        setActivityLocation(parseFloat(lat), parseFloat(lon));
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                }
+            };
+
+            window.saveActivity = function() {
+                const name = document.getElementById('activity-name').value;
+                const start = document.getElementById('activity-start').value;
+                const end = document.getElementById('activity-end').value;
+                const desc = document.getElementById('activity-desc').value;
+                
+                if (!name || !start) {
+                    alert('Vui lòng điền tên hoạt động và thời gian bắt đầu!');
+                    return;
+                }
+
+                const container = document.getElementById(`day-${currentDayForActivity}-activities`);
+                // Clear the "empty" message if it's the first activity
+                if (container.querySelector('.italic')) {
+                    container.innerHTML = '';
+                }
+
+                const activityHtml = `
+                    <div class="flex items-start gap-4 p-4 bg-surface rounded-xl border border-outline-variant/10 group hover:border-primary/30 transition-all shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-primary/5 flex flex-col items-center justify-center shrink-0 border border-primary/10">
+                            <span class="text-[10px] font-black text-primary leading-none uppercase">${start}</span>
+                            <div class="w-4 h-[1px] bg-primary/20 my-1"></div>
+                            <span class="text-[9px] font-bold text-on-surface-variant leading-none uppercase">${end || '--:--'}</span>
+                        </div>
+                        <div class="flex-1">
+                            <h5 class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">${name}</h5>
+                            <p class="text-xs text-on-surface-variant line-clamp-2 mt-1">${desc || 'Không có mô tả.'}</p>
+                            ${actLatDisplay.textContent !== '--' ? `
+                                <div class="flex items-center gap-1.5 mt-2 text-[10px] text-primary font-bold">
+                                    <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                    <span>Vị trí đã lưu</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <button class="p-2 text-outline-variant hover:text-error opacity-0 group-hover:opacity-100 transition-all">
+                            <span class="material-symbols-outlined text-base">delete</span>
+                        </button>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', activityHtml);
+                closeActivityModal();
+            };
+        });
+    </script>
+</body>
+</html>

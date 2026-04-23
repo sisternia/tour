@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin - Chat</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(24px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+    <!-- Component Containers -->
+    <div id="sidebar-container"></div>
+    
+    <!-- Main Content Wrapper -->
+    <div class="ml-72 flex flex-col h-screen">
+        <div id="topbar-container"></div>
+        
+        <main class="flex-1 p-6 overflow-hidden">
+            <div class="flex h-full gap-6">
+                <!-- Conversation List Sidebar -->
+                <aside class="w-1/3 bg-surface-container-lowest rounded-xl flex flex-col overflow-hidden shadow-sm">
+                    <div class="p-6 border-b border-surface-container/50">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-headline font-bold text-lg">Hội thoại</h3>
+                            <button class="text-primary hover:bg-primary/5 p-2 rounded-full transition-colors">
+                                <span class="material-symbols-outlined">edit_square</span>
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-primary text-on-primary text-xs font-bold rounded-full">Tất cả</span>
+                            <span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-full cursor-pointer hover:bg-surface-container-highest">Chưa đọc</span>
+                            <span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-full cursor-pointer hover:bg-surface-container-highest">VIP</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto no-scrollbar">
+                        <!-- Conversation Item -->
+                        <div class="p-4 flex gap-4 bg-primary/5 border-l-4 border-primary cursor-pointer">
+                            <div class="relative flex-shrink-0">
+                                <img alt="Customer" class="w-12 h-12 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdSdHf_V5qwy0BonVRG9n6iYZtWwFuDvmdsFHntQvSahquPI_msbZR9lXSi7SmZhhtxdtG5quqIE-_eDABc8dzUCvjfATb0PEelsEJQo4DPiGB1GGaT1UQlVz_W_2plwlx-koG8-PwzsPFCLjWRE2YOot-PPVgtDvnKqrK-VFbzEmpngwcSHV3vTqRS9FAlY1u9GsY4E2lv8yfb0hMtpNdU2K7vsMef78OZD8D9mvyzNt8apzTDpUdbe7DzxOm75gXUsS5UURGB4k"/>
+                                <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <h4 class="font-bold text-sm truncate">Lê Minh Trang</h4>
+                                    <span class="text-[10px] text-on-surface-variant font-medium">10:45 AM</span>
+                                </div>
+                                <p class="text-xs text-primary font-semibold truncate">Cảm ơn bạn, tôi đã nhận được vé rồi.</p>
+                            </div>
+                        </div>
+                        <!-- More items... -->
+                    </div>
+                </aside>
+                
+                <!-- Chat Window -->
+                <section class="flex-1 bg-surface-container-lowest rounded-xl flex flex-col overflow-hidden relative shadow-sm">
+                    <!-- Chat Header -->
+                    <div class="px-8 py-5 flex items-center justify-between border-b border-surface-container/50 glass-panel sticky top-0 z-10">
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <img alt="Active Chat" class="w-12 h-12 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLyvXfT31aYP_8m8eDowdvmaIffBoUxkixjxBJImkF2d9PkNMrICtbuUt2seKxP4KC3F2jCh7Y88Wv37DVIHK26Bm99VSg-FLD-d6SodKDy9YDhiO5R31UDT1RAh16np0cd9jDrlHjSVeipPn2fIPOOIeZq1PoGUqTlY-C1C_7mEUguaYwuWCbAPgdW39SRr3wpW25VLzqtUYZQJ2AEk9Na8oXrl0WvLZINuUV_SG98trmdjyF4G4ejTmSGa3tv2_rUwxh-4LmEZk"/>
+                                <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                            </div>
+                            <div>
+                                <h3 class="font-headline font-bold text-base">Lê Minh Trang</h3>
+                                <p class="text-xs text-emerald-600 font-medium">Đang hoạt động</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="hover:bg-surface-container-high rounded-full p-2 text-on-surface-variant transition-all">
+                                <span class="material-symbols-outlined">call</span>
+                            </button>
+                            <button class="hover:bg-surface-container-high rounded-full p-2 text-on-surface-variant transition-all">
+                                <span class="material-symbols-outlined">videocam</span>
+                            </button>
+                            <button class="hover:bg-surface-container-high rounded-full p-2 text-on-surface-variant transition-all">
+                                <span class="material-symbols-outlined">info</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat History -->
+                    <div class="flex-1 overflow-y-auto p-8 flex flex-col gap-6 no-scrollbar">
+                        <div class="flex items-center justify-center">
+                            <span class="px-4 py-1 bg-surface-container text-[10px] font-bold text-on-surface-variant rounded-full uppercase tracking-widest">Hôm nay</span>
+                        </div>
+                        <!-- Message Received -->
+                        <div class="flex gap-3 max-w-[80%]">
+                            <div class="bg-surface-container-low text-on-surface px-5 py-3 rounded-2xl rounded-bl-none text-sm shadow-sm">
+                                Chào Voyager, mình muốn hỏi về tour Phú Quốc 3 ngày 2 đêm cuối tuần này còn chỗ không ạ?
+                            </div>
+                        </div>
+                        <!-- Message Sent -->
+                        <div class="flex flex-col gap-1 items-end ml-auto max-w-[80%]">
+                            <div class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-5 py-3 rounded-2xl rounded-br-none text-sm shadow-md">
+                                Chào Trang! Dạ hiện tại tour Phú Quốc cuối tuần này vẫn còn đúng 2 chỗ cuối cùng ạ. Bạn đi mấy người để mình giữ chỗ giúp bạn nhé?
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="p-6 bg-surface-container-lowest border-t border-surface-container/50">
+                        <div class="flex items-end gap-3 bg-surface-container-low rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="flex gap-1 pb-1 px-1">
+                                <button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-all">
+                                    <span class="material-symbols-outlined">add_circle</span>
+                                </button>
+                                <button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-all">
+                                    <span class="material-symbols-outlined">image</span>
+                                </button>
+                            </div>
+                            <textarea class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-3 resize-none max-h-32 scrollbar-hide" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+                            <button class="bg-primary text-on-primary w-10 h-10 flex items-center justify-center rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+</body>
+</html>
