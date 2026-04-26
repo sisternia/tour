@@ -74,7 +74,7 @@
                 <div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant/10 shadow-sm">
                     <p class="text-on-surface-variant text-sm font-semibold mb-2">Tổng số Tour</p>
                     <div class="flex items-end gap-3">
-                        <span class="text-3xl font-extrabold font-headline">124</span>
+                        <span id="total-tours-count" class="text-3xl font-extrabold font-headline">0</span>
                         <span class="text-green-600 text-xs font-bold mb-1 flex items-center"><span
                                 class="material-symbols-outlined text-xs" data-icon="arrow_upward">arrow_upward</span>
                             12%</span>
@@ -128,80 +128,22 @@
                                 <th
                                     class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                                     Địa điểm</th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                                <th class="px-6 py-4 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                                     Ngày đi - Ngày về</th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                                <th class="px-6 py-4 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                                     Số người</th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                                <th class="px-6 py-4 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                                     Giá Tour</th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                                <th class="px-6 py-4 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                                     Hướng dẫn viên</th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                                <th class="px-6 py-4 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                                     Tình trạng</th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                                </th>
+                                <th class="px-6 py-4 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                                    Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-surface-container">
-                            <tr class="hover:bg-surface-container-high transition-colors group">
-                                <td class="px-6 py-5">
-                                    <div class="flex items-center gap-3">
-                                        <img alt="Ha Long Bay" class="w-16 h-10 rounded-lg object-cover"
-                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgH9P0lEWoU_aeddTu_LsgnuisRq7wt40ntAjpcuxlQGsj-TadzR092ZlMxA4Ny-xuHk0u6fAJL0yxiBAyvC8ZCGGub-UNnmZvbGkBamqQCDtCLVd5APEYJAcar0T5lCUwiG0OZTuf0GTB7CnKjK2X6_vLLPP0Y8jhEuP0OllWbeHtrJb5ADVlJCz6eJFS-PUWDd6GgFAJesdbmrFwJainmGkP631HHiH8w_WDA10T2j6FSzqF7nbO_72bjJY1AfZrSL90JoyeY1Q" />
-                                        <div>
-                                            <p class="text-sm font-bold text-on-surface font-headline">Vịnh Hạ Long -
-                                                Đảo Tuần Châu</p>
-                                            <p class="text-[10px] text-on-surface-variant font-medium">CODE: VN-HL-2024
-                                            </p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5 text-sm">
-                                    <div class="flex items-center gap-1.5 text-on-surface-variant">
-                                        <span class="material-symbols-outlined text-base">location_on</span>
-                                        Quảng Ninh, VN
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5 text-sm">
-                                    <div class="text-on-surface font-medium">12/05 - 15/05</div>
-                                    <div class="text-[11px] text-on-surface-variant">3 Ngày 2 Đêm</div>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <div class="flex flex-col gap-1">
-                                        <div class="flex items-center gap-1 text-xs font-semibold">
-                                            <span class="material-symbols-outlined text-xs">person</span> 24 <span
-                                                class="text-on-surface-variant font-normal">/ 30</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <p class="text-sm font-bold text-primary">4,500,000</p>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center text-[10px] font-bold text-on-secondary-fixed">
-                                            TL</div>
-                                        <span class="text-sm font-medium">Trần Lâm</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <span
-                                        class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant text-[11px] font-bold rounded-full">Đang
-                                        bán</span>
-                                </td>
-                                <td class="px-6 py-5 text-right">
-                                    <button class="text-on-surface-variant hover:text-primary transition-all">
-                                        <span class="material-symbols-outlined">more_vert</span>
-                                    </button>
-                                </td>
-                            </tr>
+                        <tbody id="tour-table-body" class="divide-y divide-surface-container">
+                            <!-- Data will be loaded here -->
                         </tbody>
                     </table>
                 </div>
@@ -212,6 +154,7 @@
     <!-- Scripts -->
     <script src="../container/js/sidebar.js"></script>
     <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/tour_standard.js"></script>
 </body>
 
 </html>

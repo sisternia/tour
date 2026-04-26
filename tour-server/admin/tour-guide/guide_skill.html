@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Thêm Kỹ năng Hướng dẫn viên - Voyager Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .brand-font { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+    <!-- Component Containers -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 ml-72 bg-surface min-h-screen">
+        <div id="topbar-container"></div>
+
+        <!-- Content Canvas -->
+        <div class="p-10 max-w-5xl mx-auto">
+            <div class="flex items-end justify-between mb-12">
+                <div>
+                    <h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Thêm Kỹ năng Hướng dẫn viên</h1>
+                    <p class="text-on-surface-variant max-w-xl">Cập nhật hồ sơ năng lực cho hướng dẫn viên để tối ưu hóa việc phân bổ hành trình cho khách hàng cao cấp.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="window.location.href='guide.html'" class="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-all">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span>
+                        Trở về
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-8">
+                <!-- Section: Languages -->
+                <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined" data-icon="language">language</span>
+                            </div>
+                            <h2 class="text-xl font-bold tracking-tight">Ngôn ngữ thông thạo</h2>
+                        </div>
+                        <button onclick="openLanguageModal()" class="flex items-center gap-2 text-sm font-bold text-primary px-4 py-2 rounded-full border border-primary/20 hover:bg-primary/5 transition-all">
+                            <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                            Thêm ngôn ngữ
+                        </button>
+                    </div>
+                    <div id="language-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Languages will be rendered here by guide.js -->
+                    </div>
+                </section>
+                <!-- Section: Expertise (Asymmetric Bento Grid) -->
+                <section>
+                    <div class="flex items-center gap-3 mb-6 ml-2">
+                        <div class="w-10 h-10 rounded-full bg-tertiary-fixed/30 flex items-center justify-center text-tertiary">
+                            <span class="material-symbols-outlined" data-icon="verified">verified</span>
+                        </div>
+                        <h2 class="text-xl font-bold tracking-tight">Lĩnh vực chuyên môn</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="field-list-grid">
+                        <!-- Fields will be rendered here by guide.js -->
+
+
+                        <!-- Add new -->
+                        <div onclick="openFieldModal()" class="bg-surface-container-low border-2 border-dashed border-outline-variant/50 rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container transition-all h-full min-h-[200px]">
+                            <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all mb-3">
+                                <span class="material-symbols-outlined" data-icon="add">add</span>
+                            </div>
+                            <p class="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">Thêm lĩnh vực</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Footer spacer -->
+            <div class="h-24"></div>
+        </div>
+    </main>
+
+    <!-- Language Modal -->
+    <div id="language-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeLanguageModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-surface rounded-2xl shadow-2xl p-6 border border-outline-variant/20">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold font-headline">Thêm ngôn ngữ mới</h3>
+                <button onclick="closeLanguageModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-on-surface-variant">Tên ngôn ngữ</label>
+                    <input id="language-name-input" type="text" class="w-full h-11 px-4 bg-surface-container-low border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="VD: Tiếng Tây Ban Nha">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-on-surface-variant">Mã quốc gia (Để lấy icon cờ)</label>
+                    <input id="language-code-input" type="text" class="w-full h-11 px-4 bg-surface-container-low border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="VD: VN, US, ES, FR, JP...">
+                    <p class="text-xs text-on-surface-variant">Tra cứu mã 2 chữ cái chuẩn ISO 3166-1 alpha-2.</p>
+                </div>
+            </div>
+            <div class="mt-8 flex gap-3 justify-end">
+                <button onclick="closeLanguageModal()" class="px-5 py-2.5 rounded-lg font-semibold text-on-surface-variant hover:bg-surface-container transition-all">Hủy</button>
+                <button onclick="submitLanguage()" class="px-5 py-2.5 rounded-lg font-semibold bg-primary text-on-primary shadow-sm hover:opacity-90 transition-all">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Field Modal -->
+    <div id="field-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFieldModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-surface rounded-2xl shadow-2xl p-6 border border-outline-variant/20">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold font-headline">Thêm lĩnh vực mới</h3>
+                <button onclick="closeFieldModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-on-surface-variant">Tên lĩnh vực</label>
+                    <input id="field-name-input" type="text" class="w-full h-11 px-4 bg-surface-container-low border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="VD: Nhiếp ảnh thiên nhiên">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-on-surface-variant">Mô tả (tùy chọn)</label>
+                    <textarea id="field-desc-input" rows="3" class="w-full p-4 bg-surface-container-low border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none" placeholder="Mô tả chi tiết chuyên môn..."></textarea>
+                </div>
+            </div>
+            <div class="mt-8 flex gap-3 justify-end">
+                <button onclick="closeFieldModal()" class="px-5 py-2.5 rounded-lg font-semibold text-on-surface-variant hover:bg-surface-container transition-all">Hủy</button>
+                <button onclick="submitField()" class="px-5 py-2.5 rounded-lg font-semibold bg-primary text-on-primary shadow-sm hover:opacity-90 transition-all">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../container/js/tailwind.config.js"></script>
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/guide.js"></script>
+    <script>
+        // Language Modal Logic
+        function openLanguageModal() {
+            document.getElementById('language-modal').classList.remove('hidden');
+        }
+        function closeLanguageModal() {
+            document.getElementById('language-modal').classList.add('hidden');
+            document.getElementById('language-name-input').value = '';
+            document.getElementById('language-code-input').value = '';
+        }
+
+        // Tự động nhận diện mã quốc gia từ tên ngôn ngữ
+        const commonLanguageCodes = {
+            'việt': 'VN', 'vietnam': 'VN',
+            'anh': 'US', 'english': 'US',
+            'pháp': 'FR', 'french': 'FR',
+            'đức': 'DE', 'german': 'DE',
+            'tây ban nha': 'ES', 'spanish': 'ES',
+            'nhật': 'JP', 'japanese': 'JP',
+            'hàn': 'KR', 'korean': 'KR',
+            'trung': 'CN', 'chinese': 'CN',
+            'ý': 'IT', 'italia': 'IT', 'italian': 'IT',
+            'nga': 'RU', 'russian': 'RU',
+            'thái': 'TH', 'thai': 'TH',
+            'ấn độ': 'IN', 'hindi': 'IN',
+            'bồ đào nha': 'PT', 'portuguese': 'PT',
+            'hà lan': 'NL', 'dutch': 'NL'
+        };
+
+        document.getElementById('language-name-input').addEventListener('input', function(e) {
+            const val = e.target.value.toLowerCase();
+            for (const [key, code] of Object.entries(commonLanguageCodes)) {
+                if (val.includes(key)) {
+                    document.getElementById('language-code-input').value = code;
+                    break;
+                }
+            }
+        });
+
+        async function submitLanguage() {
+            const name = document.getElementById('language-name-input').value;
+            const code = document.getElementById('language-code-input').value;
+            if (!name) return showNotification('Vui lòng nhập tên ngôn ngữ', 'error');
+            try {
+                const res = await fetch('http://localhost:5000/api/guides/add-language', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guide_lan_name: name, country_code: code })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification('Thêm ngôn ngữ thành công!', 'success');
+                    closeLanguageModal();
+                    // Gọi hàm fetch từ guide.js để render lại
+                    if (typeof fetchLanguages === 'function') {
+                        fetchLanguages();
+                    }
+                } else {
+                    showNotification('Lỗi: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showNotification('Có lỗi xảy ra khi kết nối server!', 'error');
+            }
+        }
+
+        // Field Modal Logic
+        function openFieldModal() {
+            document.getElementById('field-modal').classList.remove('hidden');
+        }
+        function closeFieldModal() {
+            document.getElementById('field-modal').classList.add('hidden');
+            document.getElementById('field-name-input').value = '';
+            document.getElementById('field-desc-input').value = '';
+        }
+        async function submitField() {
+            const name = document.getElementById('field-name-input').value;
+            const desc = document.getElementById('field-desc-input').value;
+            if (!name) return showNotification('Vui lòng nhập tên lĩnh vực', 'error');
+            try {
+                const res = await fetch('http://localhost:5000/api/guides/add-field', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guide_fie_name: name, guide_fie_desc: desc })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification('Thêm lĩnh vực thành công!', 'success');
+                    closeFieldModal();
+                    // Gọi hàm fetch từ guide.js để render lại
+                    if (typeof fetchFields === 'function') {
+                        fetchFields();
+                    }
+                } else {
+                    showNotification('Lỗi: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showNotification('Có lỗi xảy ra khi kết nối server!', 'error');
+            }
+        }
+
+        // Initialize lists on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof fetchLanguages === 'function') fetchLanguages();
+            if (typeof fetchFields === 'function') fetchFields();
+        });
+    </script>
+</body>
+</html>

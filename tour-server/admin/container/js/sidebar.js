@@ -12,7 +12,9 @@ const menuItems = [
 
 let navHtml = menuItems.map(item => {
     const isActive = currentPage.includes(item.link.replace('..', '')) || 
-                     (item.name === 'Quản lý khách hàng' && currentPage.includes('/customer/'));
+                     (item.name === 'Quản lý khách hàng' && currentPage.includes('/customer/')) ||
+                     (item.name === 'Quản lý hướng dẫn viên' && currentPage.includes('/tour-guide/')) ||
+                     (item.name === 'Quản lý Tour du lịch' && currentPage.includes('/tour/'));
     const activeClass = "bg-slate-200 text-blue-700 rounded-lg transition-all duration-150 ease-in-out scale-95 shadow-sm";
     const inactiveClass = "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors group";
     

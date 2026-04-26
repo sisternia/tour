@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Chi tiết Tour | Admin Dashboard</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        #detail-map { border-radius: 1rem; }
+        .leaflet-container { z-index: 10; font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+
+<body class="font-body text-slate-800">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar-container"></aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header id="topbar-container"></header>
+
+            <!-- Page Content -->
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto space-y-10">
+                    
+                    <!-- Header Actions -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="window.history.back()" class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center hover:bg-surface-container-high transition-all">
+                                <span class="material-symbols-outlined">arrow_back</span>
+                            </button>
+                            <div>
+                                <h1 class="text-2xl font-black font-headline">Chi tiết chương trình Tour</h1>
+                                <p class="text-on-surface-variant text-sm font-medium">Xem lại thông tin và lịch trình chi tiết của tour.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button class="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-bold hover:bg-surface-container-low transition-all">Xuất PDF</button>
+                            <button class="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary-container transition-all flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lg">edit_square</span>
+                                Chỉnh sửa Tour
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TOUR DETAIL CONTENT (Mirrored from Review Step) -->
+                    <div id="tour-detail-content" class="space-y-8">
+                        <!-- Row 1: Main Header (Full Width) -->
+                        <div class="bg-surface-container-lowest rounded-3xl p-10 shadow-sm border border-outline-variant/10 overflow-hidden relative">
+                            <div class="absolute top-0 right-0 p-8">
+                                <span id="detail-status-badge" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 shadow-sm">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> --
+                                </span>
+                            </div>
+                            <div class="relative z-10">
+                                <span id="detail-tour-type" class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-lg text-[11px] font-bold tracking-[0.2em] uppercase mb-6">--</span>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                                    <div>
+                                        <h2 class="text-4xl font-extrabold text-on-surface tracking-tight leading-tight mb-4" id="detail-tour-name">Đang tải dữ liệu...</h2>
+                                        <p class="text-on-surface-variant text-lg font-medium leading-relaxed mb-6" id="detail-tour-desc">--</p>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                                    <span class="material-symbols-outlined">schedule</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Thời lượng</p>
+                                                    <p class="text-sm font-extrabold text-on-surface" id="detail-duration-text">-- ngày -- đêm</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                                    <span class="material-symbols-outlined">calendar_today</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Thời gian tổ chức</p>
+                                                    <p class="text-sm font-extrabold text-on-surface"><span id="detail-start-date">--/--/----</span> — <span id="detail-end-date">--/--/----</span></p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                                    <span class="material-symbols-outlined">location_on</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Địa điểm khởi hành</p>
+                                                    <p class="text-sm font-extrabold text-on-surface truncate max-w-[300px]" id="detail-location">--</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm h-full min-h-[250px]">
+                                        <div id="detail-map" class="h-full w-full z-0 bg-surface-container-low"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Two Columns Grid -->
+                        <div class="grid grid-cols-12 gap-8">
+                            <!-- Left Column (4): Logistics & Images -->
+                            <div class="col-span-12 lg:col-span-4 space-y-8">
+                                <!-- Logistics & Pricing -->
+                                <section class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-outline-variant/10">
+                                    <div class="mb-6">
+                                        <h3 class="text-xl font-extrabold text-on-surface tracking-tight mb-1">Hậu cần & Giá cả</h3>
+                                        <p class="text-xs text-on-surface-variant">Bảng giá chi tiết theo đối tượng.</p>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-semibold text-on-surface-variant">Giá người lớn</label>
+                                            <div class="relative">
+                                                <div id="detail-adult-price" class="flex items-center w-full h-11 pl-10 bg-surface-container-low rounded-lg font-bold text-primary text-sm">--</div>
+                                                <span class="absolute left-3.5 top-2.5 font-bold text-on-surface-variant text-sm">₫</span>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-semibold text-on-surface-variant">Giá trẻ em</label>
+                                            <div class="relative">
+                                                <div id="detail-child-price" class="flex items-center w-full h-11 pl-10 bg-surface-container-low rounded-lg font-bold text-primary text-sm">--</div>
+                                                <span class="absolute left-3.5 top-2.5 font-bold text-on-surface-variant text-sm">₫</span>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-2 pt-2 border-t border-outline-variant/10">
+                                            <label class="block text-sm font-semibold text-on-surface-variant">Sức chứa tối đa</label>
+                                            <div class="relative">
+                                                <div id="detail-capacity" class="flex items-center w-full h-11 pl-10 bg-surface-container-low rounded-lg font-bold text-on-surface text-sm">--</div>
+                                                <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-on-surface-variant text-sm">groups</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Tour Images -->
+                                <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/10">
+                                    <h3 class="text-sm font-black text-on-surface mb-4 uppercase tracking-wider">Ảnh Tour</h3>
+                                    <div class="aspect-video rounded-xl overflow-hidden bg-surface-container-low mb-3">
+                                        <img id="detail-cover-image" class="w-full h-full object-cover" src="https://via.placeholder.com/400x300?text=Cover+Image" alt="Cover"/>
+                                    </div>
+                                    <div id="detail-sub-previews" class="grid grid-cols-3 gap-2">
+                                        <!-- Sub images will be injected here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column (8): Itinerary & Guide -->
+                            <div class="col-span-12 lg:col-span-8 space-y-8">
+                                <!-- Itinerary Flow -->
+                                <div class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/10">
+                                    <div class="flex justify-between items-center mb-8">
+                                        <h3 class="text-lg font-extrabold text-on-surface">Lịch trình chi tiết</h3>
+                                        <div class="px-3 py-1.5 bg-surface-container-low rounded-lg flex items-center gap-2 border border-outline-variant/5">
+                                            <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+                                            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Hành trình tối ưu</span>
+                                        </div>
+                                    </div>
+                                    <div id="detail-itinerary-flow" class="relative pl-8 space-y-10">
+                                        <div class="absolute left-[13px] top-2 bottom-2 w-0.5 bg-outline-variant/20"></div>
+                                        <!-- Dynamic itinerary items will be inserted here -->
+                                        <p class="text-sm text-on-surface-variant italic">Đang tải lịch trình...</p>
+                                    </div>
+                                </div>
+
+                                <!-- Guide Profile -->
+                                <div id="detail-guide-container" class="space-y-4">
+                                    <!-- Multiple guides will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Scripts -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/tour_detail.js"></script>
+
+    <!-- Image Modal Overlay -->
+    <div id="image-modal" class="fixed inset-0 z-[9999] hidden bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-8" onclick="closeImageModal()">
+        <!-- Close Button -->
+        <button class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all border border-white/10 group z-[100]" onclick="event.stopPropagation(); closeImageModal()">
+            <span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">close</span>
+        </button>
+
+        <!-- Navigation Buttons -->
+        <button id="modal-prev" class="absolute left-6 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all border border-white/10 group z-[100] hidden" onclick="event.stopPropagation(); prevImage()">
+            <span class="material-symbols-outlined text-3xl group-hover:-translate-x-1 transition-transform">chevron_left</span>
+        </button>
+        <button id="modal-next" class="absolute right-6 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all border border-white/10 group z-[100] hidden" onclick="event.stopPropagation(); nextImage()">
+            <span class="material-symbols-outlined text-3xl group-hover:translate-x-1 transition-transform">chevron_right</span>
+        </button>
+
+        <!-- Image Container -->
+        <div class="relative max-w-7xl max-h-full flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+            <img id="modal-image" src="" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl transition-all duration-300 scale-95" alt="Preview"/>
+            
+            <!-- Info Badge -->
+            <div id="modal-counter" class="mt-6 px-4 py-1.5 bg-white/10 rounded-full border border-white/10 text-white/80 text-[11px] font-bold tracking-widest uppercase hidden">
+                Ảnh 1 / 3
+            </div>
+            
+            <div class="mt-4 text-center">
+                <p class="text-white/40 text-xs font-medium tracking-wide">Dùng phím mũi tên hoặc nhấp bên ngoài để đóng</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
