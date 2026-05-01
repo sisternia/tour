@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,111 +6,149 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
+  ActivityIndicator,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import NavigationBar from "@/components/ui/NavigationBar";
-
-const { width } = Dimensions.get("window");
+import ProfileLayout from "@/components/profile/ProfileLayout";
+import { useAuth } from "@/context/AuthContext";
+import { getUserProfile } from "@/services/auth/userService";
 
 export default function ProfileScreen() {
-  const images = [
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
-    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05",
-    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
-    "https://images.unsplash.com/photo-1501854140801-50d01698950b",
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
-  ];
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === "web" && width > 1024;
 
-  return (
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (user?.user_name) {
+        const res = await getUserProfile(user.user_name);
+        if (res.success) {
+          setProfile(res.data);
+        }
+      }
+      setLoading(false);
+    };
+    loadProfile();
+  }, [user]);
+
+  const renderMobileProfile = () => (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity>
-          <Ionicons name="settings-sharp" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
-
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Background Cover */}
+        <View style={styles.backgroundContainer}>
+          {profile?.background ? (
+            <Image source={{ uri: profile.background }} style={styles.backgroundImage} />
+          ) : (
+            <View style={styles.backgroundPlaceholder}>
+              <Ionicons name="image-outline" size={40} color="#ccc" />
+            </View>
+          )}
+          <TouchableOpacity style={styles.settingsIcon}>
+            <Ionicons name="settings-sharp" size={16} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.editBgIcon}>
+            <Ionicons name="camera" size={16} color="white" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: "https://i.pravatar.cc/150?u=alex" }}
-              style={styles.avatar}
-            />
+          <View style={[styles.avatarContainer, { marginTop: -50 }]}>
+            {profile?.avatar ? (
+              <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Ionicons name="person" size={50} color="#ccc" />
+              </View>
+            )}
             <TouchableOpacity style={styles.editIcon}>
-              <Ionicons name="pencil" size={12} color="white" />
+              <Ionicons name="camera" size={14} color="white" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userName}>Alex Johnson</Text>
-          <Text style={styles.handle}>@alexj • New York, USA</Text>
+          <Text style={styles.userName}>{profile?.full_name || "Chưa cập nhật tên"}</Text>
+          <Text style={styles.handle}>@{profile?.user_name || "user"} • {profile?.add || "Chưa cập nhật địa chỉ"}</Text>
+          {profile?.email && <Text style={styles.emailText}>{profile.email}</Text>}
           <Text style={styles.bio}>
-            Exploring the world one coffee shop at a time ✈️☕
+            {profile?.bio || "Chưa cập nhật tiểu sử"}
           </Text>
         </View>
 
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <Text style={styles.statNum}>42</Text>
-            <Text style={styles.statLabel}>TRIPS</Text>
+            <Text style={styles.statNum}>0</Text>
+            <Text style={styles.statLabel}>CHUYẾN ĐI</Text>
           </View>
           <View style={[styles.statBox, styles.statBorder]}>
-            <Text style={styles.statNum}>1.5k</Text>
-            <Text style={styles.statLabel}>FOLLOWERS</Text>
+            <Text style={styles.statNum}>0</Text>
+            <Text style={styles.statLabel}>NGƯỜI THEO DÕI</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statNum}>340</Text>
-            <Text style={styles.statLabel}>FOLLOWING</Text>
+            <Text style={styles.statNum}>0</Text>
+            <Text style={styles.statLabel}>ĐANG THEO DÕI</Text>
           </View>
         </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.editBtn}>
             <Ionicons name="create-outline" size={18} color="white" />
-            <Text style={styles.editBtnText}>Edit Profile</Text>
+            <Text style={styles.editBtnText}>Chỉnh sửa</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareBtn}>
             <Ionicons name="share-outline" size={18} color="black" />
-            <Text style={styles.shareBtnText}>Share Profile</Text>
+            <Text style={styles.shareBtnText}>Chia sẻ</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.tabContainer}>
           <TouchableOpacity style={styles.activeTab}>
-            <Text style={styles.activeTabText}>Posts</Text>
+            <Text style={styles.activeTabText}>Bài viết</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.inactiveTabText}>Saved Trips</Text>
+            <Text style={styles.inactiveTabText}>Đã lưu</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.inactiveTabText}>Reviews</Text>
+            <Text style={styles.inactiveTabText}>Đánh giá</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.grid}>
-          {images.map((img, index) => (
-            <Image key={index} source={{ uri: img }} style={styles.gridImage} />
-          ))}
+        <View style={styles.emptyGrid}>
+          <Ionicons name="images-outline" size={50} color="#E5E5E5" />
+          <Text style={styles.emptyText}>Chưa có bài viết nào</Text>
         </View>
         <View style={{ height: 100 }} />
       </ScrollView>
       <NavigationBar />
     </View>
   );
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#005bb2" />
+      </View>
+    );
+  }
+
+  if (isWeb) {
+    return <ProfileLayout profile={profile} />;
+  }
+
+  return renderMobileProfile();
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    alignItems: "center",
-  },
-  headerTitle: { fontSize: 18, fontWeight: "bold" },
-  profileSection: { alignItems: "center", marginTop: 20 },
+  backgroundContainer: { position: "relative", width: "100%", height: 200 },
+  backgroundImage: { width: "100%", height: "100%", resizeMode: "cover" },
+  backgroundPlaceholder: { width: "100%", height: "100%", backgroundColor: "#F0F2F5", justifyContent: "center", alignItems: "center" },
+  settingsIcon: { position: "absolute", top: 40, right: 15, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 20 },
+  editBgIcon: { position: "absolute", bottom: 10, right: 15, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 20 },
+  profileSection: { alignItems: "center" },
   avatarContainer: { position: "relative" },
   avatar: {
     width: 100,
@@ -118,6 +156,12 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 3,
     borderColor: "#007BFF",
+  },
+  avatarPlaceholder: {
+    backgroundColor: "#E5E5EA",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "white",
   },
   editIcon: {
     position: "absolute",
@@ -129,10 +173,11 @@ const styles = StyleSheet.create({
   },
   userName: { fontSize: 22, fontWeight: "bold", marginTop: 10 },
   handle: { color: "#8E8E93", fontSize: 14 },
+  emailText: { color: "#007BFF", fontSize: 13, marginTop: 4, fontWeight: "500" },
   bio: {
     textAlign: "center",
     paddingHorizontal: 40,
-    marginTop: 10,
+    marginTop: 12,
     color: "#444",
   },
   statsContainer: {
@@ -193,11 +238,14 @@ const styles = StyleSheet.create({
   activeTabText: { color: "#007BFF", fontWeight: "bold" },
   inactiveTab: { flex: 1, alignItems: "center", paddingVertical: 15 },
   inactiveTabText: { color: "#8E8E93" },
-  grid: { flexDirection: "row", flexWrap: "wrap" },
-  gridImage: {
-    width: width / 3,
-    height: width / 3,
-    borderWidth: 1,
-    borderColor: "#fff",
+  emptyGrid: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 50,
+  },
+  emptyText: {
+    color: "#8E8E93",
+    fontSize: 14,
+    marginTop: 10,
   },
 });

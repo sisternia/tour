@@ -86,81 +86,60 @@ function renderTourDetail(tour) {
             const fields = guide.fields && guide.fields.length > 0 ? guide.fields : [];
             
             return `
-            <div class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/10 relative overflow-hidden">
-                <!-- Background Decoration -->
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl z-0"></div>
-                
-                <div class="flex flex-col md:flex-row gap-8 relative z-10">
-                    <!-- Avatar & Badge -->
-                    <div class="flex flex-col items-center gap-3 shrink-0 w-40">
-                        <div class="relative group mb-1">
-                            <img alt="Guide Avatar" class="w-36 h-36 rounded-3xl object-cover shadow-lg ring-4 ring-primary/5 group-hover:ring-primary/20 transition-all duration-300" src="${guide.avatar || 'https://via.placeholder.com/200?text=HDV'}"/>
-                            <div class="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/5"></div>
-                        </div>
-                        <div class="px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">stars</span>
-                            Đồng hành
-                        </div>
-                        <div class="mt-1 flex flex-col items-center gap-1 text-center bg-surface-container-low px-4 py-2 rounded-2xl w-full border border-outline-variant/10 shadow-sm">
-                            <span class="material-symbols-outlined text-amber-500 text-[18px]">cake</span>
-                            <div>
-                                <span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-[0.15em] block mb-0.5">Ngày sinh</span>
-                                <span class="text-xs font-black text-on-surface">${dob}</span>
-                            </div>
+            <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/10 mb-4">
+                <!-- Top Info: Avatar, Name, DOB -->
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="relative group shrink-0">
+                        <img alt="Guide Avatar" class="w-20 h-20 rounded-full object-cover shadow-md ring-2 ring-primary/10" src="${guide.avatar || 'https://via.placeholder.com/200?text=HDV'}"/>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5 block">Chuyên gia đồng hành</span>
+                        <h3 class="text-lg font-extrabold text-on-surface mb-0.5 truncate">${guide.full_name || 'Chưa cập nhật tên'}</h3>
+                        <div class="flex items-center gap-1.5 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[14px] text-amber-500">cake</span>
+                            <span class="text-[11px] font-bold">${dob}</span>
                         </div>
                     </div>
-                    
-                    <!-- Guide Info -->
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-2xl font-extrabold text-on-surface mb-2">${guide.full_name || 'Chưa cập nhật tên'}</h3>
-                        <p class="text-on-surface-variant font-medium text-sm mb-6 leading-relaxed italic">"${guide.bio || 'Chuyên gia văn hóa & lịch sử địa phương.'}"</p>
-                        
-                        <!-- Contact Info Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
-                                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-sm">
-                                    <span class="material-symbols-outlined text-[22px]">mail</span>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.15em] mb-0.5">Email</p>
-                                    <p class="text-sm font-bold text-on-surface break-all" title="${guide.email || '--'}">${guide.email || '--'}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
-                                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm">
-                                    <span class="material-symbols-outlined text-[22px]">call</span>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.15em] mb-0.5">Điện thoại</p>
-                                    <p class="text-sm font-bold text-on-surface break-all">${guide.phone || '--'}</p>
-                                </div>
-                            </div>
-                        </div>
+                </div>
 
-                        <!-- Skills & Expertise -->
-                        <div class="space-y-5">
-                            ${languages.length > 0 ? `
-                            <div>
-                                <p class="text-xs font-extrabold text-on-surface mb-3 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <span class="material-symbols-outlined text-[18px] text-primary">translate</span> Ngôn ngữ thông thạo
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    ${languages.map(lang => `<span class="px-3.5 py-1.5 bg-surface text-on-surface border border-outline-variant/20 rounded-xl text-xs font-bold shadow-sm hover:border-primary/30 hover:text-primary transition-colors cursor-default">${lang}</span>`).join('')}
-                                </div>
-                            </div>
-                            ` : ''}
-                            
-                            ${fields.length > 0 ? `
-                            <div>
-                                <p class="text-xs font-extrabold text-on-surface mb-3 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <span class="material-symbols-outlined text-[18px] text-primary">verified</span> Lĩnh vực chuyên môn
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    ${fields.map(field => `<span class="px-3.5 py-1.5 bg-surface text-on-surface border border-outline-variant/20 rounded-xl text-xs font-bold shadow-sm hover:border-primary/30 hover:text-primary transition-colors cursor-default">${field}</span>`).join('')}
-                                </div>
-                            </div>
-                            ` : ''}
+                <!-- Details Grid -->
+                <div class="space-y-4 mt-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[16px]">mail</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Email</p>
+                            <p class="text-[13px] font-bold text-on-surface truncate" title="${guide.email || '--'}">${guide.email || '--'}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[16px]">call</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Số điện thoại</p>
+                            <p class="text-[13px] font-bold text-on-surface truncate">${guide.phone || '--'}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-1">Tiểu sử</p>
+                        <p class="text-[13px] text-on-surface font-medium leading-relaxed italic line-clamp-3">${guide.bio || 'Chuyên gia văn hóa & lịch sử địa phương.'}</p>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">translate</span> Ngôn ngữ thông thạo</p>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold text-on-surface">
+                            ${languages.length > 0 ? languages.map(lang => `<span class="px-2 py-1 bg-surface border border-outline-variant/10 rounded-md shadow-sm">${lang}</span>`).join('') : '--'}
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">verified</span> Lĩnh vực chuyên môn</p>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold text-on-surface">
+                            ${fields.length > 0 ? fields.map(field => `<span class="px-2 py-1 bg-surface border border-outline-variant/10 rounded-md shadow-sm">${field}</span>`).join('') : '--'}
                         </div>
                     </div>
                 </div>
@@ -249,14 +228,14 @@ function renderItinerary(schedules, tourStartDateString) {
         const displayDay = day === 'undefined' ? 1 : day;
         
         const currentDate = new Date(tourStartDate);
-        currentDate.setDate(tourStartDate.getDate() + displayDay - 1);
+        currentDate.setDate(tourStartDate.getDate() + parseInt(displayDay) - 1);
         const formattedDate = currentDate.toLocaleDateString('vi-VN');
 
         html += `
             <div class="relative pl-[100px] mb-12 last:mb-0">
                 <!-- Premium Day Badge -->
-                <div class="absolute left-0 top-0 flex flex-col items-center w-20">
-                    <div class="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-primary to-[#004b87] text-white shadow-xl shadow-primary/20 flex flex-col items-center justify-center ring-[8px] ring-surface z-10 transform hover:scale-105 transition-transform duration-300">
+                <div class="absolute left-0 top-0 flex flex-col items-center w-20 cursor-pointer group/day" onclick="toggleDayActivities('${displayDay}')" title="Thu gọn/Mở rộng tất cả ngày ${displayDay}">
+                    <div class="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-primary to-[#004b87] text-white shadow-xl shadow-primary/20 flex flex-col items-center justify-center ring-[8px] ring-surface z-10 transform group-hover/day:scale-110 transition-transform duration-300">
                         <span class="text-xs font-black uppercase tracking-[0.15em] opacity-90 mb-0.5">Ngày</span>
                         <span class="text-3xl font-black leading-none">${displayDay}</span>
                     </div>
@@ -267,40 +246,73 @@ function renderItinerary(schedules, tourStartDateString) {
                 
                 <!-- Activities List -->
                 <div class="space-y-6 pt-2">
-                    ${days[day].map(sche => `
-                        <div class="relative bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group">
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="px-4 py-2 bg-primary/10 text-primary text-sm font-black rounded-xl uppercase tracking-widest flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px]">schedule</span>
-                                    ${sche.time_sche_start} ${sche.time_sche_end ? '- ' + sche.time_sche_end : ''}
+                    ${days[day].map(sche => {
+                        const desc = sche.tour_sche_desc || 'Không có mô tả chi tiết.';
+                        const isLongDesc = desc.split('\n').length > 5 || desc.length > 250;
+                        const tempId = sche.tour_sche_id || Math.random().toString(36).substr(2, 9);
+                        const imgUrls = sche.images ? sche.images.map(img => img.tour_sche_img_url) : [];
+
+                        return `
+                        <div class="relative bg-surface-container-lowest rounded-3xl border border-outline-variant/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group overflow-hidden review-day-${displayDay}-item">
+                            <!-- Header Toggle -->
+                            <div class="p-6 md:p-8 cursor-pointer flex items-center justify-between" onclick="toggleDetailActivity('${tempId}')">
+                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                    <div class="px-4 py-2 bg-primary/10 text-primary text-sm font-black rounded-xl uppercase tracking-widest flex items-center gap-2 w-fit whitespace-nowrap shrink-0">
+                                        <span class="material-symbols-outlined text-[18px]">schedule</span>
+                                        ${sche.time_sche_start} ${sche.time_sche_end ? '- ' + sche.time_sche_end : ''}
+                                    </div>
+                                    <h4 class="text-xl font-extrabold text-slate-800 group-hover:text-primary transition-colors">${sche.tour_sche_name}</h4>
                                 </div>
+                                <span id="arrow-${tempId}" class="material-symbols-outlined text-slate-400 transition-transform duration-300">expand_more</span>
                             </div>
-                            
-                            <div class="flex flex-col xl:flex-row gap-8">
-                                <div class="flex-1">
-                                    <h4 class="text-2xl font-extrabold text-slate-800 group-hover:text-primary transition-colors mb-4">${sche.tour_sche_name}</h4>
-                                    <p class="text-base text-slate-600 font-medium leading-relaxed mb-6">${sche.tour_sche_desc || 'Không có mô tả chi tiết.'}</p>
-                                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-xl text-primary border border-primary/5">
-                                        <span class="material-symbols-outlined text-[20px]">location_on</span>
-                                        <span class="text-sm font-bold">${sche.tour_sche_add || 'Chưa rõ địa điểm'}</span>
+
+                            <!-- Collapsible Content -->
+                            <div id="content-${tempId}" class="px-8 pb-8 space-y-6">
+                                <div class="flex flex-col xl:flex-row gap-8">
+                                    <div class="flex-1">
+                                        <div class="relative">
+                                            <p id="desc-${tempId}" class="text-base text-slate-600 font-medium leading-relaxed ${isLongDesc ? 'line-clamp-5' : ''}">
+                                                ${desc.replace(/\n/g, '<br>')}
+                                            </p>
+                                            ${isLongDesc ? `
+                                                <button onclick="toggleDescription('${tempId}', this)" class="mt-2 text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                                                    <span>Xem thêm</span>
+                                                    <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    ${imgUrls.length > 0 ? `
+                                        <div class="w-full xl:w-64 shrink-0">
+                                            <div class="grid grid-cols-2 gap-2 h-40">
+                                                ${imgUrls.slice(0, 2).map((imgUrl, idx) => `
+                                                    <div class="rounded-2xl overflow-hidden shadow-sm ${imgUrls.length === 1 ? 'col-span-2 h-40' : 'h-40'}">
+                                                        <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer" onclick="openImageModal(${JSON.stringify(imgUrls).replace(/"/g, "'")}, ${idx})">
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                            ${imgUrls.length > 2 ? `<p class="text-xs text-right mt-2 font-bold text-slate-500">+ ${imgUrls.length - 2} ảnh khác</p>` : ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+
+                                <!-- Full Width Location -->
+                                <div class="pt-6 border-t border-slate-100">
+                                    <div class="flex items-start gap-3 p-4 bg-surface-container-low rounded-2xl text-slate-700 border border-slate-200/50">
+                                        <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary shrink-0">
+                                            <span class="material-symbols-outlined">location_on</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Địa điểm diễn ra</p>
+                                            <p class="text-sm font-bold leading-relaxed">${sche.tour_sche_add || 'Chưa rõ địa điểm chi tiết'}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                ${sche.images && sche.images.length > 0 ? `
-                                    <div class="w-full xl:w-64 shrink-0 mt-6 xl:mt-0">
-                                        <div class="grid grid-cols-2 gap-2 h-40">
-                                            ${sche.images.slice(0, 2).map((img, idx) => `
-                                                <div class="rounded-2xl overflow-hidden shadow-sm ${sche.images.length === 1 ? 'col-span-2 h-40' : 'h-40'}">
-                                                    <img src="${img.tour_sche_img_url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer" onclick="openImageModal(${JSON.stringify(sche.images.map(i => i.tour_sche_img_url)).replace(/"/g, "'")}, ${idx})">
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                        ${sche.images.length > 2 ? `<p class="text-xs text-right mt-2 font-bold text-slate-500">+ ${sche.images.length - 2} ảnh khác</p>` : ''}
-                                    </div>
-                                ` : ''}
                             </div>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
@@ -312,6 +324,60 @@ function renderItinerary(schedules, tourStartDateString) {
         ${html}
     `;
 }
+
+window.toggleDayActivities = function(day) {
+    const items = document.querySelectorAll(`.review-day-${day}-item`);
+    if (items.length === 0) return;
+
+    // Determine if we should expand or collapse based on the first item
+    const firstContent = items[0].querySelector('[id^="content-"]');
+    const shouldCollapse = firstContent && !firstContent.classList.contains('hidden');
+
+    items.forEach(item => {
+        const content = item.querySelector('[id^="content-"]');
+        const arrow = item.querySelector('[id^="arrow-"]');
+        if (!content || !arrow) return;
+
+        if (shouldCollapse) {
+            content.classList.add('hidden');
+            arrow.style.transform = 'rotate(-90deg)';
+        } else {
+            content.classList.remove('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    });
+};
+
+window.toggleDetailActivity = function(id) {
+    const content = document.getElementById(`content-${id}`);
+    const arrow = document.getElementById(`arrow-${id}`);
+    if (!content || !arrow) return;
+    
+    const isHidden = content.classList.contains('hidden');
+    if (isHidden) {
+        content.classList.remove('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    } else {
+        content.classList.add('hidden');
+        arrow.style.transform = 'rotate(-90deg)';
+    }
+};
+
+window.toggleDescription = function(id, btn) {
+    const desc = document.getElementById(`desc-${id}`);
+    const span = btn.querySelector('span');
+    const icon = btn.querySelector('.material-symbols-outlined');
+    
+    if (desc.classList.contains('line-clamp-5')) {
+        desc.classList.remove('line-clamp-5');
+        span.textContent = 'Thu gọn';
+        icon.textContent = 'keyboard_arrow_up';
+    } else {
+        desc.classList.add('line-clamp-5');
+        span.textContent = 'Xem thêm';
+        icon.textContent = 'keyboard_arrow_down';
+    }
+};
 
 // Image Modal Gallery State
 let currentImages = [];

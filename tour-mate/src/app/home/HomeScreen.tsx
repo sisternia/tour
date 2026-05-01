@@ -8,16 +8,25 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Platform,
+  useWindowDimensions,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import NavigationBar from "@/components/ui/NavigationBar";
+import HomeLayout from "@/components/home/HomeLayout";
+import Footer from "@/components/ui/Footer";
+import { HOT_TOURS, DESTINATIONS } from "@/constants/homeData";
 
-const { width } = Dimensions.get("window");
+const { width: windowWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === "web" && width > 768;
+
   const [weather, setWeather] = useState<{ temp: number; code: number } | null>(
-    null
+    null,
   );
   const [address, setAddress] = useState("Đang xác định...");
   const [loading, setLoading] = useState(true);
@@ -39,7 +48,7 @@ export default function HomeScreen() {
       }
       try {
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
         );
         const data = await response.json();
         setWeather({
@@ -54,108 +63,210 @@ export default function HomeScreen() {
     })();
   }, []);
 
-  const getWeatherDesc = (code: number) => {
-    if (code === 0) return "Trời quang";
-    if (code <= 3) return "Nhiều mây";
-    if (code >= 51 && code <= 67) return "Đang có mưa";
-    return "Thời tiết hiện tại";
-  };
+  const renderHotTours = () => (
+    <View>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Tour Hot Trong Tháng</Text>
+        <TouchableOpacity>
+          <Text style={styles.seeAll}>Xem tất cả</Text>
+        </TouchableOpacity>
+      </View>
 
-  const getWeatherIcon = (code: number) => {
-    if (code === 0) return "sunny";
-    if (code <= 3) return "partly-sunny";
-    return "cloudy";
-  };
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.trendingScroll}>
+        {HOT_TOURS.map((tour, i) => (
+          <TouchableOpacity key={i} style={styles.mobileTourCard}>
+            <View style={{ height: 180 }}>
+              <Image
+                source={{ uri: tour.image }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+            <View style={{ padding: 16 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  marginBottom: 8,
+                }}>
+                <Ionicons name="star" size={14} color="#ff9900" />
+                <Text
+                  style={{ fontSize: 13, fontWeight: "600", color: "#666" }}>
+                  {tour.rating}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: "#333",
+                  marginBottom: 8,
+                }}
+                numberOfLines={2}>
+                {tour.title}
+              </Text>
+              <Text style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
+                {tour.time}
+              </Text>
+              <Text
+                style={{ fontSize: 18, fontWeight: "800", color: "#003d9b" }}>
+                {tour.price}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
 
-  return (
+  const renderBentoGrid = () => (
+    <View>
+      <Text style={styles.sectionTitle}>Điểm Đến Phổ Biến</Text>
+      <View style={styles.mobileBentoGrid}>
+        <View style={styles.mobileBentoMain}>
+          <Image
+            source={{ uri: DESTINATIONS[0].image }}
+            style={styles.bentoImage}
+          />
+          <View style={styles.bentoOverlay}>
+            <Text style={styles.bentoTitleSmall}>{DESTINATIONS[0].name}</Text>
+            <Text style={styles.bentoCount}>{DESTINATIONS[0].count}</Text>
+          </View>
+        </View>
+
+        <View style={styles.mobileBentoRow}>
+          <View style={styles.mobileBentoSmall}>
+            <Image
+              source={{ uri: DESTINATIONS[1].image }}
+              style={styles.bentoImage}
+            />
+            <View style={styles.bentoOverlaySmall}>
+              <Text style={styles.bentoTitleSmall}>{DESTINATIONS[1].name}</Text>
+            </View>
+          </View>
+          <View style={styles.mobileBentoSmall}>
+            <Image
+              source={{ uri: DESTINATIONS[2].image }}
+              style={styles.bentoImage}
+            />
+            <View style={styles.bentoOverlaySmall}>
+              <Text style={styles.bentoTitleSmall}>{DESTINATIONS[2].name}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderNewsletter = () => (
+    <View style={styles.mobileNewsletter}>
+      <Text style={styles.newsTitleMobile}>
+        Sẵn sàng cho chuyến đi tiếp theo?
+      </Text>
+      <Text style={styles.newsSubMobile}>
+        Đăng ký nhận tin để không bỏ lỡ những ưu đãi tour hấp dẫn nhất từ Tour
+        Mate.
+      </Text>
+      <View style={styles.newsFormMobile}>
+        <TextInput
+          style={styles.newsInputMobile}
+          placeholder="Địa chỉ email của bạn"
+          placeholderTextColor="#aaa"
+        />
+        <TouchableOpacity style={styles.newsBtnMobile}>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: "#fff" }}>
+            Đăng ký ngay
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+
+
+  const renderMobileHome = () => (
     <View style={styles.container}>
       {/* Header Section */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.welcomeText}>Chào mừng trở lại,</Text>
-            <Text style={styles.headerTitle}>Sẵn sàng khám phá?</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationBtn}>
-            <Ionicons name="notifications" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+        <Image
+          source={{
+            uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDEOPe24hlP-rPCedHni68ajIr6kSEnlt3I8--QLSfbjSjS46j84RtiiLzdBeI1srNCAPvXagcMYEgMuWKHGr785ff8hbrxzutKAynABBFHgQFKubE7rMnM_C8mXnM4y6D64P9HXLhSFJoE3eyneP0pRB-m7XTQyaLOtN9oLHsE3zGp034otB1mV3LqLfqBA7shza20LtCmZNX4QZvyrvjuUmfwPqZkOijtvccx8OHP2eVsuw_bfxJgVtDCz5yZyHqNTlgTXnTb7M0",
+          }}
+          style={styles.headerImage}
+        />
+        <View style={styles.headerOverlay} />
 
-        {/* Weather Card */}
-        <View style={styles.weatherCard}>
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <>
-              <View style={styles.weatherLeft}>
-                <Ionicons
-                  name={weather ? getWeatherIcon(weather.code) : "sunny"}
-                  size={40}
-                  color="#FFD700"
-                />
-                <View style={styles.weatherTextGroup}>
-                  <Text style={styles.tempText}>
-                    {weather ? `${weather.temp}°C` : "--°C"}
-                  </Text>
-                  <Text style={styles.weatherDesc}>
-                    {weather ? getWeatherDesc(weather.code) : "Đang tải..."}
+        <View style={styles.headerContentWrapper}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.welcomeText}>Chào mừng trở lại,</Text>
+              <Text style={styles.headerTitle}>Sẵn sàng khám phá?</Text>
+            </View>
+            <TouchableOpacity style={styles.notificationBtn}>
+              <Ionicons name="notifications" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Weather Card */}
+          <View style={styles.weatherCard}>
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <View style={styles.weatherLeft}>
+                  <Ionicons
+                    name={
+                      weather
+                        ? weather.code === 0
+                          ? "sunny"
+                          : weather.code <= 3
+                            ? "partly-sunny"
+                            : "cloudy"
+                        : "sunny"
+                    }
+                    size={40}
+                    color="#FFD700"
+                  />
+                  <View style={styles.weatherTextGroup}>
+                    <Text style={styles.tempText}>
+                      {weather ? `${weather.temp}°C` : "--°C"}
+                    </Text>
+                    <Text style={styles.weatherDesc}>
+                      {weather
+                        ? weather.code === 0
+                          ? "Trời quang"
+                          : weather.code <= 3
+                            ? "Nhiều mây"
+                            : "Thời tiết hiện tại"
+                        : "Đang tải..."}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.weatherRight}>
+                  <View style={styles.locationContainer}>
+                    <Ionicons name="location-sharp" size={16} color="white" />
+                    <Text style={styles.locationText} numberOfLines={1}>
+                      {address}
+                    </Text>
+                  </View>
+                  <Text style={styles.dateText}>
+                    Hôm nay,{" "}
+                    {new Date().toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "short",
+                    })}
                   </Text>
                 </View>
-              </View>
-              <View style={styles.weatherRight}>
-                <View style={styles.locationContainer}>
-                  <Ionicons name="location-sharp" size={16} color="white" />
-                  <Text style={styles.locationText} numberOfLines={1}>
-                    {address}
-                  </Text>
-                </View>
-                <Text style={styles.dateText}>
-                  Hôm nay,{" "}
-                  {new Date().toLocaleDateString("vi-VN", {
-                    day: "numeric",
-                    month: "short",
-                  })}
-                </Text>
-              </View>
-            </>
-          )}
+              </>
+            )}
+          </View>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
-        {/* Quick Action Icons */}
-        <View style={styles.actionRow}>
-          {[
-            {
-              name: "notifications-outline",
-              label: "Alerts",
-              color: "#FF7E5F",
-            },
-            {
-              name: "chatbubble-ellipses-outline",
-              label: "Ask AI",
-              color: "#4facfe",
-            },
-            { name: "help-buoy-outline", label: "Support", color: "#9b51e0" },
-            {
-              name: "navigate-circle-outline",
-              label: "My Trips",
-              color: "#27ae60",
-            },
-          ].map((item, index) => (
-            <TouchableOpacity key={index} style={styles.actionItem}>
-              <View style={styles.actionIconContainer}>
-                <Ionicons
-                  name={item.name as any}
-                  size={24}
-                  color={item.color}
-                />
-              </View>
-              <Text style={styles.actionLabel}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
         {/* Categories / Tabs */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Tìm kiếm chuyến đi kế tiếp</Text>
@@ -163,8 +274,7 @@ export default function HomeScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.categoryScroll}
-        >
+          style={styles.categoryScroll}>
           {["Tất cả", "Bãi biển", "Núi non", "Thành phố", "Rừng núi"].map(
             (cat, i) => (
               <TouchableOpacity
@@ -172,127 +282,57 @@ export default function HomeScreen() {
                 style={[
                   styles.categoryBtn,
                   i === 0 && styles.categoryBtnActive,
-                ]}
-              >
+                ]}>
                 <Text
                   style={[
                     styles.categoryText,
                     i === 0 && styles.categoryTextActive,
-                  ]}
-                >
+                  ]}>
                   {cat}
                 </Text>
               </TouchableOpacity>
-            )
+            ),
           )}
         </ScrollView>
 
-        {/* Trending Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Xu hướng hiện nay</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAll}>Xem tất cả</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.trendingScroll}
-        >
-          <TouchableOpacity style={styles.trendingCard}>
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1537996194471-e657df975ab4",
-              }}
-              style={styles.trendingImage}
-            />
-            <View style={styles.trendingRating}>
-              <Ionicons name="star" size={12} color="#FFD700" />
-              <Text style={styles.ratingText}> 4.8</Text>
-            </View>
-            <View style={styles.trendingOverlay}>
-              <Text style={styles.trendingTitle}>Nghỉ dưỡng Bali</Text>
-              <Text style={styles.trendingLocation}>Indonesia</Text>
-              <View style={styles.trendingPriceRow}>
-                <Text style={styles.trendingPrice}>Từ $450</Text>
-                <View style={styles.trendingGoBtn}>
-                  <Ionicons name="arrow-forward" size={16} color="white" />
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.trendingCard}>
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34",
-              }}
-              style={styles.trendingImage}
-            />
-            <View style={styles.trendingRating}>
-              <Ionicons name="star" size={12} color="#FFD700" />
-              <Text style={styles.ratingText}> 4.9</Text>
-            </View>
-            <View style={styles.trendingOverlay}>
-              <Text style={styles.trendingTitle}>Kỳ nghỉ Paris</Text>
-              <Text style={styles.trendingLocation}>Pháp</Text>
-              <View style={styles.trendingPriceRow}>
-                <Text style={styles.trendingPrice}>Từ $600</Text>
-                <View style={styles.trendingGoBtn}>
-                  <Ionicons name="arrow-forward" size={16} color="white" />
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </ScrollView>
-
-        {/* Recommended Section */}
-        <Text style={styles.sectionTitle}>Gợi ý cho bạn</Text>
-        <TouchableOpacity style={styles.recommendCard}>
-          <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1505576391880-b3f9d713dc4f",
-            }}
-            style={styles.recommendImage}
-          />
-          <View style={styles.recommendContent}>
-            <View style={styles.recommendHeader}>
-              <View style={styles.dealBadge}>
-                <Text style={styles.dealText}>ƯU ĐÃI</Text>
-              </View>
-              <View style={styles.row}>
-                <Ionicons name="star" size={14} color="#FFD700" />
-                <Text style={styles.ratingText}> 4.8</Text>
-              </View>
-            </View>
-            <Text style={styles.recommendTitle}>Khám phá Thung lũng Napa</Text>
-            <Text style={styles.recommendDesc}>
-              Trải nghiệm thưởng thức rượu vang...
-            </Text>
-            <View style={styles.recommendFooter}>
-              <Text style={styles.recommendPrice}>$320 / người</Text>
-              <TouchableOpacity style={styles.bookBtn}>
-                <Text style={styles.bookBtnText}>Đặt ngay</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
+        {renderHotTours()}
+        {renderBentoGrid()}
+        {renderNewsletter()}
+        <Footer />
 
         <View style={{ height: 100 }} />
       </ScrollView>
-
       <NavigationBar />
     </View>
   );
+
+  return isWeb ? <HomeLayout /> : renderMobileHome();
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "white" },
   header: {
-    backgroundColor: "#007BFF",
-    padding: 24,
+    height: 320,
     borderBottomLeftRadius: 35,
     borderBottomRightRadius: 35,
+    overflow: "hidden",
+    position: "relative",
+  },
+  headerImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
+  headerOverlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 61, 155, 0.6)",
+  },
+  headerContentWrapper: {
+    padding: 24,
     paddingTop: 60,
+    flex: 1,
   },
   headerTop: {
     flexDirection: "row",
@@ -330,19 +370,6 @@ const styles = StyleSheet.create({
   },
   dateText: { color: "white", fontSize: 12, opacity: 0.7, marginTop: 4 },
   content: { padding: 20 },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 10,
-  },
-  actionItem: { alignItems: "center" },
-  actionIconContainer: {
-    backgroundColor: "#F0F5FF",
-    padding: 15,
-    borderRadius: 20,
-    marginBottom: 8,
-  },
-  actionLabel: { fontSize: 12, color: "#666", fontWeight: "600" },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -351,7 +378,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
-  seeAll: { color: "#007BFF", fontWeight: "600" },
+  seeAll: { color: "#003d9b", fontWeight: "600" },
   categoryScroll: { marginBottom: 20 },
   categoryBtn: {
     paddingHorizontal: 20,
@@ -360,99 +387,99 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     marginRight: 10,
   },
-  categoryBtnActive: { backgroundColor: "#007BFF" },
+  categoryBtnActive: { backgroundColor: "#003d9b" },
   categoryText: { color: "#888", fontWeight: "600" },
   categoryTextActive: { color: "white" },
   trendingScroll: { marginBottom: 25 },
-  trendingCard: {
-    width: 200,
-    height: 280,
-    borderRadius: 30,
+
+  mobileTourCard: {
+    width: 280,
+    backgroundColor: "#fff",
+    borderRadius: 24,
     overflow: "hidden",
-    marginRight: 15,
-  },
-  trendingImage: { width: "100%", height: "100%" },
-  trendingRating: {
-    position: "absolute",
-    top: 15,
-    right: 15,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    flexDirection: "row",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  ratingText: { color: "white", fontSize: 12, fontWeight: "bold" },
-  trendingOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    padding: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-  },
-  trendingTitle: { color: "white", fontSize: 18, fontWeight: "bold" },
-  trendingLocation: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 13,
+    marginRight: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 5,
     marginBottom: 10,
   },
-  trendingPriceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  mobileBentoGrid: {
+    gap: 12,
+    marginBottom: 20,
+    marginTop: 15,
   },
-  trendingPrice: { color: "white", fontSize: 16, fontWeight: "bold" },
-  trendingGoBtn: { backgroundColor: "#007BFF", padding: 8, borderRadius: 12 },
-  recommendCard: {
+  mobileBentoRow: {
     flexDirection: "row",
-    backgroundColor: "white",
-    borderRadius: 25,
-    padding: 12,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    gap: 12,
+    height: 150,
   },
-  recommendImage: { width: 100, height: 100, borderRadius: 20 },
-  recommendContent: {
+  mobileBentoSmall: {
     flex: 1,
-    marginLeft: 15,
-    justifyContent: "space-between",
+    borderRadius: 20,
+    overflow: "hidden",
+    position: "relative",
   },
-  recommendHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  mobileBentoMain: {
+    height: 200,
+    borderRadius: 24,
+    overflow: "hidden",
+    position: "relative",
+  },
+  mobileNewsletter: {
+    backgroundColor: "#005bb2",
+    borderRadius: 30,
+    padding: 30,
+    alignItems: "center",
+    marginVertical: 40,
+  },
+  newsTitleMobile: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#fff",
+    textAlign: "center",
+  },
+  newsSubMobile: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.8)",
+    textAlign: "center",
+    marginTop: 12,
+  },
+  newsFormMobile: {
+    width: "100%",
+    gap: 12,
+    marginTop: 24,
+  },
+  newsInputMobile: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    paddingHorizontal: 20,
+    height: 50,
+    fontSize: 14,
+  },
+  newsBtnMobile: {
+    backgroundColor: "#994700",
+    borderRadius: 15,
+    height: 50,
+    justifyContent: "center",
     alignItems: "center",
   },
-  dealBadge: {
-    backgroundColor: "#E3F2FD",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+  bentoImage: { width: "100%", height: "100%" },
+  bentoOverlay: {
+    position: "absolute",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "flex-end",
+    padding: 20,
   },
-  dealText: { color: "#007BFF", fontSize: 10, fontWeight: "bold" },
-  recommendTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 4,
+  bentoOverlaySmall: {
+    position: "absolute",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    justifyContent: "flex-end",
+    padding: 15,
   },
-  recommendDesc: { fontSize: 12, color: "#888" },
-  recommendFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  recommendPrice: { fontSize: 14, fontWeight: "bold", color: "#333" },
-  bookBtn: {
-    backgroundColor: "#007BFF",
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
-  bookBtnText: { color: "white", fontSize: 12, fontWeight: "bold" },
-  row: { flexDirection: "row", alignItems: "center" },
+  bentoTitleSmall: { fontSize: 18, fontWeight: "700", color: "#fff" },
+  bentoCount: { fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 4 },
 });

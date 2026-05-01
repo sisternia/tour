@@ -13,63 +13,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { resetPassword } from "@/services/auth/userService";
 
-function FloatingInput({ label, value, onChangeText, isPassword }: any) {
-  const [isFocused, setIsFocused] = useState(false);
-  const [hidePassword, setHidePassword] = useState(true);
+import FloatingInput from "@/components/ui/FloatingInput";
 
-  const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
-
-  useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: isFocused || value ? 1 : 0,
-      duration: 150,
-      useNativeDriver: false,
-    }).start();
-  }, [isFocused, value]);
-
-  const labelStyle = {
-    position: "absolute" as const,
-    left: 12,
-    top: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [18, -10],
-    }),
-    fontSize: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 12],
-    }),
-    color: isFocused ? "#007BFF" : "#666",
-    backgroundColor: "#fff",
-    paddingHorizontal: 6,
-    zIndex: 10,
-  };
-
-  return (
-    <View style={styles.inputWrapper}>
-      <Animated.Text style={labelStyle}>{label}</Animated.Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={isPassword ? hidePassword : false}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          autoCapitalize="none"
-        />
-        {isPassword && (
-          <TouchableOpacity onPress={() => setHidePassword(!hidePassword)}>
-            <Ionicons
-              name={hidePassword ? "eye" : "eye-off"}
-              size={22}
-              color="#666"
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
-}
+import AuthLayout from "@/components/auth/AuthLayout";
 
 export default function NewPassScreen() {
   const router = useRouter();
@@ -117,8 +63,7 @@ export default function NewPassScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Thiết lập mật khẩu mới</Text>
+    <AuthLayout title="Thiết lập mật khẩu mới">
       <Text style={styles.subTitle}>
         Vui lòng nhập mật khẩu mới cho tài khoản: {email}
       </Text>
@@ -154,44 +99,15 @@ export default function NewPassScreen() {
           <Text style={styles.backText}>Trở về</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
-    textAlign: "left",
-  },
   subTitle: {
     fontSize: 14,
     color: "#666",
     marginBottom: 30,
-  },
-  inputWrapper: {
-    marginBottom: 20,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    height: 56,
-    backgroundColor: "#fff",
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
   },
   backContainer: {
     flexDirection: "row",
@@ -199,11 +115,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   backText: {
-    color: "#007BFF",
+    color: "#003d9b",
     fontWeight: "500",
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#003d9b",
     height: 56,
     borderRadius: 10,
     alignItems: "center",

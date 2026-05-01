@@ -170,6 +170,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // --- Prevent Double Submission ---
+        const submitBtn = document.querySelector('button[onclick="submitTour()"]');
+        if (submitBtn) {
+            if (submitBtn.disabled) return;
+            submitBtn.disabled = true;
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = `
+                Đang xử lý...
+                <span class="material-symbols-outlined text-sm animate-spin">sync</span>
+            `;
+            submitBtn.dataset.originalContent = originalContent;
+        }
+
         const formData = new FormData();
         formData.append('tour_name', info.tour_name);
         formData.append('tour_desc', info.tour_desc);
@@ -200,7 +213,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         formData.append('date_start', document.getElementById('start-date').value);
         formData.append('date_end', document.getElementById('end-date').value);
-        formData.append('tour_status', 'Bản nháp');
+        const tourStatus = document.getElementById('tour-status-select') ? document.getElementById('tour-status-select').value : 'Bản nháp';
+        formData.append('tour_status', tourStatus);
         
         // Prepare and append schedules
         const schedulesForSubmit = allSchedules.map((sche, index) => {
@@ -233,14 +247,27 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const result = await response.json();
             if (result.success) {
-                showNotification('Tạo tour thành công!');
-                window.location.href = 'tour_standard.html';
+                const successMsg = editingTourId ? 'Sửa thành công!' : 'Thêm thành công!';
+                showNotification(successMsg);
+                setTimeout(() => {
+                    window.location.href = 'tour_standard.html';
+                }, 1000);
             } else {
                 showNotification('Lỗi: ' + result.message, 'error');
+                // Re-enable button on error
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = submitBtn.dataset.originalContent;
+                }
             }
         } catch (error) {
             console.error('Error submitting tour:', error);
             showNotification('Lỗi kết nối máy chủ!', 'error');
+            // Re-enable button on error
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = submitBtn.dataset.originalContent;
+            }
         }
     }
 
@@ -414,12 +441,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="space-y-4" id="day-${i}-activities">
                                 <p class="text-sm text-on-surface-variant italic">Chưa có hoạt động nào cho ngày này.</p>
                             </div>
-                            ${!editingTourId ? `
                             <button onclick="openActivityModal(${i})" class="mt-6 w-full py-3 border-2 border-dashed border-outline-variant/30 rounded-xl text-on-surface-variant font-bold hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-sm bg-surface-container-low/30">
                                 <span class="material-symbols-outlined text-lg">add</span>
                                 Thêm hoạt động
                             </button>
-                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -515,6 +540,28 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDuration();
     }
 
+    window.updateTourStatusBadge = function() {
+        const selectElem = document.getElementById('tour-status-select');
+        const dotElem = document.getElementById('tour-status-dot');
+        if (!selectElem || !dotElem) return;
+        
+        const val = selectElem.value;
+        
+        // Base classes setup
+        const baseClasses = "inline-flex items-center gap-2 pl-7 pr-8 py-2 rounded-full text-xs font-bold border shadow-sm appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 transition-colors z-10 relative ";
+        
+        if (val === 'Bản nháp') {
+            selectElem.className = baseClasses + "bg-amber-50 text-amber-700 border-amber-100";
+            dotElem.className = "absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-amber-500 animate-pulse pointer-events-none z-20";
+        } else if (val === 'Đang hoạt động') {
+            selectElem.className = baseClasses + "bg-emerald-50 text-emerald-700 border-emerald-100";
+            dotElem.className = "absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse pointer-events-none z-20";
+        } else if (val === 'Tạm dừng') {
+            selectElem.className = baseClasses + "bg-rose-50 text-rose-700 border-rose-100";
+            dotElem.className = "absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-rose-500 animate-pulse pointer-events-none z-20";
+        }
+    };
+
     // --- Stepper Navigation ---
     window.goToStep = function(step) {
         const contents = ['step-1-content', 'step-2-content', 'step-3-content', 'step-4-content'];
@@ -531,6 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (step === 4) {
             const info = getBasicInfo();
             document.getElementById('review-tour-name').textContent = info.tour_name || 'Tên Tour chưa đặt';
+            document.getElementById('review-tour-desc').textContent = info.tour_desc || 'Chưa có mô tả chi tiết.';
             document.getElementById('review-tour-type').textContent = `Tour Cao cấp ${info.tour_type}`;
             document.getElementById('review-adult-price').textContent = info.price_adult || '0';
             document.getElementById('review-child-price').textContent = info.price_child || '0';
@@ -583,25 +631,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 itineraryFlow.innerHTML = '';
                 const totalDays = parseInt(durationInput.value) || 0;
                 
-                const renderFullDayReview = async (dayNum) => {
-                    const daySches = allSchedules.filter(s => s.day_number === dayNum);
-                    
-                    const dayHeader = `
-                        <div class="relative group mb-6">
-                            <div class="absolute -left-[23px] top-1.5 w-4 h-4 rounded-full border-4 border-surface bg-primary shadow-sm z-10"></div>
-                            <div class="bg-primary/5 px-4 py-2 rounded-xl inline-block mb-4">
-                                <span class="text-[10px] font-black text-primary uppercase tracking-widest">Ngày ${dayNum.toString().padStart(2, '0')}</span>
-                            </div>
-                            <div class="space-y-4" id="review-day-${dayNum}-activities">
-                                ${daySches.length === 0 ? '<p class="text-xs text-on-surface-variant italic ml-4">Không có hoạt động nào được lập lịch.</p>' : ''}
-                            </div>
-                        </div>
-                    `;
-                    itineraryFlow.insertAdjacentHTML('beforeend', dayHeader);
+                const renderAllReview = async () => {
+                    const container = document.getElementById('review-itinerary-flow');
+                    if (!container) return;
 
-                    if (daySches.length > 0) {
-                        const dayContainer = document.getElementById(`review-day-${dayNum}-activities`);
-                        for (const sche of daySches) {
+                    if (!allSchedules || allSchedules.length === 0) {
+                        container.innerHTML = `<p class="text-sm text-on-surface-variant italic">Chưa có lịch trình chi tiết.</p>`;
+                        return;
+                    }
+
+                    container.className = "relative mt-4";
+                    const days = {};
+                    allSchedules.forEach(s => {
+                        const d = s.day_number || 1;
+                        if (!days[d]) days[d] = [];
+                        days[d].push(s);
+                    });
+
+                    const tourStartDate = startDateInput.value ? new Date(startDateInput.value) : new Date();
+
+                    let html = '';
+                    const dayKeys = Object.keys(days).sort((a,b) => a-b);
+                    for (const day of dayKeys) {
+                        const displayDay = day === 'undefined' ? 1 : parseInt(day);
+                        const currentDate = new Date(tourStartDate);
+                        currentDate.setDate(tourStartDate.getDate() + displayDay - 1);
+                        const formattedDate = currentDate.toLocaleDateString('vi-VN');
+
+                        html += `
+                            <div class="relative pl-[100px] mb-12 last:mb-0">
+                                <!-- Premium Day Badge -->
+                                <div class="absolute left-0 top-0 flex flex-col items-center w-20 cursor-pointer group/day" onclick="toggleDayActivities('${displayDay}')" title="Thu gọn/Mở rộng tất cả ngày ${displayDay}">
+                                    <div class="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-primary to-[#004b87] text-white shadow-xl shadow-primary/20 flex flex-col items-center justify-center ring-[8px] ring-surface z-10 transform group-hover/day:scale-110 transition-transform duration-300">
+                                        <span class="text-xs font-black uppercase tracking-[0.15em] opacity-90 mb-0.5">Ngày</span>
+                                        <span class="text-3xl font-black leading-none">${displayDay}</span>
+                                    </div>
+                                    <div class="mt-3 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/10 shadow-sm">
+                                        <span class="text-xs font-bold text-slate-700 whitespace-nowrap">${formattedDate}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Activities List -->
+                                <div class="space-y-6 pt-2">
+                        `;
+
+                        for (const sche of days[day]) {
                             let imgUrls = [];
                             if (sche.images && sche.images.length > 0) {
                                 imgUrls = await Promise.all(sche.images.map(img => {
@@ -611,26 +685,219 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return Promise.resolve(img.tour_sche_img_url || img);
                                 }));
                             }
-                            dayContainer.insertAdjacentHTML('beforeend', renderActivityItemHTML(sche, imgUrls, true));
+
+                            const desc = sche.tour_sche_desc || 'Không có mô tả chi tiết.';
+                            const isLongDesc = desc.split('\n').length > 5 || desc.length > 250;
+
+                            html += `
+                                <div class="relative bg-surface-container-lowest rounded-3xl border border-outline-variant/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group overflow-hidden review-day-${displayDay}-item">
+                                    <!-- Header Toggle -->
+                                    <div class="p-6 md:p-8 cursor-pointer flex items-center justify-between" onclick="toggleReviewActivity('${sche.tempId}')">
+                                        <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                            <div class="px-4 py-2 bg-primary/10 text-primary text-sm font-black rounded-xl uppercase tracking-widest flex items-center gap-2 w-fit whitespace-nowrap shrink-0">
+                                                <span class="material-symbols-outlined text-[18px]">schedule</span>
+                                                ${sche.time_sche_start} ${sche.time_sche_end ? '- ' + sche.time_sche_end : ''}
+                                            </div>
+                                            <h4 class="text-xl font-extrabold text-slate-800 group-hover:text-primary transition-colors">${sche.tour_sche_name}</h4>
+                                        </div>
+                                        <span id="arrow-${sche.tempId}" class="material-symbols-outlined text-slate-400 transition-transform duration-300">expand_more</span>
+                                    </div>
+
+                                    <!-- Collapsible Content -->
+                                    <div id="content-${sche.tempId}" class="px-8 pb-8 space-y-6">
+                                        <div class="flex flex-col xl:flex-row gap-8">
+                                            <div class="flex-1">
+                                                <div class="relative">
+                                                    <p id="desc-${sche.tempId}" class="text-base text-slate-600 font-medium leading-relaxed ${isLongDesc ? 'line-clamp-5' : ''}">
+                                                        ${desc.replace(/\n/g, '<br>')}
+                                                    </p>
+                                                    ${isLongDesc ? `
+                                                        <button onclick="toggleDescription('${sche.tempId}', this)" class="mt-2 text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                                                            <span>Xem thêm</span>
+                                                            <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                            
+                                            ${imgUrls.length > 0 ? `
+                                                <div class="w-full xl:w-64 shrink-0">
+                                                    <div class="grid grid-cols-2 gap-2 h-40">
+                                                        ${imgUrls.slice(0, 2).map((imgUrl, idx) => `
+                                                            <div class="rounded-2xl overflow-hidden shadow-sm ${imgUrls.length === 1 ? 'col-span-2 h-40' : 'h-40'}">
+                                                                <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cursor-pointer" onclick="openImageModal(${JSON.stringify(imgUrls).replace(/"/g, "'")}, ${idx})">
+                                                            </div>
+                                                        `).join('')}
+                                                    </div>
+                                                    ${imgUrls.length > 2 ? `<p class="text-xs text-right mt-2 font-bold text-slate-500">+ ${imgUrls.length - 2} ảnh khác</p>` : ''}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+
+                                        <!-- Full Width Location -->
+                                        <div class="pt-6 border-t border-slate-100">
+                                            <div class="flex items-start gap-3 p-4 bg-surface-container-low rounded-2xl text-slate-700 border border-slate-200/50">
+                                                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary shrink-0">
+                                                    <span class="material-symbols-outlined">location_on</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Địa điểm diễn ra</p>
+                                                    <p class="text-sm font-bold leading-relaxed">${sche.tour_sche_add || 'Chưa rõ địa điểm chi tiết'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                         }
+
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    container.innerHTML = `
+                        <!-- Vertical Timeline Line -->
+                        <div class="absolute left-[31px] top-8 bottom-0 w-0.5 bg-gradient-to-b from-primary/30 via-outline-variant/20 to-transparent z-0"></div>
+                        ${html}
+                    `;
+                };
+
+                window.toggleDayActivities = function(day) {
+                    const items = document.querySelectorAll(`.review-day-${day}-item`);
+                    if (items.length === 0) return;
+
+                    // Determine if we should expand or collapse based on the first item
+                    const firstContent = items[0].querySelector('[id^="content-"]');
+                    const shouldCollapse = firstContent && !firstContent.classList.contains('hidden');
+
+                    items.forEach(item => {
+                        const content = item.querySelector('[id^="content-"]');
+                        const arrow = item.querySelector('[id^="arrow-"]');
+                        if (!content || !arrow) return;
+
+                        if (shouldCollapse) {
+                            content.classList.add('hidden');
+                            arrow.style.transform = 'rotate(-90deg)';
+                        } else {
+                            content.classList.remove('hidden');
+                            arrow.style.transform = 'rotate(0deg)';
+                        }
+                    });
+                };
+
+                window.toggleReviewActivity = function(id) {
+                    const content = document.getElementById(`content-${id}`);
+                    const arrow = document.getElementById(`arrow-${id}`);
+                    if (!content || !arrow) return;
+                    
+                    const isHidden = content.classList.contains('hidden');
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        arrow.style.transform = 'rotate(0deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        arrow.style.transform = 'rotate(-90deg)';
                     }
                 };
 
-                const renderAllReview = async () => {
-                    for (let d = 1; d <= totalDays; d++) {
-                        await renderFullDayReview(d);
+                window.toggleDescription = function(id, btn) {
+                    const desc = document.getElementById(`desc-${id}`);
+                    const span = btn.querySelector('span');
+                    const icon = btn.querySelector('.material-symbols-outlined');
+                    
+                    if (desc.classList.contains('line-clamp-5')) {
+                        desc.classList.remove('line-clamp-5');
+                        span.textContent = 'Thu gọn';
+                        icon.textContent = 'keyboard_arrow_up';
+                    } else {
+                        desc.classList.add('line-clamp-5');
+                        span.textContent = 'Xem thêm';
+                        icon.textContent = 'keyboard_arrow_down';
                     }
                 };
                 renderAllReview();
             }
 
             // Guide Info
-            if (selectedGuideIds.length > 0) {
-                const guide = allGuides.find(g => g.user_id === selectedGuideIds[0]);
-                if (guide) {
-                    document.getElementById('review-guide-name').textContent = guide.full_name;
-                    document.getElementById('review-guide-bio').textContent = guide.bio || 'Chuyên gia đồng hành';
-                    document.getElementById('review-guide-avatar').src = guide.avatar || 'https://via.placeholder.com/200';
+            const guideContainer = document.getElementById('review-guide-container');
+            if (guideContainer) {
+                if (selectedGuideIds.length > 0) {
+                    guideContainer.innerHTML = selectedGuideIds.map(guideId => {
+                        const guide = allGuides.find(g => g.user_id === guideId);
+                        if (!guide) return '';
+                        
+                        const dob = guide.dob ? new Date(guide.dob).toLocaleDateString('vi-VN') : 'Chưa cập nhật';
+                        const languages = guide.languages && guide.languages.length > 0 ? guide.languages : [];
+                        const fields = guide.fields && guide.fields.length > 0 ? guide.fields : [];
+                        
+                        return `
+                        <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/10">
+                            <!-- Top Info: Avatar, Name, DOB -->
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="relative group shrink-0">
+                                    <img alt="Guide Avatar" class="w-20 h-20 rounded-full object-cover shadow-md ring-2 ring-primary/10" src="${guide.avatar || 'https://via.placeholder.com/200?text=HDV'}"/>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5 block">Hướng dẫn viên</span>
+                                    <h3 class="text-lg font-extrabold text-on-surface mb-0.5 truncate">${guide.full_name || 'Chưa cập nhật tên'}</h3>
+                                    <div class="flex items-center gap-1.5 text-on-surface-variant">
+                                        <span class="material-symbols-outlined text-[14px] text-amber-500">cake</span>
+                                        <span class="text-[11px] font-bold">${dob}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Details Grid -->
+                            <div class="space-y-4 mt-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[16px]">mail</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Email</p>
+                                        <p class="text-[13px] font-bold text-on-surface truncate" title="${guide.email || '--'}">${guide.email || '--'}</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[16px]">call</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Số điện thoại</p>
+                                        <p class="text-[13px] font-bold text-on-surface truncate">${guide.phone || '--'}</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-1">Tiểu sử</p>
+                                    <p class="text-[13px] text-on-surface font-medium leading-relaxed italic line-clamp-3">${guide.bio || 'Chuyên gia văn hóa & lịch sử địa phương.'}</p>
+                                </div>
+
+                                <div>
+                                    <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">translate</span> Ngôn ngữ thông thạo</p>
+                                    <div class="flex flex-wrap gap-1.5 text-xs font-bold text-on-surface">
+                                        ${languages.length > 0 ? languages.map(lang => `<span class="px-2 py-1 bg-surface border border-outline-variant/10 rounded-md shadow-sm">${lang}</span>`).join('') : '--'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">verified</span> Lĩnh vực chuyên môn</p>
+                                    <div class="flex flex-wrap gap-1.5 text-xs font-bold text-on-surface">
+                                        ${fields.length > 0 ? fields.map(field => `<span class="px-2 py-1 bg-surface border border-outline-variant/10 rounded-md shadow-sm">${field}</span>`).join('') : '--'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    guideContainer.innerHTML = `
+                    <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/10 text-center">
+                        <p class="text-on-surface-variant text-sm font-medium italic">Chưa chọn Hướng dẫn viên nào cho Tour này.</p>
+                    </div>`;
                 }
             }
 
@@ -702,28 +969,69 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = `group relative bg-surface-container-lowest p-6 rounded-xl transition-all cursor-pointer border-2 ${isSelected ? 'border-primary shadow-xl shadow-primary/10' : 'border-outline-variant/10 hover:border-primary/30'}`;
             
+            const dobStr = guide.dob ? new Date(guide.dob).toLocaleDateString('vi-VN') : '--/--/----';
+            const langs = guide.languages && guide.languages.length > 0 ? guide.languages : [];
+            const fields = guide.fields && guide.fields.length > 0 ? guide.fields : [];
+
             card.innerHTML = `
-                <div class="flex items-start justify-between mb-6">
-                    <div class="flex gap-4">
-                        <img alt="${guide.full_name}" class="w-16 h-16 rounded-full object-cover shadow-sm" src="${guide.avatar || 'https://via.placeholder.com/100'}"/>
-                        <div>
-                            <h3 class="font-headline font-bold text-lg text-on-surface">${guide.full_name}</h3>
-                            <p class="text-xs text-on-surface-variant font-medium">${guide.bio || 'Chuyên gia dẫn đoàn'}</p>
+                <!-- Top Info: Avatar, Name, DOB -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-4">
+                        <img alt="${guide.full_name}" class="w-16 h-16 rounded-full object-cover shadow-sm ring-2 ring-primary/10" src="${guide.avatar || 'https://via.placeholder.com/200?text=HDV'}"/>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5 block">Hướng dẫn viên</span>
+                            <h3 class="text-lg font-extrabold text-on-surface mb-0.5 truncate">${guide.full_name}</h3>
+                            <div class="flex items-center gap-1.5 text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[14px] text-amber-500">cake</span>
+                                <span class="text-[11px] font-bold">${dobStr}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-1 rounded-full text-[10px] font-bold">
-                        <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
-                        5.0
-                    </div>
                 </div>
-                <div class="mb-6 space-y-3">
+
+                <!-- Details Grid -->
+                <div class="space-y-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[16px]">mail</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Email</p>
+                            <p class="text-[13px] font-bold text-on-surface truncate" title="${guide.email || '--'}">${guide.email || '--'}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[16px]">call</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">Số điện thoại</p>
+                            <p class="text-[13px] font-bold text-on-surface truncate">${guide.phone || '--'}</p>
+                        </div>
+                    </div>
+
                     <div>
-                        <span class="text-[10px] font-bold uppercase text-outline tracking-widest block mb-1">Liên hệ</span>
-                        <p class="text-xs text-on-surface-variant">${guide.email}</p>
-                        <p class="text-xs text-on-surface-variant">${guide.phone || ''}</p>
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-1">Tiểu sử</p>
+                        <p class="text-[13px] text-on-surface font-medium leading-relaxed italic line-clamp-3">${guide.bio || 'Chuyên gia dẫn đoàn'}</p>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">translate</span> Ngôn ngữ thông thạo</p>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold text-on-surface">
+                            ${langs.length > 0 ? langs.map(lang => `<span class="px-2 py-1 bg-surface border border-outline-variant/10 rounded-md shadow-sm">${lang}</span>`).join('') : '--'}
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">verified</span> Lĩnh vực chuyên môn</p>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold text-on-surface">
+                            ${fields.length > 0 ? fields.map(field => `<span class="px-2 py-1 bg-surface border border-outline-variant/10 rounded-md shadow-sm">${field}</span>`).join('') : '--'}
+                        </div>
                     </div>
                 </div>
-                <label class="flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected ? 'border-primary bg-primary/5' : 'border-outline-variant/20 group-hover:border-primary/40'}">
+
+                <label class="flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all mt-auto ${isSelected ? 'border-primary bg-primary/5' : 'border-outline-variant/20 group-hover:border-primary/40'}">
                     <span class="text-xs font-bold ${isSelected ? 'text-primary' : 'text-on-surface group-hover:text-primary'}">${isSelected ? 'Đã chọn' : 'Chọn làm dẫn đoàn'}</span>
                     <input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="guide_select" type="checkbox" value="${guide.user_id}" ${isSelected ? 'checked' : ''}/>
                 </label>
@@ -765,13 +1073,53 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!reviewMap) {
             const reviewMapElem = document.getElementById('review-map');
             if (!reviewMapElem) return;
-            reviewMap = L.map('review-map', { zoomControl: false, attributionControl: false }).setView([lat, lng], 14);
+            reviewMap = L.map('review-map', { zoomControl: true, attributionControl: false }).setView([lat, lng], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(reviewMap);
         } else {
-            reviewMap.setView([lat, lng], 14);
+            reviewMap.setView([lat, lng], 13);
+            reviewMap.eachLayer((layer) => { if (layer instanceof L.Marker) reviewMap.removeLayer(layer); });
         }
-        reviewMap.eachLayer((layer) => { if (layer instanceof L.Marker) reviewMap.removeLayer(layer); });
-        L.marker([lat, lng]).addTo(reviewMap);
+        
+        const tourStartDate = startDateInput.value ? new Date(startDateInput.value) : new Date();
+        const markers = [];
+        
+        if (lat && lng) {
+            L.marker([lat, lng]).addTo(reviewMap).bindPopup(`<b>Điểm khởi hành</b>`).openPopup();
+            markers.push([lat, lng]);
+        }
+
+        if (allSchedules && allSchedules.length > 0) {
+            allSchedules.forEach((sche) => {
+                if (sche.tour_sche_latit && sche.tour_sche_longit) {
+                    const dayNum = sche.day_number || 1;
+                    const currentDate = new Date(tourStartDate);
+                    currentDate.setDate(tourStartDate.getDate() + dayNum - 1);
+                    const formattedDate = currentDate.toLocaleDateString('vi-VN');
+                    const timeRange = `${sche.time_sche_start} ${sche.time_sche_end ? '- ' + sche.time_sche_end : ''}`;
+
+                    L.marker([sche.tour_sche_latit, sche.tour_sche_longit], {
+                        icon: L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div style='background-color:#0061A4; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3)'>${dayNum}</div>`,
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        })
+                    }).addTo(reviewMap).bindPopup(`
+                        <div style="font-family: 'Inter', sans-serif;">
+                            <b style="font-size: 13px; color: #0061A4;">Ngày ${dayNum} (${formattedDate})</b><br>
+                            <span style="font-size: 11px; font-weight: bold; color: #64748b;">${timeRange}</span><br>
+                            <span style="font-size: 12px; font-weight: 600;">${sche.tour_sche_name}</span>
+                        </div>
+                    `);
+                    markers.push([sche.tour_sche_latit, sche.tour_sche_longit]);
+                }
+            });
+        }
+        
+        if (markers.length > 1) {
+            reviewMap.fitBounds(markers, { padding: [50, 50] });
+        }
+
         setTimeout(() => reviewMap.invalidateSize(), 100);
     }
 
@@ -795,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openActivityModal = function(dayIndex) {
         currentDayForActivity = dayIndex;
         document.getElementById('modal-day-label').textContent = `Ngày ${dayIndex.toString().padStart(2, '0')} - Lịch trình`;
+        document.getElementById('activity-continue-btn').querySelector('span').textContent = 'Thêm & Tiếp tục';
         activityModal.classList.remove('hidden');
         ensureActivityMapInitialized();
         if (activityMap) setTimeout(() => activityMap.invalidateSize(), 100);
@@ -824,6 +1173,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('activity-end').value = sche.time_sche_end || '';
         document.getElementById('activity-desc').value = sche.tour_sche_desc || '';
         document.getElementById('activity-search').value = sche.tour_sche_add || '';
+        document.getElementById('activity-continue-btn').querySelector('span').textContent = 'Lưu & Tiếp tới';
         
         activityModal.classList.remove('hidden');
         ensureActivityMapInitialized();
@@ -870,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.length > 0) setActivityLocation(parseFloat(data[0].lat), parseFloat(data[0].lon));
     };
 
-    window.saveActivity = function() {
+    window.saveActivity = async function(isContinue = false) {
         const name = document.getElementById('activity-name').value;
         const start = document.getElementById('activity-start').value;
         const end = document.getElementById('activity-end').value;
@@ -879,57 +1229,100 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!name) return showNotification('Vui lòng nhập tên hoạt động!', 'error');
 
+        // --- Prevent Double Data ---
+        const continueBtn = document.getElementById('activity-continue-btn');
+        const saveBtn = document.getElementById('activity-save-btn');
+        if (continueBtn && saveBtn) {
+            if (continueBtn.disabled) return;
+            continueBtn.disabled = true;
+            saveBtn.disabled = true;
+        }
+
         const tempId = editingActivityId || Date.now();
         const activityImages = [...scheSelectedFiles];
         
         const scheObj = {
             tempId: tempId,
-            day_number: currentDayForActivity,
+            day_number: parseInt(currentDayForActivity),
             tour_sche_name: name,
             tour_sche_desc: desc,
             time_sche_start: start,
             time_sche_end: end,
             tour_sche_add: address,
-            tour_sche_longit: parseFloat(document.getElementById('act-lng').textContent) || null,
-            tour_sche_latit: parseFloat(document.getElementById('act-lat').textContent) || null,
-            cover_index: scheCoverIndexInput.value,
+            tour_sche_longit: !isNaN(parseFloat(document.getElementById('act-lng').textContent)) ? parseFloat(document.getElementById('act-lng').textContent) : null,
+            tour_sche_latit: !isNaN(parseFloat(document.getElementById('act-lat').textContent)) ? parseFloat(document.getElementById('act-lat').textContent) : null,
+            cover_index: parseInt(scheCoverIndexInput.value) || 0,
             images: activityImages
         };
 
-        // If editing, remove old entry
+        // If editing, remove old entry (use != to handle string vs number comparison)
         if (editingActivityId) {
-            allSchedules = allSchedules.filter(s => s.tempId !== editingActivityId);
-            const oldElem = document.querySelector(`[data-id="${editingActivityId}"]`);
-            if (oldElem) oldElem.remove();
+            allSchedules = allSchedules.filter(s => s.tempId != editingActivityId);
         }
 
-        const container = document.getElementById(`day-${currentDayForActivity}-activities`);
-        if (container.querySelector('.text-on-surface-variant.italic')) container.innerHTML = '';
-
-        // If there are images, we need to read them to display
-        if (activityImages.length > 0) {
-            const promises = activityImages.map(img => {
-                if (img instanceof File) {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(img);
-                    });
-                }
-                return Promise.resolve(img.tour_sche_img_url || img);
-            });
+        try {
+            // Save to state
+            allSchedules.push(scheObj);
             
-            Promise.all(promises).then(urls => {
-                container.insertAdjacentHTML('beforeend', renderActivityItemHTML(scheObj, urls));
+            // Sort by day and time
+            allSchedules.sort((a, b) => {
+                if (a.day_number !== b.day_number) return a.day_number - b.day_number;
+                return (a.time_sche_start || '').localeCompare(b.time_sche_start || '');
             });
-        } else {
-            container.insertAdjacentHTML('beforeend', renderActivityItemHTML(scheObj));
+
+            // Re-render the day's activities to ensure order
+            const container = document.getElementById(`day-${currentDayForActivity}-activities`);
+            if (container) {
+                container.innerHTML = '';
+                const dayActivities = allSchedules.filter(s => s.day_number == currentDayForActivity);
+                for (const sche of dayActivities) {
+                    let urls = [];
+                    if (sche.images && sche.images.length > 0) {
+                        urls = await Promise.all(sche.images.map(img => {
+                            if (img instanceof File) {
+                                return new Promise(resolve => {
+                                    const reader = new FileReader();
+                                    reader.onload = e => resolve(e.target.result);
+                                    reader.readAsDataURL(img);
+                                });
+                            }
+                            return Promise.resolve(img.tour_sche_img_url || img);
+                        }));
+                    }
+                    container.insertAdjacentHTML('beforeend', renderActivityItemHTML(sche, urls));
+                }
+            }
+
+            if (isContinue) {
+                if (editingActivityId) {
+                    // Find next activity in the same day or next day
+                    const currentIndex = allSchedules.findIndex(s => s.tempId == tempId);
+                    const nextActivity = allSchedules[currentIndex + 1];
+                    
+                    if (nextActivity) {
+                        openEditActivityModal(nextActivity.tempId);
+                    } else {
+                        showNotification('Đã tới cuối lịch trình!');
+                        closeActivityModal();
+                    }
+                } else {
+                    // Add mode: Clear and stay on same day
+                    const currentDay = currentDayForActivity;
+                    closeActivityModal();
+                    openActivityModal(currentDay);
+                }
+            } else {
+                closeActivityModal();
+            }
+        } catch (error) {
+            console.error('Error saving activity:', error);
+            showNotification('Lỗi khi lưu hoạt động!', 'error');
+        } finally {
+            if (continueBtn && saveBtn) {
+                continueBtn.disabled = false;
+                saveBtn.disabled = false;
+            }
         }
-
-        // Save to state
-        allSchedules.push(scheObj);
-
-        closeActivityModal();
     };
 
     window.removeActivity = function(tempId, btn) {
@@ -1273,6 +1666,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('start-date').value = tour.time.date_start.split('T')[0];
                 updateDuration();
 
+                // Status
+                const statusSelect = document.getElementById('tour-status-select');
+                if (statusSelect && tour.tour_status) {
+                    statusSelect.value = tour.tour_status;
+                    if (typeof window.updateTourStatusBadge === 'function') window.updateTourStatusBadge();
+                }
+
                 // Images
                 selectedFiles = tour.images || [];
                 const coverIdx = selectedFiles.findIndex(img => img.img_is_cover);
@@ -1281,6 +1681,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Guides
                 selectedGuideIds = tour.guides.map(g => g.user_id);
+                // Ensure allGuides has these guides so Step 4 can render them
+                tour.guides.forEach(g => {
+                    if (!allGuides.find(ag => ag.user_id === g.user_id)) {
+                        allGuides.push(g);
+                    }
+                });
                 // Schedules
                 allSchedules = tour.schedules.map(sche => ({
                     tempId: sche.tour_sche_id,

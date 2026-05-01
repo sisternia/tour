@@ -32,19 +32,18 @@
     </style>
 </head>
 
-<body class="font-body text-slate-800">
-    <div class="flex min-h-screen">
-        <!-- Sidebar -->
-        <aside id="sidebar-container"></aside>
+<body class="font-body text-slate-800 bg-[#f8f9fa]">
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col min-w-0">
-            <!-- Topbar -->
-            <header id="topbar-container"></header>
+    <!-- Main Content -->
+    <main class="ml-72 min-h-screen flex flex-col min-w-0">
+        <!-- Topbar -->
+        <header id="topbar-container"></header>
 
-            <!-- Page Content -->
-            <div class="flex-1 p-8 overflow-y-auto">
-                <div class="max-w-6xl mx-auto space-y-10">
+        <!-- Page Content -->
+        <div class="flex-1 py-10 px-8 overflow-y-auto">
+            <div class="max-w-6xl mx-auto space-y-10">
                     
                     <!-- Header Actions -->
                     <div class="flex items-center justify-between">
@@ -163,6 +162,11 @@
                                         <!-- Sub images will be injected here -->
                                     </div>
                                 </div>
+
+                                <!-- Guide Profile -->
+                                <div id="detail-guide-container" class="space-y-4">
+                                    <!-- Multiple guides will be injected here -->
+                                </div>
                             </div>
 
                             <!-- Right Column (8): Itinerary & Guide -->
@@ -183,17 +187,11 @@
                                     </div>
                                 </div>
 
-                                <!-- Guide Profile -->
-                                <div id="detail-guide-container" class="space-y-4">
-                                    <!-- Multiple guides will be injected here -->
-                                </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
         </main>
-    </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

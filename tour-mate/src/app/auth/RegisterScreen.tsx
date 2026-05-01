@@ -6,10 +6,14 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import FloatingInput from "@/components/ui/FloatingInput";
 import { registerUser } from "@/services/auth/userService";
+import NotificationModal from "@/components/ui/NotificationModal";
+
+import AuthLayout from "@/components/auth/AuthLayout";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -19,20 +23,35 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Notification Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message: string;
+  }>({
+    type: 'info',
+    title: '',
+    message: ''
+  });
+
+  const showNotification = (type: any, title: string, message: string) => {
+    setModalConfig({ type, title, message });
+    setModalVisible(true);
+  };
+
   const handleRegister = async () => {
-    // 1. Validation cơ bản
     if (!username || !email || !password || !confirmPassword) {
-      Alert.alert("Thông báo", "Vui lòng nhập đầy đủ thông tin");
+      showNotification('error', 'Lỗi', 'Vui lòng nhập đầy đủ thông tin');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Lỗi", "Mật khẩu xác nhận không khớp");
+      showNotification('error', 'Lỗi', 'Mật khẩu xác nhận không khớp');
       return;
     }
 
     setLoading(true);
     try {
-      // 2. Gọi API từ service
       const result = await registerUser({
         username: username,
         email: email,
@@ -40,30 +59,26 @@ export default function RegisterScreen() {
       });
 
       if (result.success) {
-        Alert.alert("Thành công", "Đăng ký tài khoản thành công!", [
-          {
-            text: "OK",
-            onPress: () =>
-              router.push({
-                pathname: "/auth/VerifyScreen",
-                params: { from: "register", email: email },
-              }),
-          },
-        ]);
+        showNotification('success', 'Thành công', 'Đăng ký tài khoản thành công! Vui lòng xác thực email.');
+        setTimeout(() => {
+          setModalVisible(false);
+          router.replace({
+            pathname: "/auth/VerifyScreen",
+            params: { from: "register", email: email },
+          });
+        }, 1500);
       } else {
-        Alert.alert("Đăng ký thất bại", result.message || "Vui lòng thử lại");
+        showNotification('error', 'Đăng ký thất bại', result.message || "Vui lòng thử lại");
       }
     } catch (error) {
-      Alert.alert("Lỗi kết nối", "Không thể kết nối đến máy chủ");
+      showNotification('error', 'Lỗi', 'Không thể kết nối đến máy chủ');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Đăng ký</Text>
-
+    <AuthLayout title="Đăng ký">
       <FloatingInput
         label="Tên đăng nhập"
         value={username}
@@ -103,24 +118,23 @@ export default function RegisterScreen() {
 
       <View style={styles.loginContainer}>
         <Text>Đã có tài khoản? </Text>
-        <TouchableOpacity onPress={() => router.push("/auth/LoginScreen")}>
+        <TouchableOpacity onPress={() => router.replace("/auth/LoginScreen")}>
           <Text style={styles.loginText}>Đăng nhập</Text>
         </TouchableOpacity>
       </View>
-    </View>
+
+      <NotificationModal
+        visible={modalVisible}
+        {...modalConfig}
+        onClose={() => setModalVisible(false)}
+      />
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  title: { fontSize: 24, fontWeight: "600", marginBottom: 24 },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#003d9b",
     height: 56,
     borderRadius: 10,
     alignItems: "center",
@@ -133,5 +147,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 20,
   },
-  loginText: { color: "#007BFF", fontWeight: "bold" },
+  loginText: { color: "#003d9b", fontWeight: "bold" },
 });

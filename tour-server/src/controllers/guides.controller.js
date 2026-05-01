@@ -148,6 +148,44 @@ exports.view_guide = async (req, res) => {
           as: 'verification'
         }
       },
+      // Convert user_id to string for looking up in junction tables that use String user_id
+      {
+        $addFields: {
+          user_id_str: { $toString: '$user_id' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_user_languages',
+          localField: 'user_id_str',
+          foreignField: 'user_id',
+          as: 'userLangs'
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_languages',
+          localField: 'userLangs.guide_lan_id',
+          foreignField: 'guide_lan_id',
+          as: 'languages_detail'
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_user_fields',
+          localField: 'user_id_str',
+          foreignField: 'user_id',
+          as: 'userFields'
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_fields',
+          localField: 'userFields.guide_fie_id',
+          foreignField: 'guide_fie_id',
+          as: 'fields_detail'
+        }
+      },
       {
         $project: {
           full_name: 1,
@@ -166,6 +204,20 @@ exports.view_guide = async (req, res) => {
               if: { $gt: [{ $size: { $ifNull: ['$verification', []] } }, 0] },
               then: { $ifNull: [{ $arrayElemAt: ['$verification.verifies_status', 0] }, 0] },
               else: 0
+            }
+          },
+          languages: {
+            $map: {
+              input: '$languages_detail',
+              as: 'lan',
+              in: '$$lan.guide_lan_name'
+            }
+          },
+          fields: {
+            $map: {
+              input: '$fields_detail',
+              as: 'fie',
+              in: '$$fie.guide_fie_name'
             }
           }
         }

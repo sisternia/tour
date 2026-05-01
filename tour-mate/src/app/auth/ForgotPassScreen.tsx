@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import FloatingInput from "@/components/ui/FloatingInput";
 import { checkEmailAndSendOTP } from "@/services/auth/userService";
 
+import AuthLayout from "@/components/auth/AuthLayout";
+
 export default function ForgotPassScreen() {
   const router = useRouter();
 
@@ -43,10 +45,7 @@ export default function ForgotPassScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Title */}
-      <Text style={styles.title}>Quên mật khẩu</Text>
-
+    <AuthLayout title="Quên mật khẩu">
       {/* Tabs */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -114,22 +113,11 @@ export default function ForgotPassScreen() {
       >
         <Text style={styles.backText}>Trở về</Text>
       </TouchableOpacity>
-    </View>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
-  },
   tabContainer: {
     flexDirection: "row",
     marginBottom: 20,
@@ -143,13 +131,13 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderColor: "#007BFF",
+    borderColor: "#003d9b",
   },
   tabText: {
     color: "#666",
   },
   activeTabText: {
-    color: "#007BFF",
+    color: "#003d9b",
     fontWeight: "bold",
   },
   backContainer: {
@@ -157,11 +145,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   backText: {
-    color: "#007BFF",
+    color: "#003d9b",
     fontWeight: "500",
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#003d9b",
     height: 56,
     borderRadius: 10,
     alignItems: "center",

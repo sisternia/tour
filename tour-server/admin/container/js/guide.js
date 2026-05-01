@@ -421,7 +421,7 @@ function showNotification(message, type = 'success') {
 // --- Languages & Fields Functions ---
 async function fetchLanguages() {
     try {
-        const response = await fetch('http://localhost:5000/api/guides/get-languages');
+        const response = await fetch('/api/guides/get-languages');
         const result = await response.json();
         if (result.success) {
             renderLanguages(result.data);
@@ -469,7 +469,7 @@ function renderLanguages(languages) {
 
 async function fetchFields() {
     try {
-        const response = await fetch('http://localhost:5000/api/guides/get-fields');
+        const response = await fetch('/api/guides/get-fields');
         const result = await response.json();
         if (result.success) {
             renderFields(result.data);

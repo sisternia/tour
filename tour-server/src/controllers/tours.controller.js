@@ -174,8 +174,7 @@ exports.updateTour = async (req, res) => {
     // 6. Cập nhật Schedules (Xóa cũ, thêm mới để đảm bảo tính nhất quán cao nhất)
     const parsedSchedules = typeof schedules === 'string' ? JSON.parse(schedules) : schedules;
     if (parsedSchedules && Array.isArray(parsedSchedules)) {
-      // Xóa folder sche_imgs cũ
-      await deleteFolder(`tour/${id}/tour_sche_imgs`);
+      // KHÔNG xóa folder sche_imgs cũ để tránh mất ảnh hiện có
       const oldSches = await TourSche.find({ tour_id: id });
       const oldScheIds = oldSches.map(s => s.tour_sche_id);
       
@@ -187,6 +186,7 @@ exports.updateTour = async (req, res) => {
       for (let i = 0; i < parsedSchedules.length; i++) {
         const sche = parsedSchedules[i];
         const tour_sche_id = new mongoose.Types.ObjectId().toString();
+        const dayNum = parseInt(sche.day_number) || (i + 1);
 
         await new TourSche({
           tour_sche_id,
@@ -197,7 +197,7 @@ exports.updateTour = async (req, res) => {
           tour_sche_add: sche.tour_sche_add || '',
           tour_sche_longit: sche.tour_sche_longit || null,
           tour_sche_latit: sche.tour_sche_latit || null,
-          day_number: sche.day_number || (i + 1),
+          day_number: dayNum,
           tour_times_id: tourTime.tour_times_id,
           tour_id: id
         }).save();
@@ -205,8 +205,7 @@ exports.updateTour = async (req, res) => {
         // Handle Schedule Images
         const fieldName = `sche_imgs_${i}`;
         const scheImgFiles = req.files ? req.files.filter(f => f.fieldname === fieldName) : [];
-        const dayNum = sche.day_number || (i + 1);
-
+        
         if (scheImgFiles.length > 0 || (sche.existing_images && sche.existing_images.length > 0)) {
           const scheCoverIdx = parseInt(sche.cover_index) || 0;
           let currentScheIdx = 0;
@@ -278,19 +277,19 @@ exports.get_tour_by_id = async (req, res) => {
 
     const guides = await Promise.all(baseGuides.map(async (guide) => {
       // Find languages
-      const userLangs = await GuideUserLanguage.find({ user_id: guide.user_id });
+      const userLangs = await GuideUserLanguage.find({ user_id: guide.user_id.toString() });
       const lanIds = userLangs.map(ul => ul.guide_lan_id);
       const languages = await GuideLanguage.find({ guide_lan_id: { $in: lanIds } });
 
       // Find fields
-      const userFields = await GuideUserField.find({ user_id: guide.user_id });
-      const fieldIds = userFields.map(uf => uf.guide_field_id);
-      const fields = await GuideField.find({ guide_field_id: { $in: fieldIds } });
+      const userFields = await GuideUserField.find({ user_id: guide.user_id.toString() });
+      const fieldIds = userFields.map(uf => uf.guide_fie_id);
+      const fields = await GuideField.find({ guide_fie_id: { $in: fieldIds } });
 
       return {
         ...guide._doc,
-        languages: languages.map(l => l.guide_lan_name),
-        fields: fields.map(f => f.guide_field_name)
+        languages: languages.map(l => l.guide_lan_name).filter(n => n),
+        fields: fields.map(f => f.guide_fie_name).filter(n => n)
       };
     }));
 

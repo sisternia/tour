@@ -10,6 +10,9 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { verifyOTP, resendOTP } from "@/services/auth/userService"; // Import thêm resendOTP
+import NotificationModal from "@/components/ui/NotificationModal";
+
+import AuthLayout from "@/components/auth/AuthLayout";
 
 export default function VerifyScreen() {
   const router = useRouter();
@@ -21,6 +24,24 @@ export default function VerifyScreen() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false); // State riêng cho việc gửi lại mã
+  
+  // Notification Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message: string;
+  }>({
+    type: 'info',
+    title: '',
+    message: ''
+  });
+
+  const showNotification = (type: any, title: string, message: string) => {
+    setModalConfig({ type, title, message });
+    setModalVisible(true);
+  };
+
   const inputs = useRef<Array<TextInput | null>>([]);
 
   const handleChange = (text: string, index: number) => {
@@ -50,14 +71,14 @@ export default function VerifyScreen() {
     try {
       const result = await resendOTP(email);
       if (result.success) {
-        Alert.alert("Thông báo", result.message);
+        showNotification('success', 'Thông báo', result.message);
         setOtp(["", "", "", "", "", ""]); // Reset lại các ô nhập
         inputs.current[0]?.focus();
       } else {
-        Alert.alert("Lỗi", result.message);
+        showNotification('error', 'Lỗi', result.message);
       }
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể kết nối server");
+      showNotification('error', 'Lỗi', "Không thể kết nối server");
     } finally {
       setResending(false);
     }
@@ -66,7 +87,7 @@ export default function VerifyScreen() {
   const handleVerify = async () => {
     const otpString = otp.join("");
     if (otpString.length < 6) {
-      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ mã OTP 6 số");
+      showNotification('error', 'Lỗi', "Vui lòng nhập đầy đủ mã OTP 6 số");
       return;
     }
   
@@ -77,31 +98,27 @@ export default function VerifyScreen() {
       const result = await verifyOTP(email!, otpString, purpose);
       
       if (result.success) {
-        Alert.alert("Thành công", result.message, [
-          {
-            text: "OK",
-            onPress: () => {
-              if (from === "forgotpass") {
-                router.push({ pathname: "/auth/NewPassScreen", params: { email } });
-              } else {
-                router.push("/auth/LoginScreen");
-              }
-            },
-          },
-        ]);
+        showNotification('success', 'Thành công', result.message);
+        setTimeout(() => {
+          setModalVisible(false);
+          if (from === "forgotpass") {
+            router.push({ pathname: "/auth/NewPassScreen", params: { email } });
+          } else {
+            router.push("/auth/LoginScreen");
+          }
+        }, 1500);
       } else {
-        Alert.alert("Thất bại", result.message);
+        showNotification('error', 'Thất bại', result.message);
       }
     } catch (error) {
-      Alert.alert("Lỗi", "Kết nối thất bại");
+      showNotification('error', 'Lỗi', "Kết nối thất bại");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Xác thực</Text>
+    <AuthLayout title="Xác thực">
       <Text style={styles.subTitle}>Mã xác thực đã được gửi đến: {email}</Text>
 
       <View style={styles.otpContainer}>
@@ -128,7 +145,7 @@ export default function VerifyScreen() {
 
         <TouchableOpacity onPress={handleResend} disabled={resending}>
           {resending ? (
-            <ActivityIndicator size="small" color="#007BFF" />
+            <ActivityIndicator size="small" color="#003d9b" />
           ) : (
             <Text style={styles.linkTextBlue}>Gửi lại</Text>
           )}
@@ -146,23 +163,17 @@ export default function VerifyScreen() {
           <Text style={styles.buttonText}>Xác nhận</Text>
         )}
       </TouchableOpacity>
-    </View>
+
+      <NotificationModal
+        visible={modalVisible}
+        {...modalConfig}
+        onClose={() => setModalVisible(false)}
+      />
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 10,
-    textAlign: "center",
-  },
   subTitle: {
     fontSize: 14,
     color: "#666",
@@ -190,9 +201,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     paddingHorizontal: 5,
   },
-  linkTextBlue: { color: "#007BFF", fontWeight: "500" },
+  linkTextBlue: { color: "#003d9b", fontWeight: "500" },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#003d9b",
     height: 56,
     borderRadius: 10,
     alignItems: "center",
