@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import NavigationBar from "@/components/ui/NavigationBar";
 import FloatingInput from "@/components/ui/FloatingInput";
 import NotificationModal from "@/components/ui/NotificationModal";
+import BookingSteps from "@/components/ui/BookingSteps";
 
 interface BookTourLayoutProps {
   tour: any;
@@ -43,35 +44,7 @@ export default function BookTourLayout({
       <NavigationBar />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.webContent}>
-          <View style={styles.headerStepsContainer}>
-            <Text style={styles.mainTitle}>ĐẶT TOUR</Text>
-            <View style={styles.stepsRow}>
-              <View style={styles.stepItem}>
-                <View style={[styles.stepCircle, styles.stepActive]}>
-                  <Ionicons name="reader-outline" size={24} color="#fff" />
-                </View>
-                <Text style={[styles.stepText, styles.stepTextActive]}>NHẬP THÔNG TIN</Text>
-              </View>
-
-              <Ionicons name="arrow-forward" size={20} color="#ccc" style={styles.stepArrow} />
-
-              <View style={styles.stepItem}>
-                <View style={styles.stepCircle}>
-                  <Ionicons name="card-outline" size={24} color="#999" />
-                </View>
-                <Text style={styles.stepText}>THANH TOÁN</Text>
-              </View>
-
-              <Ionicons name="arrow-forward" size={20} color="#ccc" style={styles.stepArrow} />
-
-              <View style={styles.stepItem}>
-                <View style={styles.stepCircle}>
-                  <Ionicons name="checkmark-done-outline" size={24} color="#999" />
-                </View>
-                <Text style={styles.stepText}>HOÀN TẤT</Text>
-              </View>
-            </View>
-          </View>
+          <BookingSteps isWeb title="ĐẶT TOUR" currentStep={1} />
 
           <View style={styles.grid}>
             {/* Left Column: Form */}

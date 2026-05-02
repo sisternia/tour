@@ -4,7 +4,7 @@ const API_URL = Platform.OS === "web"
   ? "http://localhost:3000/api/vnpay"
   : `${process.env.EXPO_PUBLIC_API_URL}/vnpay`;
 
-export const createVnPayPaymentUrl = async (amount: number, orderDescription: string, bookingData: any, userId: string) => {
+export const createVnPayPaymentUrl = async (amount: number, orderDescription: string, bookingData: any, userId: string, bookingId?: string) => {
   try {
     const response = await fetch(`${API_URL}/create_payment_url`, {
       method: "POST",
@@ -16,7 +16,8 @@ export const createVnPayPaymentUrl = async (amount: number, orderDescription: st
         language: "vn",
         bankCode: "", // Empty string will show all bank options on VNPAY
         bookingData,
-        userId
+        userId,
+        bookingId
       }),
     });
     return await response.json();

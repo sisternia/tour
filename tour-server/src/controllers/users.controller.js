@@ -1,9 +1,14 @@
 const User = require("../models/users.model");
 const UserInfo = require("../models/user_infors.model");
 const Verify = require("../models/verifies.model");
+const BookingInfo = require("../models/booking_infos.model");
+const Tour = require("../models/tours.model");
+const TourImg = require("../models/tour_imgs.model");
+const TourTime = require("../models/tour_times.model");
 const mongoose = require("mongoose");
 const emailService = require("../services/email");
 const passwordService = require("../services/password");
+const { uploadImage, deleteImage } = require("../services/cloudinary");
 
 exports.register = async (req, res) => {
   try {
@@ -409,6 +414,31 @@ exports.getUserProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: "Không tìm thấy thông tin chi tiết" });
     }
 
+    // Fetch User's Bookings (My Tours)
+    const rawBookings = await BookingInfo.find({ 
+      $or: [
+        { user_id: user.user_id },
+        { "contact_info.email": userInfo.email }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
+    const tours = await Promise.all(rawBookings.map(async (booking) => {
+      const tour = await Tour.findOne({ tour_id: booking.tour_id }).lean();
+      if (tour) {
+        const tourImg = await TourImg.findOne({ tour_id: booking.tour_id, img_is_cover: true }).lean();
+        const tourTime = await TourTime.findOne({ tour_id: booking.tour_id }).lean();
+        return {
+          ...booking,
+          tour_id: {
+            ...tour,
+            tour_image: tourImg ? tourImg.tour_img_url : null,
+            time: tourTime || null
+          }
+        };
+      }
+      return booking;
+    }));
+
     res.status(200).json({
       success: true,
       data: {
@@ -421,9 +451,117 @@ exports.getUserProfile = async (req, res) => {
         bio: userInfo.bio,
         avatar: userInfo.avatar,
         background: userInfo.background,
+        tours: tours,
+        savedTours: [] // Placeholder
       }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { user_id, full_name, add, phone, dob, bio } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({ success: false, message: "Thiếu user_id" });
+    }
+
+    // Find user by custom user_id string to get the _id (ObjectId)
+    const user = await User.findOne({ user_id });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy tài khoản người dùng" });
+    }
+
+    const userInfo = await UserInfo.findOne({ user_id: user._id });
+    if (!userInfo) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy thông tin chi tiết người dùng" });
+    }
+
+    let updateData = {
+      full_name: full_name || userInfo.full_name,
+      add: add || userInfo.add,
+      phone: phone || userInfo.phone,
+      bio: bio || userInfo.bio,
+    };
+
+    if (dob) {
+      updateData.dob = new Date(dob);
+    }
+
+    // Helper function to extract public_id from Cloudinary URL
+    const getPublicIdFromUrl = (url) => {
+      try {
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split("/");
+        const uploadIdx = pathParts.indexOf("upload");
+        if (uploadIdx !== -1) {
+          let afterUpload = pathParts.slice(uploadIdx + 1);
+          if (afterUpload[0].startsWith("v") && !isNaN(afterUpload[0].substring(1))) {
+            afterUpload = afterUpload.slice(1);
+          }
+          const publicIdWithExt = afterUpload.join("/");
+          return decodeURIComponent(publicIdWithExt.replace(/\.[^/.]+$/, ""));
+        }
+      } catch (err) {
+        console.error("Error parsing Cloudinary URL:", err);
+      }
+      return null;
+    };
+
+    const uploadPromises = [];
+
+    // Handle Avatar Upload
+    if (req.files && req.files.avatar) {
+      const avatarTask = async () => {
+        // Delete old avatar
+        if (userInfo.avatar && userInfo.avatar.includes("cloudinary.com")) {
+          const oldPublicId = getPublicIdFromUrl(userInfo.avatar);
+          if (oldPublicId) await deleteImage(oldPublicId);
+        }
+        // Upload new avatar
+        const folderPath = `customer/${user_id}/avatar`;
+        const uploadResult = await uploadImage(req.files.avatar[0].buffer, folderPath);
+        updateData.avatar = uploadResult.secure_url;
+      };
+      uploadPromises.push(avatarTask());
+    }
+
+    // Handle Background Upload
+    if (req.files && req.files.background) {
+      const backgroundTask = async () => {
+        // Delete old background
+        if (userInfo.background && userInfo.background.includes("cloudinary.com")) {
+          const oldPublicId = getPublicIdFromUrl(userInfo.background);
+          if (oldPublicId) await deleteImage(oldPublicId);
+        }
+        // Upload new background
+        const folderPath = `customer/${user_id}/background`;
+        const uploadResult = await uploadImage(req.files.background[0].buffer, folderPath);
+        updateData.background = uploadResult.secure_url;
+      };
+      uploadPromises.push(backgroundTask());
+    }
+
+    // Wait for all uploads to complete
+    if (uploadPromises.length > 0) {
+      await Promise.all(uploadPromises);
+    }
+
+    const updatedUserInfo = await UserInfo.findOneAndUpdate(
+      { user_id: user._id },
+      { $set: updateData },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật hồ sơ thành công",
+      data: updatedUserInfo,
+    });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ success: false, message: error.message || "Lỗi cập nhật hồ sơ" });
   }
 };

@@ -7,19 +7,24 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   useWindowDimensions,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BookingSteps from "@/components/ui/BookingSteps";
 import { getPaymentStatus } from "@/services/payment/vnpayService";
+import StatusLayout from "@/components/tour/StatusLayout";
 
 export default function StatusScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { bookingId } = params;
   
+  const isWeb = Platform.OS === "web" && width > 1024;
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
 
@@ -75,6 +80,21 @@ export default function StatusScreen() {
     if (isPending) return "#007BFF"; // Blue
     return "#dc3545"; // Red
   };
+
+  if (isWeb) {
+    return (
+      <StatusLayout 
+        data={data}
+        isPaid={isPaid}
+        isPending={isPending}
+        isSuccess={isSuccess}
+        getStatusTitle={getStatusTitle}
+        getStatusSubTitle={getStatusSubTitle}
+        getStatusColor={getStatusColor}
+        router={router}
+      />
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

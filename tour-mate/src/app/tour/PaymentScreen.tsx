@@ -14,10 +14,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTourById } from "@/services/tour/tourService";
-import { createVnPayPaymentUrl, createOfflineBooking } from "@/services/payment/vnpayService";
+import { createVnPayPaymentUrl, createOfflineBooking, getPaymentStatus } from "@/services/payment/vnpayService";
 import * as Linking from 'expo-linking';
 import { useAuth } from "@/context/AuthContext";
 import BookingSteps from "@/components/ui/BookingSteps";
+import PaymentLayout from "@/components/tour/PaymentLayout";
 
 export default function PaymentScreen() {
   const router = useRouter();
@@ -25,35 +26,80 @@ export default function PaymentScreen() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  
+  const isWeb = Platform.OS === "web" && width > 1024;
 
   const {
     tourId,
-    adultCount,
-    childCount,
-    name,
-    email,
-    phone,
-    note,
-    adultsInfo,
-    childrenInfo,
-    totalPrice,
+    adultCount: initialAdultCount,
+    childCount: initialChildCount,
+    name: initialName,
+    email: initialEmail,
+    phone: initialPhone,
+    note: initialNote,
+    adultsInfo: initialAdultsInfo,
+    childrenInfo: initialChildrenInfo,
+    totalPrice: initialTotalPrice,
+    bookingId: existingBookingId,
   } = params;
 
   const [tour, setTour] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState<
-    "transfer" | "cash"
-  >("transfer");
+  const [paymentMethod, setPaymentMethod] = useState<"transfer" | "cash">("transfer");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const parsedAdults = adultsInfo ? JSON.parse(adultsInfo as string) : [];
-  const parsedChildren = childrenInfo ? JSON.parse(childrenInfo as string) : [];
+  const [adultCount, setAdultCount] = useState(initialAdultCount);
+  const [childCount, setChildCount] = useState(initialChildCount);
+  const [name, setName] = useState(initialName);
+  const [email, setEmail] = useState(initialEmail);
+  const [phone, setPhone] = useState(initialPhone);
+  const [note, setNote] = useState(initialNote);
+  const [totalPrice, setTotalPrice] = useState(initialTotalPrice);
+  const [parsedAdults, setParsedAdults] = useState<any[]>([]);
+  const [parsedChildren, setParsedChildren] = useState<any[]>([]);
 
   useEffect(() => {
-    if (tourId) {
-      loadTour(tourId as string);
-    }
-  }, [tourId]);
+    const fetchData = async () => {
+      setLoading(true);
+      if (existingBookingId) {
+        // Fetch existing booking info
+        try {
+          const res = await getPaymentStatus(existingBookingId as string);
+          if (res.success && res.data?.booking) {
+            const b = res.data.booking;
+            setAdultCount(b.adult_count);
+            setChildCount(b.child_count);
+            setName(b.contact_info.full_name);
+            setEmail(b.contact_info.email);
+            setPhone(b.contact_info.phone);
+            setNote(b.contact_info.note);
+            setTotalPrice(b.total_price);
+            
+            // Reconstruct parsedAdults and parsedChildren
+            const adults = b.passengers.filter((p: any) => p.type === 'adult');
+            const children = b.passengers.filter((p: any) => p.type === 'child');
+            setParsedAdults(adults);
+            setParsedChildren(children);
+
+            // Load tour info using the tour_id from booking
+            // Note: In our current getPaymentStatus, booking.tour_id might already be populated
+            const tId = typeof b.tour_id === 'object' ? b.tour_id.tour_id : b.tour_id;
+            await loadTour(tId);
+          }
+        } catch (error) {
+          console.error("Fetch Booking Error:", error);
+        }
+      } else {
+        // Normal flow from BookTourScreen
+        if (initialAdultsInfo) setParsedAdults(JSON.parse(initialAdultsInfo as string));
+        if (initialChildrenInfo) setParsedChildren(JSON.parse(initialChildrenInfo as string));
+        if (tourId) await loadTour(tourId as string);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [existingBookingId, tourId]);
 
   const loadTour = async (id: string) => {
     try {
@@ -61,8 +107,6 @@ export default function PaymentScreen() {
       if (res?.data) setTour(res.data);
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -70,7 +114,7 @@ export default function PaymentScreen() {
     setIsProcessing(true);
     try {
       const orderDesc = `Thanh toan tour ${tour?.tour_name} - ${name}`;
-      const bookingData = {
+      const bookingData = existingBookingId ? null : {
         tourId,
         adultCount,
         childCount,
@@ -88,7 +132,8 @@ export default function PaymentScreen() {
           Number(totalPrice), 
           orderDesc, 
           bookingData, 
-          user?.user_id || user?._id
+          user?.user_id || user?._id,
+          existingBookingId as string
         );
 
         if (res.success && res.paymentUrl) {
@@ -133,6 +178,28 @@ export default function PaymentScreen() {
   const coverImage =
     tour?.images?.find((img: any) => img.img_is_cover)?.tour_img_url ||
     tour?.images?.[0]?.tour_img_url;
+
+  if (isWeb) {
+    return (
+      <PaymentLayout
+        tour={tour}
+        coverImage={coverImage}
+        name={name}
+        email={email}
+        phone={phone}
+        note={note}
+        adultCount={adultCount}
+        childCount={childCount}
+        parsedAdults={parsedAdults}
+        parsedChildren={parsedChildren}
+        totalPrice={totalPrice}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        handleFinish={handleFinish}
+        isProcessing={isProcessing}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

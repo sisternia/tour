@@ -1,6 +1,10 @@
 const crypto = require("crypto");
 const moment = require("moment");
 const BookingInfo = require("../models/booking_infos.model");
+const Tour = require("../models/tours.model");
+const TourImg = require("../models/tour_imgs.model");
+const TourTime = require("../models/tour_times.model");
+const TourPrice = require("../models/tour_prices.model");
 
 function sortObject(obj) {
     let sorted = {};
@@ -20,11 +24,11 @@ function sortObject(obj) {
 
 exports.createPaymentUrl = async (req, res) => {
     try {
-        const { amount, bankCode, orderDescription, orderType, language, bookingData, userId } = req.body;
+        const { amount, bankCode, orderDescription, orderType, language, bookingData, userId, bookingId } = req.body;
 
         let date = new Date();
         let createDate = moment(date).format('YYYYMMDDHHmmss');
-        let txnRef = moment(date).format('YYYYMMDDHHmmss');
+        let txnRef = bookingId || moment(date).format('YYYYMMDDHHmmss');
         
         let tmnCode = process.env.VNP_TMNCODE;
         let secretKey = process.env.VNP_HASHSECRET;
@@ -33,9 +37,10 @@ exports.createPaymentUrl = async (req, res) => {
 
         console.log("CreatePayment - bookingData:", bookingData ? "Present" : "Missing");
         console.log("CreatePayment - userId:", userId);
+        console.log("CreatePayment - txnRef:", txnRef);
 
-        // Save pending booking
-        if (bookingData) {
+        // Save pending booking ONLY IF it's a new booking (bookingId not provided)
+        if (bookingData && !bookingId) {
             try {
                 let passengers = [];
                 if (bookingData.parsedAdults && Array.isArray(bookingData.parsedAdults)) {
@@ -84,11 +89,14 @@ exports.createPaymentUrl = async (req, res) => {
             } catch (saveError) {
                 console.error("=== ERROR: Saving pending booking failed ===");
                 console.error(saveError);
-                // Throw error to stop flow if DB save fails
                 return res.status(500).json({ success: false, message: "Lỗi lưu thông tin đặt tour: " + saveError.message });
             }
+        } else if (bookingId) {
+            console.log("Using existing bookingId:", bookingId);
+            // Optionally update existing booking status to pending if it was cancelled
+            await BookingInfo.findOneAndUpdate({ booking_info_id: bookingId }, { status: 'pending' });
         } else {
-            console.log("No bookingData provided, skipping DB save.");
+            console.log("No bookingData or bookingId provided.");
         }
 
         let ipAddr = req.headers['x-forwarded-for'] ||
@@ -286,11 +294,28 @@ exports.vnpayIpn = async (req, res) => {
 exports.getPaymentStatus = async (req, res) => {
     try {
         const { bookingId } = req.params;
-        const booking = await BookingInfo.findOne({ booking_info_id: bookingId });
+        const booking = await BookingInfo.findOne({ booking_info_id: bookingId }).lean();
         const vnpay = await VnPay.findOne({ vnp_TxnRef: bookingId });
 
         if (!booking) {
             return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+        }
+
+        // Fetch Tour Details
+        if (booking.tour_id) {
+            const tour = await Tour.findOne({ tour_id: booking.tour_id }).lean();
+            if (tour) {
+                const tourImg = await TourImg.findOne({ tour_id: booking.tour_id, img_is_cover: true }).lean();
+                const tourTime = await TourTime.findOne({ tour_id: booking.tour_id }).lean();
+                const tourPrice = await TourPrice.findOne({ tour_id: booking.tour_id }).lean();
+                
+                booking.tour_id = {
+                    ...tour,
+                    tour_image: tourImg ? tourImg.tour_img_url : null,
+                    time: tourTime || null,
+                    price: tourPrice || null
+                };
+            }
         }
 
         res.status(200).json({

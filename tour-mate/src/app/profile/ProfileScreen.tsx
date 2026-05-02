@@ -15,6 +15,7 @@ import NavigationBar from "@/components/ui/NavigationBar";
 import ProfileLayout from "@/components/profile/ProfileLayout";
 import { useAuth } from "@/context/AuthContext";
 import { getUserProfile } from "@/services/auth/userService";
+import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const { width } = useWindowDimensions();
@@ -52,7 +53,7 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.settingsIcon}>
             <Ionicons name="settings-sharp" size={16} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.editBgIcon}>
+          <TouchableOpacity style={styles.editBgIcon} onPress={() => router.push("/profile/ProfileDetailScreen")}>
             <Ionicons name="camera" size={16} color="white" />
           </TouchableOpacity>
         </View>
@@ -66,7 +67,7 @@ export default function ProfileScreen() {
                 <Ionicons name="person" size={50} color="#ccc" />
               </View>
             )}
-            <TouchableOpacity style={styles.editIcon}>
+            <TouchableOpacity style={styles.editIcon} onPress={() => router.push("/profile/ProfileDetailScreen")}>
               <Ionicons name="camera" size={14} color="white" />
             </TouchableOpacity>
           </View>
@@ -94,7 +95,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.editBtn}>
+          <TouchableOpacity style={styles.editBtn} onPress={() => router.push("/profile/ProfileDetailScreen")}>
             <Ionicons name="create-outline" size={18} color="white" />
             <Text style={styles.editBtnText}>Chỉnh sửa</Text>
           </TouchableOpacity>

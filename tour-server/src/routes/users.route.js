@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/users.controller');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/register', userController.register);
 router.post('/verify-otp', userController.verifyOTP);
@@ -11,5 +13,9 @@ router.post('/check-email-match', userController.checkEmailMatchUser);
 router.post('/reset-password', userController.resetPassword);
 router.get('/view-customer', userController.view_customer);
 router.get('/profile/:user_name', userController.getUserProfile);
+router.post('/update-profile', upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'background', maxCount: 1 }
+]), userController.updateUserProfile);
 
 module.exports = router;

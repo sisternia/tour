@@ -4,9 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 interface BookingStepsProps {
   currentStep: 1 | 2 | 3;
+  isWeb?: boolean;
+  title?: string;
 }
 
-const BookingSteps: React.FC<BookingStepsProps> = ({ currentStep }) => {
+const BookingSteps: React.FC<BookingStepsProps> = ({ currentStep, isWeb = false, title }) => {
   const getStepStatus = (step: number) => {
     if (step < currentStep) return 'completed';
     if (step === currentStep) {
@@ -16,22 +18,23 @@ const BookingSteps: React.FC<BookingStepsProps> = ({ currentStep }) => {
     return 'inactive';
   };
 
-  const renderStep = (step: number, title: string, icon: string, last?: boolean) => {
+  const renderStep = (step: number, stepTitle: string, icon: string, last?: boolean) => {
     const status = getStepStatus(step);
     
     let circleStyle: any = styles.stepCircle;
     let textStyle: any = styles.stepText;
     let iconName: any = icon;
     let iconColor = '#999';
+    let iconSize = 16;
 
     if (status === 'completed') {
-      circleStyle = [styles.stepCircle, styles.stepCompleted];
-      textStyle = [styles.stepText, styles.stepTextCompleted];
+      circleStyle = [circleStyle, styles.stepCompleted];
+      textStyle = [textStyle, styles.stepTextCompleted];
       iconName = step === 3 ? 'checkmark-done' : 'checkmark';
       iconColor = '#fff';
     } else if (status === 'active') {
-      circleStyle = [styles.stepCircle, styles.stepActive];
-      textStyle = [styles.stepText, styles.stepTextActive];
+      circleStyle = [circleStyle, styles.stepActive];
+      textStyle = [textStyle, styles.stepTextActive];
       iconColor = '#fff';
     }
 
@@ -39,9 +42,9 @@ const BookingSteps: React.FC<BookingStepsProps> = ({ currentStep }) => {
       <React.Fragment key={step}>
         <View style={styles.stepItem}>
           <View style={circleStyle}>
-            <Ionicons name={iconName} size={16} color={iconColor} />
+            <Ionicons name={iconName} size={iconSize} color={iconColor} />
           </View>
-          <Text style={textStyle}>{title}</Text>
+          <Text style={textStyle}>{stepTitle}</Text>
         </View>
         {!last && (
           <Ionicons 
@@ -55,6 +58,21 @@ const BookingSteps: React.FC<BookingStepsProps> = ({ currentStep }) => {
     );
   };
 
+  if (isWeb) {
+    const webTitle = title || (
+      currentStep === 1 ? 'NHẬP THÔNG TIN' :
+      currentStep === 2 ? 'THANH TOÁN' :
+      'HOÀN TẤT'
+    );
+
+    return (
+      <View style={styles.webHeaderContainer}>
+        <Text style={styles.webLargeTitle}>{webTitle}</Text>
+        <View style={styles.webTitleUnderline} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.mobileStepsContainer}>
       <View style={styles.stepsRow}>
@@ -67,6 +85,7 @@ const BookingSteps: React.FC<BookingStepsProps> = ({ currentStep }) => {
 };
 
 const styles = StyleSheet.create({
+  // Mobile Styles
   mobileStepsContainer: {
     marginBottom: 20,
     backgroundColor: '#fff',
@@ -103,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#28a745', // Green
   },
   stepArrow: {
-    marginHorizontal: 2,
+    marginHorizontal: 5,
   },
   stepText: {
     fontSize: 9,
@@ -115,6 +134,27 @@ const styles = StyleSheet.create({
   },
   stepTextCompleted: {
     color: '#28a745',
+  },
+
+  // Web Styles
+  webHeaderContainer: {
+    alignItems: 'center',
+    marginBottom: 50,
+    marginTop: 20,
+  },
+  webLargeTitle: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: '#005bb2',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  webTitleUnderline: {
+    width: 80,
+    height: 4,
+    backgroundColor: '#fb7800',
+    marginTop: 15,
+    borderRadius: 2,
   },
 });
 

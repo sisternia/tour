@@ -10,6 +10,7 @@ import {
     Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import NavigationBar from "@/components/ui/NavigationBar";
 import Footer from "@/components/ui/Footer";
 
@@ -20,11 +21,9 @@ interface ProfileLayoutProps {
 }
 
 export default function ProfileLayout({ profile }: ProfileLayoutProps) {
+    const router = useRouter();
     const sidebarItems = [
         { name: "Thông tin tài khoản", icon: "person", active: true },
-        { name: "Tour đã đặt", icon: "ticket", active: false },
-        { name: "Tour yêu thích", icon: "heart", active: false },
-        { name: "Đánh giá của tôi", icon: "chatbubble-ellipses", active: false },
         { name: "Cài đặt", icon: "settings", active: false },
     ];
 
@@ -116,39 +115,76 @@ export default function ProfileLayout({ profile }: ProfileLayoutProps) {
 
                             {myTours.length > 0 ? (
                                 <View style={styles.toursGrid}>
-                                    {myTours.map((tour: any, index: number) => (
-                                        <View key={index} style={styles.tourCard}>
-                                            <View style={styles.tourImageWrapper}>
-                                                <Image source={{ uri: tour.image }} style={styles.tourImage} />
-                                                <View style={styles.statusBadge}>
-                                                    <View style={[styles.statusDot, { backgroundColor: tour.statusColor }]} />
-                                                    <Text style={styles.statusText}>{tour.status}</Text>
-                                                </View>
-                                            </View>
-                                            <View style={styles.tourCardContent}>
-                                                <Text style={styles.tourCardTitle}>{tour.title}</Text>
-                                                <View style={styles.tourMetaRow}>
-                                                    <View style={styles.tourMetaItem}>
-                                                        <View style={styles.metaIconBox}>
-                                                            <Ionicons name="calendar" size={18} color="#005bb2" />
-                                                        </View>
-                                                        <Text style={styles.metaText}>{tour.date}</Text>
-                                                    </View>
-                                                    <View style={styles.tourMetaItem}>
-                                                        <View style={styles.metaIconBox}>
-                                                            <Ionicons name="time" size={18} color="#005bb2" />
-                                                        </View>
-                                                        <Text style={styles.metaText}>{tour.duration}</Text>
+                                    {myTours.map((booking: any, index: number) => {
+                                        const tour = booking.tour_id || {};
+                                        const statusLabel = booking.status === 'paid' ? 'Đã thanh toán' :
+                                            booking.status === 'pending' ? 'Chờ thanh toán' : 'Đã hủy';
+                                        const statusColor = booking.status === 'paid' ? '#22c55e' :
+                                            booking.status === 'pending' ? '#3b82f6' : '#ef4444';
+                                        const statusBg = booking.status === 'paid' ? '#f0fdf4' :
+                                            booking.status === 'pending' ? '#eff6ff' : '#fef2f2';
+
+                                        return (
+                                            <TouchableOpacity key={index} style={styles.tourCard} onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}>
+                                                <View style={styles.tourImageWrapper}>
+                                                    <Image
+                                                        source={{ uri: tour.tour_image || "https://images.unsplash.com/photo-1596895111956-bf57059e00fa?q=80&w=1000&auto=format&fit=crop" }}
+                                                        style={styles.tourImage}
+                                                    />
+                                                    <View style={[styles.modernBadge, { backgroundColor: statusBg }]}>
+                                                        <View style={[styles.modernBadgeDot, { backgroundColor: statusColor }]} />
+                                                        <Text style={[styles.modernBadgeText, { color: statusColor }]}>{statusLabel}</Text>
                                                     </View>
                                                 </View>
-                                                <TouchableOpacity style={[styles.tourActionBtn, index === 1 && styles.tourActionBtnSecondary]}>
-                                                    <Text style={[styles.tourActionBtnText, index === 1 && styles.tourActionBtnTextSecondary]}>
-                                                        {index === 0 ? "Chi tiết hành trình" : "Đánh giá ngay"}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        </View>
-                                    ))}
+                                                <View style={styles.tourCardContent}>
+                                                    <Text style={styles.tourCardTitle} numberOfLines={2}>{tour.tour_name || "Tour du lịch"}</Text>
+
+                                                    <View style={styles.modernMetaRow}>
+                                                        <View style={styles.modernMetaItem}>
+                                                            <Ionicons name="calendar-outline" size={16} color="#64748b" />
+                                                            <Text style={styles.modernMetaText}>
+                                                                {tour.time?.date_start ? new Date(tour.time.date_start).toLocaleDateString('vi-VN') : "--/--/----"}
+                                                            </Text>
+                                                        </View>
+                                                        <View style={styles.modernMetaItem}>
+                                                            <Ionicons name="bookmark-outline" size={16} color="#64748b" />
+                                                            <Text style={styles.modernMetaText}>#{booking.booking_info_id}</Text>
+                                                        </View>
+                                                    </View>
+
+                                                    <View style={styles.priceRow}>
+                                                        <Text style={styles.priceLabel}>Tổng cộng</Text>
+                                                        <Text style={styles.priceValue}>
+                                                            {Number(booking.total_price || 0).toLocaleString()}đ
+                                                        </Text>
+                                                    </View>
+
+                                                    <View style={styles.modernActionBtnRow}>
+                                                        <TouchableOpacity 
+                                                            style={styles.modernActionBtn}
+                                                            onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
+                                                        >
+                                                            <Text style={styles.modernActionBtnText}>Xem vé</Text>
+                                                            <Ionicons name="chevron-forward" size={16} color="#fff" />
+                                                        </TouchableOpacity>
+                                                        
+                                                        {booking.status === 'pending' && (
+                                                            <TouchableOpacity 
+                                                                style={[styles.modernActionBtn, styles.payNowBtn]}
+                                                                onPress={() => router.push({
+                                                                    pathname: '/tour/PaymentScreen',
+                                                                    params: { bookingId: booking.booking_info_id }
+                                                                })}
+                                                            >
+                                                                <Text style={styles.modernActionBtnText}>Thanh toán</Text>
+                                                                <Ionicons name="card-outline" size={16} color="#fff" />
+                                                            </TouchableOpacity>
+                                                        )}
+                                                    </View>
+                                                </View>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
                                 </View>
                             ) : (
                                 <View style={styles.emptyContainer}>
@@ -412,87 +448,100 @@ const styles = StyleSheet.create({
         height: "100%",
         resizeMode: "cover",
     },
-    statusBadge: {
+    modernBadge: {
         position: "absolute",
-        top: 24,
-        left: 24,
-        backgroundColor: "rgba(255, 255, 255, 0.9)",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 100,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        // @ts-ignore
-        backdropFilter: "blur(8px)",
+        top: 16,
+        left: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        gap: 6,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.05)',
     },
-    statusDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+    modernBadgeDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
-    statusText: {
+    modernBadgeText: {
         fontSize: 12,
-        fontWeight: "800",
-        color: "#005bb2",
+        fontWeight: "700",
     },
     tourCardContent: {
-        padding: 32,
+        padding: 20,
     },
     tourCardTitle: {
-        fontSize: 22,
-        fontWeight: "800",
-        color: "#1c1b1b",
-        marginBottom: 16,
-        lineHeight: 28,
-    },
-    tourMetaRow: {
-        flexDirection: "row",
-        gap: 16,
-        marginBottom: 32,
-    },
-    tourMetaItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-    },
-    metaIconBox: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: "#f6f3f2",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    metaText: {
-        fontSize: 14,
-        fontWeight: "500",
-        color: "#414753",
-    },
-    tourActionBtn: {
-        width: "100%",
-        paddingVertical: 16,
-        borderRadius: 16,
-        backgroundColor: "#005bb2",
-        alignItems: "center",
-        shadowColor: "#005bb2",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
-        shadowRadius: 16,
-        elevation: 5,
-    },
-    tourActionBtnSecondary: {
-        backgroundColor: "#f0eded",
-        shadowOpacity: 0,
-        elevation: 0,
-    },
-    tourActionBtnText: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: "700",
-        color: "#fff",
+        color: "#0f172a",
+        marginBottom: 12,
+        lineHeight: 24,
     },
-    tourActionBtnTextSecondary: {
-        color: "#1c1b1b",
+    modernMetaRow: {
+        flexDirection: "row",
+        alignItems: 'center',
+        gap: 16,
+        marginBottom: 20,
+    },
+    modernMetaItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+    },
+    modernMetaText: {
+        fontSize: 13,
+        color: "#64748b",
+        fontWeight: "500",
+    },
+    priceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#f1f5f9',
+        marginBottom: 20,
+    },
+    priceLabel: {
+        fontSize: 13,
+        color: '#94a3b8',
+        fontWeight: '500',
+    },
+    priceValue: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#fb7800',
+    },
+    modernActionBtn: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: "#005bb2",
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: "center",
+        gap: 8,
+        shadowColor: "#005bb2",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 3,
+    },
+    modernActionBtnRow: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    payNowBtn: {
+        backgroundColor: "#fb7800",
+        shadowColor: "#fb7800",
+    },
+    modernActionBtnText: {
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: "600",
     },
     savedGrid: {
         flexDirection: "row",
@@ -582,5 +631,32 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "700",
         fontSize: 15,
+    },
+    paymentBadge: {
+        position: "absolute",
+        top: 15,
+        left: 15,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    paymentBadgeText: {
+        color: "#fff",
+        fontSize: 12,
+        fontWeight: "bold",
+    },
+    bookingIdRow: {
+        marginTop: 10,
+        marginBottom: 5,
+    },
+    bookingIdText: {
+        fontSize: 12,
+        color: "#999",
+        fontStyle: "italic",
     },
 });

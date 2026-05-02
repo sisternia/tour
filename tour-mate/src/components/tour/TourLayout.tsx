@@ -46,11 +46,6 @@ export default function TourLayout({
       <NavigationBar />
 
       <View style={styles.webMainContent}>
-        <View style={styles.webPageHeader}>
-          <Text style={styles.webTitle}>Khám phá các Tour du lịch</Text>
-          <Text style={styles.webSubTitle}>Tìm kiếm hành trình hoàn hảo cho chuyến phiêu lưu tiếp theo của bạn.</Text>
-        </View>
-
         <View style={styles.webLayout}>
           {/* Sidebar Filters */}
           <View style={styles.webSidebar}>
@@ -155,8 +150,8 @@ export default function TourLayout({
                   </View>
                   <View style={styles.webTourInfo}>
                     <View style={styles.webLocationRow}>
-                      <Ionicons name="location" size={14} color="#005bb2" />
-                      <Text style={styles.webLocationText}>{tour.tour_add?.toUpperCase()}</Text>
+                      <Ionicons name="location" size={14} color="#005bb2" style={{ marginTop: 2 }} />
+                      <Text style={styles.webLocationText} numberOfLines={2}>{tour.tour_add?.toUpperCase()}</Text>
                     </View>
                     <Text style={styles.webTourTitle} numberOfLines={1}>{tour.tour_name}</Text>
                     <View style={styles.webTourMeta}>
@@ -244,11 +239,8 @@ export default function TourLayout({
 const styles = StyleSheet.create({
   // Web Styles
   webContainer: { flex: 1, backgroundColor: "#fcf9f8" },
-  webMainContent: { maxWidth: 1280, width: "100%", alignSelf: "center", paddingHorizontal: 24, paddingVertical: 60 },
-  webPageHeader: { marginBottom: 60 },
-  webTitle: { fontSize: 48, fontWeight: "800", color: "#1c1b1b", marginBottom: 12 },
-  webSubTitle: { fontSize: 18, color: "#666" },
-
+  webMainContent: { maxWidth: 1280, width: "100%", alignSelf: "center", paddingHorizontal: 24, paddingTop: 100, paddingBottom: 60 },
+  
   webLayout: { flexDirection: "row", gap: 32 },
   webSidebar: { width: 300 },
   webFilterCard: { backgroundColor: "#fff", padding: 24, borderRadius: 24, borderWidth: 1, borderColor: "#f0f0f0", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20 },
@@ -284,36 +276,36 @@ const styles = StyleSheet.create({
   webSortText: { fontSize: 12, color: "#1c1b1b" },
 
   webTourGrid: { flexDirection: "row", flexWrap: "wrap", gap: 24 },
-  webTourCard: { width: "48%", backgroundColor: "#fff", borderRadius: 24, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, borderWidth: 1, borderColor: "#f0f0f0" },
-  webTourImageWrapper: { height: 240, position: "relative" },
+  webTourCard: { width: "31.5%", backgroundColor: "#fff", borderRadius: 16, overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, borderWidth: 1, borderColor: "#f0f0f0", marginBottom: 8 },
+  webTourImageWrapper: { height: 180, position: "relative" },
   webTourImage: { width: "100%", height: "100%" },
-  webHotTag: { position: "absolute", top: 16, right: 16, backgroundColor: "#fb7800", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  webHotTagText: { fontSize: 11, fontWeight: "800", color: "#fff" },
-  webRatingBadge: { position: "absolute", top: 16, left: 16, backgroundColor: "rgba(255,255,255,0.9)", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  webRatingValue: { fontSize: 12, fontWeight: "800", color: "#1c1b1b" },
+  webHotTag: { position: "absolute", top: 12, right: 12, backgroundColor: "#fb7800", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  webHotTagText: { fontSize: 10, fontWeight: "800", color: "#fff" },
+  webRatingBadge: { position: "absolute", top: 12, left: 12, backgroundColor: "rgba(255,255,255,0.9)", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
+  webRatingValue: { fontSize: 11, fontWeight: "800", color: "#1c1b1b" },
 
-  webTourInfo: { padding: 24 },
-  webLocationRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 },
-  webLocationText: { fontSize: 11, fontWeight: "800", color: "#005bb2", letterSpacing: 1 },
-  webTourTitle: { fontSize: 20, fontWeight: "700", color: "#1c1b1b", marginBottom: 16 },
-  webTourMeta: { flexDirection: "row", gap: 16, marginBottom: 24 },
+  webTourInfo: { padding: 16 },
+  webLocationRow: { flexDirection: "row", alignItems: "flex-start", gap: 4, marginBottom: 6 },
+  webLocationText: { fontSize: 10, fontWeight: "800", color: "#005bb2", letterSpacing: 1 },
+  webTourTitle: { fontSize: 16, fontWeight: "700", color: "#1c1b1b", marginBottom: 12 },
+  webTourMeta: { flexDirection: "row", gap: 12, marginBottom: 16 },
   webMetaItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  webMetaText: { fontSize: 13, color: "#666" },
+  webMetaText: { fontSize: 12, color: "#666" },
   webDurationContainer: { marginTop: 8 },
   durationStepper: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "#f6f3f2", borderRadius: 12, padding: 8 },
   stepperBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: "#fff", justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
   durationValueText: { fontSize: 14, fontWeight: "700", color: "#1c1b1b" },
   webCheckboxActive: { backgroundColor: "#005bb2", borderColor: "#005bb2" },
 
-  webPriceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "#f0f0f0", paddingTop: 20 },
-  webDetailBtn: { backgroundColor: "#d6e3ff", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 },
-  webDetailBtnText: { fontSize: 15, fontWeight: "700", color: "#001b3d" },
+  webPriceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "#f0f0f0", paddingTop: 12 },
+  webDetailBtn: { backgroundColor: "#d6e3ff", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  webDetailBtnText: { fontSize: 13, fontWeight: "700", color: "#001b3d" },
 
-  priceContainer: { gap: 4 },
+  priceContainer: { gap: 2 },
   priceItem: { flexDirection: "row", alignItems: "center" },
-  priceLabel: { width: 70, fontSize: 13, color: "#333", fontWeight: "600" },
-  priceSeparator: { fontSize: 13, color: "#333", fontWeight: "600" },
-  priceValue: { fontSize: 13, fontWeight: "600", color: "#333" },
+  priceLabel: { width: 60, fontSize: 11, color: "#333", fontWeight: "600" },
+  priceSeparator: { fontSize: 11, color: "#333", fontWeight: "600" },
+  priceValue: { fontSize: 11, fontWeight: "600", color: "#333" },
 
   webPagination: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 60 },
   webPageBtn: { width: 40, height: 40, borderRadius: 10, borderWidth: 1, borderColor: "#ddd", justifyContent: "center", alignItems: "center" },

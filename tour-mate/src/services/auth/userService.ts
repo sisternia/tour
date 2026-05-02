@@ -121,3 +121,17 @@ export const getUserProfile = async (user_name: string) => {
     return { success: false, message: "Lỗi kết nối Server" };
   }
 };
+
+export const updateUserProfile = async (formData: FormData) => {
+  try {
+    const response = await fetch(`${API_URL}/update-profile`, {
+      method: "POST",
+      body: formData,
+      // No Content-Type header needed for FormData; browser/Expo will set it automatically with boundary
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Update Profile API Error:", error);
+    return { success: false, message: "Lỗi kết nối Server" };
+  }
+};
