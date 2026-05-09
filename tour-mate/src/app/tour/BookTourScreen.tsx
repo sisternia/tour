@@ -15,16 +15,15 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import BookTourLayout from "@/components/tour/BookTourLayout";
 import FloatingInput from "@/components/ui/FloatingInput";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import NotificationModal from "@/components/ui/NotificationModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTourById } from "@/services/tour/tourService";
 import { getUserProfile } from "@/services/auth/userService";
-import BookingSteps from "@/components/ui/BookingSteps";
 
 import { useAuth } from "@/context/AuthContext";
+import BookTourLayout from "@/components/tour/BookTourLayout";
 
 export default function BookTourScreen() {
   const router = useRouter();
@@ -293,7 +292,7 @@ export default function BookTourScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <BookingSteps currentStep={1} />
+        <View style={{ height: 10 }} />
         <View style={styles.card}>
           <Image source={{ uri: coverImage }} style={styles.tourImage} />
           <View style={styles.tourInfo}>

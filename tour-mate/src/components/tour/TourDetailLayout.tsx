@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     paddingTop: 72, // Space for fixed Nav
   },
   webPageContent: {
-    maxWidth: 1280,
+    maxWidth: 1300,
     width: "100%",
     alignSelf: "center",
     paddingHorizontal: 24,

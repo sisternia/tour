@@ -10,9 +10,11 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import NavigationBar from "@/components/ui/NavigationBar";
 import ProfileLayout from "@/components/profile/ProfileLayout";
+import NotificationModal from "@/components/ui/NotificationModal";
 import { useAuth } from "@/context/AuthContext";
 import { getUserProfile } from "@/services/auth/userService";
 import { router } from "expo-router";
@@ -21,9 +23,11 @@ export default function ProfileScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web" && width > 1024;
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -38,8 +42,14 @@ export default function ProfileScreen() {
     loadProfile();
   }, [user]);
 
+  const handleLogout = async () => {
+    setShowLogoutModal(false);
+    await logout();
+    router.replace("/auth/LoginScreen");
+  };
+
   const renderMobileProfile = () => (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Background Cover */}
         <View style={styles.backgroundContainer}>
@@ -50,9 +60,28 @@ export default function ProfileScreen() {
               <Ionicons name="image-outline" size={40} color="#ccc" />
             </View>
           )}
-          <TouchableOpacity style={styles.settingsIcon}>
+          <TouchableOpacity 
+            style={styles.settingsIcon} 
+            onPress={() => setShowMenu(!showMenu)}
+          >
             <Ionicons name="settings-sharp" size={16} color="white" />
           </TouchableOpacity>
+
+          {showMenu && (
+            <View style={styles.dropdownMenu}>
+              <TouchableOpacity 
+                style={styles.menuItem} 
+                onPress={() => {
+                  setShowMenu(false);
+                  setShowLogoutModal(true);
+                }}
+              >
+                <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                <Text style={styles.menuItemText}>Đăng xuất</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity style={styles.editBgIcon} onPress={() => router.push("/profile/ProfileDetailScreen")}>
             <Ionicons name="camera" size={16} color="white" />
           </TouchableOpacity>
@@ -123,8 +152,18 @@ export default function ProfileScreen() {
         </View>
         <View style={{ height: 100 }} />
       </ScrollView>
+      <NotificationModal
+        visible={showLogoutModal}
+        type="warning"
+        title="Đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?"
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+        confirmText="Đăng xuất"
+      />
+
       <NavigationBar />
-    </View>
+    </SafeAreaView>
   );
 
   if (loading) {
@@ -147,7 +186,7 @@ const styles = StyleSheet.create({
   backgroundContainer: { position: "relative", width: "100%", height: 200 },
   backgroundImage: { width: "100%", height: "100%", resizeMode: "cover" },
   backgroundPlaceholder: { width: "100%", height: "100%", backgroundColor: "#F0F2F5", justifyContent: "center", alignItems: "center" },
-  settingsIcon: { position: "absolute", top: 40, right: 15, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 20 },
+  settingsIcon: { position: "absolute", top: 10, right: 15, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 20 },
   editBgIcon: { position: "absolute", bottom: 10, right: 15, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 20 },
   profileSection: { alignItems: "center" },
   avatarContainer: { position: "relative" },
@@ -245,8 +284,33 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
   },
   emptyText: {
-    color: "#8E8E93",
     fontSize: 14,
     marginTop: 10,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: 50,
+    right: 15,
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 8,
+    width: 150,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    gap: 10,
+  },
+  menuItemText: {
+    fontSize: 15,
+    color: "#EF4444",
+    fontWeight: "600",
   },
 });

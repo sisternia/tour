@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+    <!-- SideNavBar Container -->
+    <div id="sidebar-container"></div>
+
+    <!-- TopAppBar Container -->
+    <div id="topbar-container"></div>
+
+    <!-- Main Content Canvas -->
+    <main class="ml-72 pt-24 p-8 min-h-screen bg-surface">
+        <!-- Header Status Section -->
+        <section class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Chi tiết thanh toán</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="booking-status-badge" class="px-4 py-2 rounded-lg flex items-center gap-2 font-bold text-sm">
+                    <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">info</span>
+                    <span id="booking-status-text">Đang tải...</span>
+                </span>
+                <button onclick="window.print()" class="bg-surface-container-lowest text-primary px-4 py-2 rounded-lg font-semibold hover:bg-surface-container-high transition-colors shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">print</span>
+                    In hóa đơn
+                </button>
+            </div>
+        </section>
+
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Left Column: Booking & Passenger Info -->
+            <div class="col-span-12 lg:col-span-8 space-y-6">
+                <!-- Customer & General Info Card -->
+                <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border-0">
+                    <div class="flex items-start justify-between mb-8">
+                        <div>
+                            <h3 class="text-xl font-bold mb-1">Thông tin khách hàng</h3>
+                            <p class="text-sm text-on-surface-variant">Chi tiết người đại diện đặt tour</p>
+                        </div>
+                        <span class="material-symbols-outlined text-primary-container p-2 bg-primary-fixed rounded-lg">person</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                        <div>
+                            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Họ và tên</p>
+                            <p id="customer-name" class="text-base font-bold text-on-surface">---</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Mã đơn hàng</p>
+                            <p id="booking-id-text" class="text-base font-bold text-on-surface">---</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Thời gian đặt</p>
+                            <p id="booking-time" class="text-base font-bold text-on-surface">---</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Email</p>
+                            <p id="customer-email" class="text-base font-bold text-on-surface">---</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Số điện thoại</p>
+                            <p id="customer-phone" class="text-base font-bold text-on-surface">---</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Phương thức</p>
+                            <p class="text-base font-bold text-on-surface">Thanh toán trực tuyến</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passenger Details Card -->
+                <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-xl font-bold">Danh sách hành khách</h3>
+                        <span id="total-passengers-badge" class="px-3 py-1 bg-surface-container-high rounded-full text-xs font-bold text-on-surface">0 Người</span>
+                    </div>
+                    <div id="passenger-list-container" class="space-y-6">
+                        <!-- Categories will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Tour Summary & Guide & Financial -->
+            <div class="col-span-12 lg:col-span-4 space-y-6">
+                <!-- Tour Information Card -->
+                <div class="bg-surface-container-lowest overflow-hidden rounded-xl shadow-sm flex flex-col">
+                    <div class="h-48 w-full relative">
+                        <img id="tour-image" alt="Tour Cover" class="w-full h-full object-cover" src="https://via.placeholder.com/800x400?text=Tour+Cover">
+                        <div class="absolute top-4 left-4">
+                            <span id="tour-id-badge" class="px-3 py-1 bg-white/90 backdrop-blur text-primary text-[10px] font-bold uppercase tracking-widest rounded-full">---</span>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <button id="view-tour-btn" class="w-8 h-8 bg-white/90 backdrop-blur text-primary rounded-full flex items-center justify-center shadow-sm hover:bg-primary hover:text-white transition-all" title="Xem chi tiết Tour">
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 id="tour-name" class="text-xl font-bold leading-tight mb-2">---</h3>
+                        <div class="flex items-center gap-2 text-on-surface-variant text-sm mb-6">
+                            <span class="material-symbols-outlined text-sm">location_on</span>
+                            <span id="tour-location">---</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex gap-4 p-4 bg-surface-container-low rounded-lg items-center">
+                                <span class="material-symbols-outlined text-primary">calendar_today</span>
+                                <div>
+                                    <p class="text-xs text-on-surface-variant uppercase font-bold tracking-tighter">Ngày khởi hành</p>
+                                    <p id="tour-start-date" class="text-sm font-bold">---</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 bg-surface-container-low rounded-lg items-center">
+                                <span class="material-symbols-outlined text-primary">event_repeat</span>
+                                <div>
+                                    <p class="text-xs text-on-surface-variant uppercase font-bold tracking-tighter">Thời lượng</p>
+                                    <p id="tour-duration" class="text-sm font-bold">---</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 bg-emerald-50 rounded-lg items-center border border-emerald-100">
+                                <span class="material-symbols-outlined text-emerald-600">group_add</span>
+                                <div>
+                                    <p class="text-xs text-emerald-700 uppercase font-bold tracking-tighter">Chỗ trống hiện tại</p>
+                                    <p id="available-slots" class="text-sm font-black text-emerald-700">---</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Guide Card -->
+                <div id="guide-info-card" class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-primary/10">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Hướng dẫn viên</h4>
+                        <span class="material-symbols-outlined text-primary">verified_user</span>
+                    </div>
+                    <div id="guides-container" class="space-y-4">
+                        <!-- Guides will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Financial Summary Table -->
+                <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10">
+                    <h3 class="text-xl font-bold mb-6">Chi tiết thanh toán</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-4 border-b border-surface-variant/30">
+                            <span id="adult-price-label" class="text-on-surface-variant text-sm">Người lớn (0đ x 0)</span>
+                            <span id="adult-total-price" class="font-bold text-sm">0đ</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-surface-variant/30">
+                            <span id="child-price-label" class="text-on-surface-variant text-sm">Trẻ em (0đ x 0)</span>
+                            <span id="child-total-price" class="font-bold text-sm">0đ</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-6">
+                            <span class="text-base font-bold">Tổng thanh toán</span>
+                            <div class="text-right">
+                                <p id="grand-total-price" class="text-2xl font-extrabold text-primary">0đ</p>
+                                <p class="text-[10px] text-on-surface-variant mt-1 uppercase font-bold tracking-tighter">Đã bao gồm VAT</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Shared Components -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/book_detail.js"></script>
+</body>
+</html>

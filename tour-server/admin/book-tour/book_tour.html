@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Quản lý đặt Tour - Voyager Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="../container/js/tailwind.config.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Custom styles for table responsiveness and premium feel */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface">
+    <!-- SideNavBar Container -->
+    <div id="sidebar-container"></div>
+
+    <!-- TopAppBar Container -->
+    <div id="topbar-container"></div>
+
+    <!-- Main Content Canvas -->
+    <main class="ml-72 p-8 min-h-screen">
+        <div class="max-w-[1600px] mx-auto">
+            <!-- Header Section -->
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h3 class="font-headline font-extrabold text-3xl text-on-surface tracking-tight mb-2">Quản lý đơn
+                        hàng</h3>
+                    <p class="text-on-surface-variant font-medium">Theo dõi và cập nhật trạng thái các Tour du lịch đang
+                        diễn ra.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        class="flex items-center gap-2 bg-surface-container-high text-primary px-6 py-2.5 rounded-lg font-headline font-bold text-sm hover:brightness-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Xuất báo cáo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Tổng đơn hàng
+                    </p>
+                    <div class="flex items-end justify-between">
+                        <p id="total-bookings-count" class="font-headline font-extrabold text-4xl text-primary">0</p>
+                        <div class="flex items-center gap-1 text-xs text-green-600 font-bold mb-1">
+                            <span class="material-symbols-outlined text-xs">trending_up</span>
+                            +12%
+                        </div>
+                    </div>
+                </div>
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Thành công</p>
+                    <p id="paid-bookings-count" class="font-headline font-extrabold text-4xl text-green-600">0</p>
+                    <p class="text-xs text-on-surface-variant mt-2 font-medium">Đã thanh toán</p>
+                </div>
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Đang xử lý</p>
+                    <p id="pending-bookings-count" class="font-headline font-extrabold text-4xl text-orange-500">0</p>
+                    <p class="text-xs text-on-surface-variant mt-2 font-medium">Chờ thanh toán</p>
+                </div>
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Đã hủy</p>
+                    <p id="cancelled-bookings-count" class="font-headline font-extrabold text-4xl text-error">0</p>
+                    <p class="text-xs text-on-surface-variant mt-2 font-medium">Đơn đã hủy</p>
+                </div>
+            </div>
+
+            <!-- Filter Chips & Search -->
+            <div class="flex flex-wrap items-center gap-4 mb-6">
+                <div class="flex items-center gap-2 bg-surface-container-low p-1 rounded-xl">
+                    <button
+                        class="bg-primary text-on-primary px-5 py-2 rounded-lg text-xs font-bold shadow-md shadow-primary/20">Tất
+                        cả</button>
+                    <button
+                        class="text-on-surface-variant px-5 py-2 rounded-lg text-xs font-bold hover:bg-surface-container-high transition-colors">Thành
+                        công</button>
+                    <button
+                        class="text-on-surface-variant px-5 py-2 rounded-lg text-xs font-bold hover:bg-surface-container-high transition-colors">Đang
+                        xử lý</button>
+                    <button
+                        class="text-on-surface-variant px-5 py-2 rounded-lg text-xs font-bold hover:bg-surface-container-high transition-colors">Đã
+                        hủy</button>
+                </div>
+
+                <div class="ml-auto flex gap-3">
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">calendar_today</span>
+                        <select
+                            class="bg-surface-container-low border-none rounded-lg py-2 pl-10 pr-8 text-xs font-bold text-on-surface-variant focus:ring-2 focus:ring-primary/20 appearance-none">
+                            <option>7 ngày qua</option>
+                            <option>30 ngày qua</option>
+                            <option>Tháng này</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Table -->
+            <div
+                class="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low/50">
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    Người đặt</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    Tour / Mã đơn</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    Email / SĐT</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    Lịch trình</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider text-center">
+                                    Số người</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    HDV</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    Tổng tiền</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider">
+                                    Trạng thái</th>
+                                <th
+                                    class="px-6 py-5 text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider text-right">
+                                    Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booking-table-body" class="divide-y divide-surface-container">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination-container"
+                    class="bg-surface-container-low/50 px-8 py-4 flex items-center justify-between border-t border-surface-container hidden">
+                    <p id="pagination-info" class="text-xs text-on-surface-variant font-medium">Hiển thị 1-3 trong số 1,284 đơn hàng</p>
+                    <div id="pagination-buttons" class="flex gap-1">
+                        <!-- Dynamic buttons -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Shared Components -->
+    <script src="../container/js/sidebar.js"></script>
+    <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/book_tour.js"></script>
+</body>
+
+</html>

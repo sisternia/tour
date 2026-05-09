@@ -19,6 +19,14 @@ const bookingInfoSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    date_start: {
+      type: Date,
+      required: false
+    },
+    date_end: {
+      type: Date,
+      required: false
+    },
     contact_info: {
       full_name: { type: String, required: true },
       email: { type: String, required: true },
@@ -47,7 +55,7 @@ const bookingInfoSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'paid', 'cancelled'],
+      enum: ['confirmed', 'pending', 'paid', 'cancelled'],
       default: 'pending'
     }
   },

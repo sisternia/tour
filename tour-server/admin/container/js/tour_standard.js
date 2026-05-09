@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let scheSelectedFiles = [];
     let allSchedules = []; // To store all activities for submission
     let allGuides = []; // To store fetched guides
+    let isFullGuidesLoaded = false; // Flag to track if full list has been fetched
     let selectedGuideIds = []; // To store selected guide IDs
     let editingActivityId = null; // Track which activity is being edited
     let editingTourId = new URLSearchParams(window.location.search).get('id');
@@ -940,7 +941,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const guidesListContainer = document.getElementById('guides-list-container');
 
     async function fetchGuides() {
-        if (allGuides.length > 0) {
+        if (isFullGuidesLoaded) {
             renderGuides();
             return;
         }
@@ -949,6 +950,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             if (result.success) {
                 allGuides = result.data;
+                isFullGuidesLoaded = true;
                 renderGuides();
             }
         } catch (error) {
@@ -1411,8 +1413,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </td>
                 <td class="px-6 py-4 text-center">
-                    <div class="flex items-center justify-center">
-                        <span class="text-[11px] font-bold text-on-surface">0 <span class="text-on-surface-variant/40 font-medium">/ ${tour.price.tour_capacity || 0}</span></span>
+                    <div class="flex flex-col items-center justify-center gap-1">
+                        <span class="text-[11px] font-bold ${tour.available_slots <= 0 ? 'text-red-600' : 'text-on-surface'}">
+                            ${tour.current_passengers || 0} 
+                            <span class="text-on-surface-variant/40 font-medium">/ ${tour.price.tour_capacity || 0}</span>
+                        </span>
+                        ${tour.available_slots <= 0 
+                            ? '<span class="text-[8px] font-black uppercase text-red-600 bg-red-50 px-1 rounded">Hết chỗ</span>' 
+                            : `<span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">Còn ${tour.available_slots} chỗ</span>`
+                        }
                     </div>
                 </td>
                 <td class="px-6 py-4 text-center">

@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import NavigationBar from "@/components/ui/NavigationBar";
-import BookingSteps from "@/components/ui/BookingSteps";
 import FloatingInput from "@/components/ui/FloatingInput";
 
 export default function PaymentLayout({
@@ -39,8 +38,6 @@ export default function PaymentLayout({
       <NavigationBar />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.webContent}>
-          <BookingSteps isWeb title="THANH TOÁN" currentStep={2} />
-
           <View style={styles.grid}>
             {/* Left Column */}
             <View style={styles.leftColumn}>

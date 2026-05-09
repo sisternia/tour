@@ -7,6 +7,7 @@ interface AuthContextType {
   user: any | null;
   login: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (userData: any) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -45,6 +46,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = async (userData: any) => {
+    try {
+      const updatedUser = { ...user, ...userData };
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Error updating user data:', error);
+    }
+  };
+
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('user');
@@ -56,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

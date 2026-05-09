@@ -5,6 +5,9 @@ const Tour = require("../models/tours.model");
 const TourImg = require("../models/tour_imgs.model");
 const TourTime = require("../models/tour_times.model");
 const TourPrice = require("../models/tour_prices.model");
+const TourGuide = require("../models/tour_guides.model");
+const UserInfor = require("../models/user_infors.model");
+const { notifyBookingStatusChange } = require("./bookings.controller");
 
 function sortObject(obj) {
     let sorted = {};
@@ -42,6 +45,25 @@ exports.createPaymentUrl = async (req, res) => {
         // Save pending booking ONLY IF it's a new booking (bookingId not provided)
         if (bookingData && !bookingId) {
             try {
+                const tourId = bookingData.tourId || "unknown";
+                const requestedSeats = (parseInt(bookingData.adultCount) || 0) + (parseInt(bookingData.childCount) || 0);
+
+                // Check capacity
+                const [tourPrice, existingBookings] = await Promise.all([
+                    TourPrice.findOne({ tour_id: tourId }),
+                    BookingInfo.find({ tour_id: tourId, status: { $ne: 'cancelled' } })
+                ]);
+
+                const currentBooked = existingBookings.reduce((sum, b) => sum + (b.adult_count || 0) + (b.child_count || 0), 0);
+                const capacity = tourPrice ? tourPrice.tour_capacity : 0;
+
+                if (currentBooked + requestedSeats > capacity) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Tour đã đạt giới hạn số lượng người tham gia. Hiện còn ${Math.max(0, capacity - currentBooked)} chỗ trống.` 
+                    });
+                }
+
                 let passengers = [];
                 if (bookingData.parsedAdults && Array.isArray(bookingData.parsedAdults)) {
                     bookingData.parsedAdults.forEach(p => {
@@ -65,11 +87,14 @@ exports.createPaymentUrl = async (req, res) => {
                 }
 
                 const mongoose = require('mongoose');
+                const tourTime = await TourTime.findOne({ tour_id: tourId });
                 
                 const newBooking = new BookingInfo({
                     booking_info_id: txnRef,
                     user_id: userId || null,
                     tour_id: bookingData.tourId || "unknown",
+                    date_start: tourTime ? tourTime.date_start : null,
+                    date_end: tourTime ? tourTime.date_end : null,
                     contact_info: {
                         full_name: bookingData.name || "Người đặt",
                         email: bookingData.email || "N/A",
@@ -86,6 +111,9 @@ exports.createPaymentUrl = async (req, res) => {
                 await newBooking.save();
                 console.log("=== SUCCESS: Saved new pending booking ===");
                 console.log("Booking ID:", txnRef);
+                
+                // Trigger email notification for new pending booking
+                notifyBookingStatusChange(txnRef);
             } catch (saveError) {
                 console.error("=== ERROR: Saving pending booking failed ===");
                 console.error(saveError);
@@ -216,6 +244,8 @@ exports.vnpayReturn = async (req, res) => {
                     { booking_info_id: orderId },
                     { status: 'paid' }
                 );
+                // Trigger email notification for successful payment
+                notifyBookingStatusChange(orderId);
             }
         } catch (err) {
             console.error("DB Update Error in VNPAY Return:", err);
@@ -280,6 +310,8 @@ exports.vnpayIpn = async (req, res) => {
                     { booking_info_id: orderId },
                     { status: 'paid' }
                 );
+                // Trigger email notification for successful payment
+                notifyBookingStatusChange(orderId);
             }
         } catch (err) {
             console.error("DB Update Error in VNPAY IPN:", err);
@@ -309,11 +341,25 @@ exports.getPaymentStatus = async (req, res) => {
                 const tourTime = await TourTime.findOne({ tour_id: booking.tour_id }).lean();
                 const tourPrice = await TourPrice.findOne({ tour_id: booking.tour_id }).lean();
                 
+                // Fetch Guides
+                const tourGuides = await TourGuide.find({ tour_id: booking.tour_id }).lean();
+                const guides = await Promise.all(tourGuides.map(async (tg) => {
+                    const info = await UserInfor.findOne({ user_id: tg.user_id }).lean();
+                    return info ? {
+                        user_id: tg.user_id,
+                        full_name: info.full_name,
+                        avatar: info.avatar,
+                        email: info.email,
+                        phone: info.phone
+                    } : null;
+                }));
+
                 booking.tour_id = {
                     ...tour,
                     tour_image: tourImg ? tourImg.tour_img_url : null,
                     time: tourTime || null,
-                    price: tourPrice || null
+                    price: tourPrice || null,
+                    guides: guides.filter(g => g !== null)
                 };
             }
         }
@@ -363,10 +409,14 @@ exports.createOfflineBooking = async (req, res) => {
             });
         }
 
+        const tourTime = await TourTime.findOne({ tour_id: bookingData.tourId });
+
         const newBooking = new BookingInfo({
             booking_info_id: txnRef,
             user_id: userId || null,
             tour_id: bookingData.tourId || "unknown",
+            date_start: tourTime ? tourTime.date_start : null,
+            date_end: tourTime ? tourTime.date_end : null,
             contact_info: {
                 full_name: bookingData.name || "Người đặt",
                 email: bookingData.email || "N/A",

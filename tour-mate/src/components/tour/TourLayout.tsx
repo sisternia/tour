@@ -239,8 +239,8 @@ export default function TourLayout({
 const styles = StyleSheet.create({
   // Web Styles
   webContainer: { flex: 1, backgroundColor: "#fcf9f8" },
-  webMainContent: { maxWidth: 1280, width: "100%", alignSelf: "center", paddingHorizontal: 24, paddingTop: 100, paddingBottom: 60 },
-  
+  webMainContent: { maxWidth: 1300, width: "100%", alignSelf: "center", paddingHorizontal: 24, paddingTop: 100, paddingBottom: 60 },
+
   webLayout: { flexDirection: "row", gap: 32 },
   webSidebar: { width: 300 },
   webFilterCard: { backgroundColor: "#fff", padding: 24, borderRadius: 24, borderWidth: 1, borderColor: "#f0f0f0", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20 },

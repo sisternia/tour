@@ -1,9 +1,6 @@
-import { Platform } from "react-native";
+import { API_URL as BASE_URL } from "../config";
 
-const API_URL =
-  Platform.OS === "web"
-    ? "http://localhost:3000/api/users"
-    : `${process.env.EXPO_PUBLIC_API_URL}/users`;
+const API_URL = `${BASE_URL}/users`;
 
 export const registerUser = async (userData: any) => {
   try {

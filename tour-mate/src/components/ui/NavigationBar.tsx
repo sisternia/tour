@@ -18,7 +18,18 @@ const { width: windowWidth } = Dimensions.get("window");
 const MOBILE_NAV_ITEMS = [
   { name: "Trang chủ", icon: "home", route: "/home/HomeScreen" },
   { name: "Tour", icon: "airplane", route: "/tour/TourScreen" },
-  { name: "Lịch sử", icon: "time", route: "/(tabs)/history" },
+  { name: "Lịch sử", icon: "time", route: "/history/HistoryBookScreen" },
+  {
+    name: "Thông báo",
+    icon: "notifications",
+    route: "/notification/NotificationsScreen",
+  },
+  { name: "Cá nhân", icon: "person", route: "/profile/ProfileScreen" },
+];
+
+const GUIDE_NAV_ITEMS = [
+  { name: "Trang chủ", icon: "home", route: "/guide/GuideHomeScreen" },
+  { name: "Tour", icon: "airplane", route: "/guide/ManageTourScreen" },
   {
     name: "Thông báo",
     icon: "notifications",
@@ -41,7 +52,7 @@ export default function NavigationBar() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web" && width > 768;
 
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = async () => {
@@ -57,26 +68,33 @@ export default function NavigationBar() {
   const renderMobileNav = () => (
     <View style={[styles.mobileWrapper, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.mobileNavBar}>
-        {MOBILE_NAV_ITEMS.map((item, index) => {
-          const itemSegment = item.route.split("/")[1];
-          const pathSegment = pathname.split("/")[1];
-          const isActive = itemSegment === pathSegment;
-          return (
-            <TouchableOpacity
-              key={index}
-              style={styles.navItem}
-              onPress={() => router.replace(item.route as any)}>
-              <Ionicons
-                name={(isActive ? item.icon : `${item.icon}-outline`) as any}
-                size={24}
-                color={isActive ? "#003d9b" : "#666"}
-              />
-              <Text style={[styles.navText, isActive && styles.navTextActive]}>
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        {(user?.role === 'guide' ? GUIDE_NAV_ITEMS : MOBILE_NAV_ITEMS)
+          .map((item, index) => {
+            let isActive = pathname === item.route;
+            
+            // Đặc biệt cho vai trò Hướng dẫn viên (Guide)
+            if (user?.role === 'guide' && item.name === 'Tour') {
+              if (pathname === '/guide/ManageTourScreen' || pathname === '/guide/ManageCustomerScreen') {
+                isActive = true;
+              }
+            }
+            
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.navItem}
+                onPress={() => router.replace(item.route as any)}>
+                <Ionicons
+                  name={(isActive ? item.icon : `${item.icon}-outline`) as any}
+                  size={24}
+                  color={isActive ? "#003d9b" : "#666"}
+                />
+                <Text style={[styles.navText, isActive && styles.navTextActive]}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
       </View>
     </View>
   );
@@ -91,10 +109,20 @@ export default function NavigationBar() {
               <Text style={styles.brandText}>Tour Mate</Text>
             </TouchableOpacity>
             <View style={styles.webMenu}>
-              {WEB_NAV_ITEMS.map((item, index) => {
-                const itemSegment = item.route.split("/")[1];
-                const pathSegment = pathname.split("/")[1];
-                const isActive = itemSegment === pathSegment;
+              {(user?.role === 'guide' ? GUIDE_NAV_ITEMS : WEB_NAV_ITEMS).map((item, index) => {
+                let isActive = false;
+                if (user?.role === 'guide') {
+                  if (item.name === 'Tour' && (pathname === '/guide/ManageTourScreen' || pathname === '/guide/ManageCustomerScreen')) {
+                    isActive = true;
+                  } else {
+                    isActive = pathname === item.route;
+                  }
+                } else {
+                  const itemSegment = item.route.split("/")[1];
+                  const pathSegment = pathname.split("/")[1];
+                  isActive = itemSegment === pathSegment;
+                }
+                
                 return (
                   <TouchableOpacity
                     key={index}
@@ -117,11 +145,6 @@ export default function NavigationBar() {
           <View style={styles.webRight}>
             {isLoggedIn ? (
               <View style={styles.webActions}>
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => router.push("/(tabs)/history")}>
-                  <Ionicons name="time-outline" size={24} color="#333" />
-                </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtn}
                   onPress={() =>

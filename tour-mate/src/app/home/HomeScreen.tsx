@@ -17,7 +17,9 @@ import * as Location from "expo-location";
 import NavigationBar from "@/components/ui/NavigationBar";
 import HomeLayout from "@/components/home/HomeLayout";
 import Footer from "@/components/ui/Footer";
+import HomeHeader from "@/components/ui/HomeHeader";
 import { HOT_TOURS, DESTINATIONS } from "@/constants/homeData";
+import { router } from "expo-router";
 
 const { width: windowWidth } = Dimensions.get("window");
 
@@ -62,6 +64,27 @@ export default function HomeScreen() {
       }
     })();
   }, []);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 10) return "Chào buổi sáng";
+    if (hour < 14) return "Chào buổi trưa";
+    if (hour < 18) return "Chào buổi chiều";
+    return "Chào buổi tối";
+  };
+
+  const getWeatherInfo = (code: number) => {
+    if (code === 0) return { icon: "sunny", label: "Trời nắng", color: "#FFD700" };
+    if (code <= 3) return { icon: "partly-sunny", label: "Nhiều mây", color: "#FFD700" };
+    if (code >= 45 && code <= 48) return { icon: "cloudy", label: "Có sương mù", color: "#cbd5e1" };
+    if (code >= 51 && code <= 55) return { icon: "rainy", label: "Mưa phùn", color: "#60a5fa" };
+    if (code >= 61 && code <= 67) return { icon: "rainy", label: "Mưa", color: "#3b82f6" };
+    if (code >= 80 && code <= 82) return { icon: "rainy", label: "Mưa rào", color: "#2563eb" };
+    if (code >= 95) return { icon: "thunderstorm", label: "Có bão", color: "#f59e0b" };
+    return { icon: "cloudy", label: "Thời tiết hiện tại", color: "#cbd5e1" };
+  };
+
+  const weatherInfo = weather ? getWeatherInfo(weather.code) : { icon: "sunny", label: "Đang tải...", color: "#FFD700" };
 
   const renderHotTours = () => (
     <View>
@@ -185,86 +208,49 @@ export default function HomeScreen() {
     </View>
   );
 
-
-
   const renderMobileHome = () => (
     <View style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.header}>
-        <Image
-          source={{
-            uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDEOPe24hlP-rPCedHni68ajIr6kSEnlt3I8--QLSfbjSjS46j84RtiiLzdBeI1srNCAPvXagcMYEgMuWKHGr785ff8hbrxzutKAynABBFHgQFKubE7rMnM_C8mXnM4y6D64P9HXLhSFJoE3eyneP0pRB-m7XTQyaLOtN9oLHsE3zGp034otB1mV3LqLfqBA7shza20LtCmZNX4QZvyrvjuUmfwPqZkOijtvccx8OHP2eVsuw_bfxJgVtDCz5yZyHqNTlgTXnTb7M0",
-          }}
-          style={styles.headerImage}
-        />
-        <View style={styles.headerOverlay} />
-
-        <View style={styles.headerContentWrapper}>
-          <View style={styles.headerTop}>
-            <View>
-              <Text style={styles.welcomeText}>Chào mừng trở lại,</Text>
-              <Text style={styles.headerTitle}>Sẵn sàng khám phá?</Text>
-            </View>
-            <TouchableOpacity style={styles.notificationBtn}>
-              <Ionicons name="notifications" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Weather Card */}
-          <View style={styles.weatherCard}>
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <View style={styles.weatherLeft}>
-                  <Ionicons
-                    name={
-                      weather
-                        ? weather.code === 0
-                          ? "sunny"
-                          : weather.code <= 3
-                            ? "partly-sunny"
-                            : "cloudy"
-                        : "sunny"
-                    }
-                    size={40}
-                    color="#FFD700"
-                  />
-                  <View style={styles.weatherTextGroup}>
-                    <Text style={styles.tempText}>
-                      {weather ? `${weather.temp}°C` : "--°C"}
-                    </Text>
-                    <Text style={styles.weatherDesc}>
-                      {weather
-                        ? weather.code === 0
-                          ? "Trời quang"
-                          : weather.code <= 3
-                            ? "Nhiều mây"
-                            : "Thời tiết hiện tại"
-                        : "Đang tải..."}
-                    </Text>
-                  </View>
+      <HomeHeader
+        welcomeText={getGreeting()}
+        title="Sẵn sàng khám phá?"
+      >
+        <View style={styles.weatherCard}>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <>
+              <View style={styles.weatherLeft}>
+                <Ionicons 
+                  name={weatherInfo.icon as any} 
+                  size={40} 
+                  color={weatherInfo.color} 
+                />
+                <View style={styles.weatherTextGroup}>
+                  <Text style={styles.tempText}>
+                    {weather ? `${weather.temp}°C` : "--°C"}
+                  </Text>
+                  <Text style={styles.weatherDesc}>{weatherInfo.label}</Text>
                 </View>
-                <View style={styles.weatherRight}>
-                  <View style={styles.locationContainer}>
-                    <Ionicons name="location-sharp" size={16} color="white" />
-                    <Text style={styles.locationText} numberOfLines={1}>
-                      {address}
-                    </Text>
-                  </View>
-                  <Text style={styles.dateText}>
-                    Hôm nay,{" "}
-                    {new Date().toLocaleDateString("vi-VN", {
-                      day: "numeric",
-                      month: "short",
-                    })}
+              </View>
+              <View style={styles.weatherRight}>
+                <View style={styles.locationContainer}>
+                  <Ionicons name="location-sharp" size={16} color="white" />
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    {address}
                   </Text>
                 </View>
-              </>
-            )}
-          </View>
+                <Text style={styles.dateText}>
+                  Hôm nay,{" "}
+                  {new Date().toLocaleDateString("vi-VN", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
-      </View>
+      </HomeHeader>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
         {/* Categories / Tabs */}
@@ -311,41 +297,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "white" },
-  header: {
-    height: 320,
-    borderBottomLeftRadius: 35,
-    borderBottomRightRadius: 35,
-    overflow: "hidden",
-    position: "relative",
-  },
-  headerImage: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-  },
-  headerOverlay: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 61, 155, 0.6)",
-  },
-  headerContentWrapper: {
-    padding: 24,
-    paddingTop: 60,
-    flex: 1,
-  },
-  headerTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  welcomeText: { color: "rgba(255,255,255,0.8)", fontSize: 15 },
   headerTitle: { color: "white", fontSize: 26, fontWeight: "bold" },
-  notificationBtn: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    padding: 10,
-    borderRadius: 15,
-  },
   weatherCard: {
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 25,

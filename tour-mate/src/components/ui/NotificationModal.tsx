@@ -8,8 +8,11 @@ interface NotificationModalProps {
   title: string;
   message: string;
   onClose: () => void;
-  actionText?: string;
-  onAction?: () => void;
+  onConfirm?: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  autoClose?: boolean;
+  duration?: number;
 }
 
 export default function NotificationModal({
@@ -18,64 +21,93 @@ export default function NotificationModal({
   title,
   message,
   onClose,
-  actionText,
-  onAction
+  onConfirm,
+  confirmText = "Đồng ý",
+  cancelText = "Hủy",
+  autoClose = true,
+  duration = 3000
 }: NotificationModalProps) {
   const scaleValue = useRef(new Animated.Value(0)).current;
+  const opacityValue = useRef(new Animated.Value(0)).current;
+
+  const isConfirm = !!onConfirm;
+  const shouldAutoClose = autoClose && !isConfirm;
 
   useEffect(() => {
     if (visible) {
-      Animated.spring(scaleValue, {
-        toValue: 1,
-        useNativeDriver: true,
-        friction: 8,
-        tension: 40
-      }).start();
+      Animated.parallel([
+        Animated.spring(scaleValue, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 8,
+          tension: 40
+        }),
+        Animated.timing(opacityValue, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true
+        })
+      ]).start();
+
+      if (shouldAutoClose) {
+        const timer = setTimeout(() => {
+          onClose();
+        }, duration);
+        return () => clearTimeout(timer);
+      }
     } else {
       scaleValue.setValue(0);
+      opacityValue.setValue(0);
     }
   }, [visible]);
 
   const getIcon = () => {
     switch (type) {
-      case 'success': return { name: 'checkmark-circle', color: '#28a745' };
-      case 'error': return { name: 'alert-circle', color: '#dc3545' };
-      case 'warning': return { name: 'warning', color: '#ffc107' };
-      default: return { name: 'information-circle', color: '#007bff' };
+      case 'success': return { name: 'checkmark-circle', color: '#10b981', bg: '#ecfdf5' };
+      case 'error': return { name: 'close-circle', color: '#ef4444', bg: '#fef2f2' };
+      case 'warning': return { name: 'warning', color: '#f59e0b', bg: '#fffbeb' };
+      default: return { name: 'information-circle', color: '#3b82f6', bg: '#eff6ff' };
     }
   };
 
-  const icon = getIcon();
+  const config = getIcon();
 
   return (
     <Modal
       transparent
       visible={visible}
-      animationType="fade"
+      animationType="none"
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <Animated.View style={[styles.modalContainer, { transform: [{ scale: scaleValue }] }]}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color="#999" />
-          </TouchableOpacity>
-          
-          <View style={styles.iconContainer}>
-            <Ionicons name={icon.name as any} size={60} color={icon.color} />
+        <Animated.View 
+          style={[
+            styles.modalContainer, 
+            { 
+              opacity: opacityValue,
+              transform: [{ scale: scaleValue }] 
+            }
+          ]}
+        >
+          <View style={[styles.iconWrapper, { backgroundColor: config.bg }]}>
+            <Ionicons name={config.name as any} size={48} color={config.color} />
           </View>
           
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           
-          {actionText && onAction && (
-            <TouchableOpacity style={styles.actionButton} onPress={onAction}>
-              <Text style={styles.actionText}>{actionText}</Text>
-            </TouchableOpacity>
-          )}
-          
-          {!actionText && (
-            <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#f0f0f0' }]} onPress={onClose}>
-              <Text style={[styles.actionText, { color: '#333' }]}>Đóng</Text>
+          {isConfirm ? (
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={[styles.btn, styles.cancelBtn]} onPress={onClose}>
+                <Text style={styles.cancelBtnText}>{cancelText}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.btn, styles.confirmBtn]} onPress={onConfirm}>
+                <Text style={styles.confirmBtnText}>{confirmText}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+              <Text style={styles.closeBtnText}>Đóng</Text>
             </TouchableOpacity>
           )}
         </Animated.View>
@@ -87,60 +119,83 @@ export default function NotificationModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
   },
   modalContainer: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 32,
+    padding: 32,
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 340,
     alignItems: 'center',
-    position: 'relative',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 15,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.2,
+    shadowRadius: 30,
+    elevation: 20,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 15,
-    right: 15,
-    padding: 5,
-    zIndex: 10,
-  },
-  iconContainer: {
-    marginBottom: 15,
+  iconWrapper: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: 15,
-    color: '#666',
+    color: '#64748b',
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: 32,
   },
-  actionButton: {
-    backgroundColor: '#003d9b',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 12,
+  closeBtn: {
     width: '100%',
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: 'center',
   },
-  actionText: {
-    color: 'white',
+  closeBtnText: {
+    color: '#475569',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  btn: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  cancelBtn: {
+    backgroundColor: '#f1f5f9',
+  },
+  confirmBtn: {
+    backgroundColor: '#ef4444',
+  },
+  cancelBtnText: {
+    color: '#475569',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  confirmBtnText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

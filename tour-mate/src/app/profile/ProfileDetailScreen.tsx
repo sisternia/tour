@@ -10,19 +10,36 @@ import {
     Alert,
     Platform,
     ActivityIndicator,
+    useWindowDimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@/context/AuthContext";
 import { getUserProfile, updateUserProfile } from "@/services/auth/userService";
 import FloatingInput from "@/components/ui/FloatingInput";
+import ProfileDetailLayout from "@/components/profile/ProfileDetailLayout";
 
 export default function ProfileDetailScreen() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { width } = useWindowDimensions();
+    const isWeb = Platform.OS === "web" && width > 1024;
+
+    const { user, updateUser } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [notification, setNotification] = useState<{
+        visible: boolean;
+        type: "success" | "error" | "warning" | "info";
+        title: string;
+        message: string;
+    }>({
+        visible: false,
+        type: "success",
+        title: "",
+        message: "",
+    });
 
     const [formData, setFormData] = useState({
         full_name: "",
@@ -134,18 +151,43 @@ export default function ProfileDetailScreen() {
 
             const res = await updateUserProfile(data);
             if (res.success) {
-                Alert.alert("Thành công", "Hồ sơ của bạn đã được cập nhật.");
-                if (router.canGoBack()) {
-                    router.back();
-                } else {
-                    router.push("/profile/ProfileScreen");
-                }
+                // Update global auth context to reflect changes immediately across the app
+                await updateUser({
+                    full_name: formData.full_name,
+                    avatar: previewImages.avatar,
+                    background: previewImages.background,
+                });
+
+                setNotification({
+                    visible: true,
+                    type: "success",
+                    title: "Thành công",
+                    message: "Hồ sơ của bạn đã được cập nhật.",
+                });
+
+                setTimeout(() => {
+                    if (router.canGoBack()) {
+                        router.back();
+                    } else {
+                        router.push("/profile/ProfileScreen");
+                    }
+                }, 2000);
             } else {
-                Alert.alert("Lỗi", res.message || "Cập nhật không thành công.");
+                setNotification({
+                    visible: true,
+                    type: "error",
+                    title: "Lỗi",
+                    message: res.message || "Cập nhật không thành công.",
+                });
             }
         } catch (error) {
             console.error(error);
-            Alert.alert("Lỗi", "Có lỗi xảy ra khi cập nhật hồ sơ.");
+            setNotification({
+                visible: true,
+                type: "error",
+                title: "Lỗi",
+                message: "Có lỗi xảy ra khi cập nhật hồ sơ.",
+            });
         } finally {
             setSaving(false);
         }
@@ -159,24 +201,49 @@ export default function ProfileDetailScreen() {
         );
     }
 
+    if (isWeb) {
+        return (
+            <ProfileDetailLayout
+                formData={formData}
+                setFormData={setFormData}
+                previewImages={previewImages}
+                pickImage={pickImage}
+                handleSave={handleSave}
+                saving={saving}
+                notification={notification}
+                setNotification={setNotification}
+            />
+        );
+    }
+
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container} edges={["top"]}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => {
                         if (router.canGoBack()) {
                             router.back();
                         } else {
                             router.push("/profile/ProfileScreen");
                         }
-                    }} 
+                    }}
                     style={styles.backButton}
                 >
                     <Ionicons name="chevron-back" size={24} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Chỉnh sửa hồ sơ</Text>
-                <View style={{ width: 40 }} />
+                <TouchableOpacity
+                    onPress={handleSave}
+                    disabled={saving}
+                    style={styles.headerSaveButton}
+                >
+                    {saving ? (
+                        <ActivityIndicator size="small" color="#007BFF" />
+                    ) : (
+                        <Text style={styles.headerSaveText}>Lưu</Text>
+                    )}
+                </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -287,28 +354,8 @@ export default function ProfileDetailScreen() {
                         style={{ height: 120 }}
                     />
                 </View>
-
-                <View style={{ height: 120 }} />
             </ScrollView>
-
-            {/* Save Button */}
-            <View style={styles.footer}>
-                <TouchableOpacity
-                    style={[styles.saveButton, saving && { opacity: 0.7 }]}
-                    onPress={handleSave}
-                    disabled={saving}
-                >
-                    {saving ? (
-                        <ActivityIndicator color="white" />
-                    ) : (
-                        <>
-                            <Ionicons name="save-outline" size={20} color="white" />
-                            <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
-            </View>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -318,15 +365,40 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
         paddingHorizontal: 15,
-        paddingTop: Platform.OS === "ios" ? 50 : 20,
-        paddingBottom: 15,
+        paddingBottom: 10,
+        paddingTop: 5,
         backgroundColor: "#fff",
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+        height: 50,
+        position: "relative",
     },
-    backButton: { padding: 5 },
-    headerTitle: { fontSize: 18, fontWeight: "bold" },
-    scrollContent: { paddingBottom: 20 },
+    backButton: {
+        position: "absolute",
+        left: 10,
+        top: 8,
+        padding: 5,
+    },
+    headerTitle: {
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+    headerSaveButton: {
+        position: "absolute",
+        right: 10,
+        top: 5,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+    },
+    headerSaveText: {
+        color: "#007BFF",
+        fontWeight: "bold",
+        fontSize: 15,
+    },
+    scrollContent: { paddingBottom: 10, paddingTop: 0 },
     imageSection: { marginBottom: 30 },
     backgroundPicker: { width: "100%", height: 180, backgroundColor: "#F0F2F5", position: "relative" },
     backgroundImage: { width: "100%", height: "100%", resizeMode: "cover" },
@@ -396,29 +468,4 @@ const styles = StyleSheet.create({
         color: "#333",
     },
     row: { flexDirection: "row" },
-    footer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: 20,
-        backgroundColor: "rgba(255,255,255,0.9)",
-        borderTopWidth: 1,
-        borderTopColor: "#eee",
-    },
-    saveButton: {
-        backgroundColor: "#137fec",
-        height: 55,
-        borderRadius: 12,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: 10,
-        shadowColor: "#137fec",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    saveButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
 });

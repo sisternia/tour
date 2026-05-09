@@ -1,30 +1,54 @@
 const currentPage = window.location.pathname;
 
 const menuItems = [
-    { name: 'Trang chủ', icon: 'home', link: '../home/home.html' },
-    { name: 'Quản lý khách hàng', icon: 'group', link: '../customer/customer.html' },
-    { name: 'Quản lý hướng dẫn viên', icon: 'person_pin', link: '../tour-guide/guide.html' },
-    { name: 'Quản lý Tour du lịch', icon: 'map', link: '../tour/tour_standard.html' },
-    { name: 'Chat', icon: 'chat', link: '../chat/chat.html' },
-    { name: 'Trạng thái đơn hàng', icon: 'receipt_long', link: '#' },
-    { name: 'Cài đặt', icon: 'settings', link: '../settings/settings.html' },
+  { name: "Trang chủ", icon: "home", link: "../home/home.html" },
+  {
+    name: "Quản lý khách hàng",
+    icon: "group",
+    link: "../customer/customer.html",
+  },
+  {
+    name: "Quản lý hướng dẫn viên",
+    icon: "person_pin",
+    link: "../tour-guide/guide.html",
+  },
+  {
+    name: "Quản lý Tour du lịch",
+    icon: "map",
+    link: "../tour/tour_standard.html",
+  },
+  { name: "Chat", icon: "chat", link: "../chat/chat.html" },
+  {
+    name: "Trạng thái đơn hàng",
+    icon: "receipt_long",
+    link: "../book-tour/book_tour.html",
+  },
+  { name: "Cài đặt", icon: "settings", link: "../settings/settings.html" },
 ];
 
-let navHtml = menuItems.map(item => {
-    const isActive = currentPage.includes(item.link.replace('..', '')) || 
-                     (item.name === 'Quản lý khách hàng' && currentPage.includes('/customer/')) ||
-                     (item.name === 'Quản lý hướng dẫn viên' && currentPage.includes('/tour-guide/')) ||
-                     (item.name === 'Quản lý Tour du lịch' && currentPage.includes('/tour/'));
-    const activeClass = "bg-slate-200 text-blue-700 rounded-lg transition-all duration-150 ease-in-out scale-95 shadow-sm";
-    const inactiveClass = "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors group";
-    
+let navHtml = menuItems
+  .map((item) => {
+    const isActive =
+      currentPage.includes(item.link.replace("..", "")) ||
+      (item.name === "Quản lý khách hàng" &&
+        currentPage.includes("/customer/")) ||
+      (item.name === "Quản lý hướng dẫn viên" &&
+        currentPage.includes("/tour-guide/")) ||
+      (item.name === "Quản lý Tour du lịch" && currentPage.includes("/tour/")) ||
+      (item.name === "Trạng thái đơn hàng" && currentPage.includes("/book-tour/"));
+    const activeClass =
+      "bg-slate-200 text-blue-700 rounded-lg transition-all duration-150 ease-in-out scale-95 shadow-sm";
+    const inactiveClass =
+      "text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-colors group";
+
     return `
         <a class="flex items-center gap-3 px-4 py-3 ${isActive ? activeClass : inactiveClass} font-['Manrope'] font-semibold text-sm rounded-lg" href="${item.link}">
-            <span class="material-symbols-outlined ${!isActive ? 'group-hover:scale-110' : ''} transition-transform" data-icon="${item.icon}">${item.icon}</span>
+            <span class="material-symbols-outlined ${!isActive ? "group-hover:scale-110" : ""} transition-transform" data-icon="${item.icon}">${item.icon}</span>
             <span>${item.name}</span>
         </a>
     `;
-}).join('');
+  })
+  .join("");
 
 document.getElementById("sidebar-container").innerHTML = `
     <nav class="h-screen w-72 fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col p-6 gap-2 z-50">

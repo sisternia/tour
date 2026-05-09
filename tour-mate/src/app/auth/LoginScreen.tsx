@@ -57,7 +57,11 @@ export default function LoginScreen() {
         showNotification('success', 'Thành công', 'Đăng nhập thành công!');
         setTimeout(() => {
           setModalVisible(false);
-          router.replace("/(tabs)");
+          if (result.data.role === 'guide') {
+            router.replace("/guide/GuideHomeScreen");
+          } else {
+            router.replace("/(tabs)");
+          }
         }, 1500);
       } else {
         if (result.email) {

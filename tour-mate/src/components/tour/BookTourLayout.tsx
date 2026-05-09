@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import NavigationBar from "@/components/ui/NavigationBar";
 import FloatingInput from "@/components/ui/FloatingInput";
 import NotificationModal from "@/components/ui/NotificationModal";
-import BookingSteps from "@/components/ui/BookingSteps";
 
 interface BookTourLayoutProps {
   tour: any;
@@ -44,8 +43,6 @@ export default function BookTourLayout({
       <NavigationBar />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.webContent}>
-          <BookingSteps isWeb title="ĐẶT TOUR" currentStep={1} />
-
           <View style={styles.grid}>
             {/* Left Column: Form */}
             <View style={styles.leftColumn}>
@@ -318,14 +315,14 @@ export default function BookTourLayout({
                 </View>
 
                 <View style={styles.actionButtons}>
-                  <TouchableOpacity 
-                    style={styles.cancelBtn} 
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
                     onPress={handleCancel}
                   >
                     <Text style={styles.cancelBtnText}>Hủy</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.confirmBtn} 
+                  <TouchableOpacity
+                    style={styles.confirmBtn}
                     onPress={handleConfirm}
                   >
                     <Text style={styles.confirmBtnText}>Thanh toán</Text>
@@ -348,7 +345,7 @@ export default function BookTourLayout({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F7FA" },
-  webContent: { maxWidth: 1200, alignSelf: "center", width: "100%", padding: 40, paddingTop: 112 },
+  webContent: { maxWidth: 1300, alignSelf: "center", width: "100%", padding: 40, paddingTop: 112 },
   pageTitle: { fontSize: 32, fontWeight: "bold", color: "#333", marginBottom: 30 },
   grid: { flexDirection: "row", gap: 40 },
   leftColumn: { flex: 2 },
@@ -413,12 +410,12 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 16, fontWeight: "bold", color: "#333" },
   totalValue: { fontSize: 26, fontWeight: "bold", color: "#FF3B30" },
   actionButtons: { flexDirection: "row", gap: 15 },
-  cancelBtn: { 
-    flex: 1, 
-    paddingVertical: 16, 
-    borderRadius: 12, 
-    alignItems: "center", 
-    borderWidth: 1, 
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1,
     borderColor: "#ff4d4f",
     backgroundColor: "#fff"
   },

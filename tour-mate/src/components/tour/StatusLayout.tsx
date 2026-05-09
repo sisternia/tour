@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import NavigationBar from "@/components/ui/NavigationBar";
-import BookingSteps from "@/components/ui/BookingSteps";
 
 export default function StatusLayout({
   data,
@@ -41,8 +40,6 @@ export default function StatusLayout({
       <NavigationBar />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.webContent}>
-          <BookingSteps isWeb title="HOÀN TẤT" currentStep={3} />
-
           <View style={styles.mainCenterBox}>
             {/* Animated Success Icon */}
             <View
@@ -113,7 +110,7 @@ export default function StatusLayout({
                     <View style={styles.iconTextRow}>
                       <Ionicons name="people-outline" size={18} color="#005bb2" />
                       <Text style={styles.gridValue}>
-                        {adultCount} Lớn, {childCount} Trẻ em
+                        {adultCount} Người lớn, {childCount} Trẻ em
                       </Text>
                     </View>
                   </View>

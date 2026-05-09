@@ -17,7 +17,6 @@ import { getTourById } from "@/services/tour/tourService";
 import { createVnPayPaymentUrl, createOfflineBooking, getPaymentStatus } from "@/services/payment/vnpayService";
 import * as Linking from 'expo-linking';
 import { useAuth } from "@/context/AuthContext";
-import BookingSteps from "@/components/ui/BookingSteps";
 import PaymentLayout from "@/components/tour/PaymentLayout";
 
 export default function PaymentScreen() {
@@ -216,9 +215,7 @@ export default function PaymentScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Steps Progress */}
-        <BookingSteps currentStep={2} />
-
+        <View style={{ height: 10 }} />
         {/* Booking Summary Card */}
         <View style={styles.card}>
           <View style={styles.summaryHeader}>

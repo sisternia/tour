@@ -18,10 +18,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import Footer from "@/components/ui/Footer";
 import Map from "@/components/ui/Map";
 import TourDetailLayout from "@/components/tour/TourDetailLayout";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTourById } from "@/services/tour/tourService";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -130,7 +129,7 @@ export default function TourDetailScreen() {
       animationType="fade"
       onRequestClose={() => setIsGalleryVisible(false)}
     >
-      <View style={styles.modalContainer}>
+      <SafeAreaView style={styles.modalContainer} edges={["top"]}>
         <TouchableOpacity
           style={styles.closeModalBtn}
           onPress={() => setIsGalleryVisible(false)}
@@ -215,13 +214,13 @@ export default function TourDetailScreen() {
             {activeImageIndex + 1} / {galleryImages.length}
           </span>
         </div>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 
   if (loading) {
     return (
-      <View
+      <SafeAreaView
         style={[
           styles.container,
           { justifyContent: "center", alignItems: "center" },
@@ -231,13 +230,13 @@ export default function TourDetailScreen() {
         <Text style={{ marginTop: 10, color: "#666" }}>
           Đang tải chi tiết tour...
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (error || !tour) {
     return (
-      <View
+      <SafeAreaView
         style={[
           styles.container,
           { justifyContent: "center", alignItems: "center", padding: 20 },
@@ -252,7 +251,7 @@ export default function TourDetailScreen() {
             textAlign: "center",
           }}
         >
-          {error || "Không tìm thấy thông tin tour"}
+          {error || "Không thể tìm thấy tour"}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -265,7 +264,7 @@ export default function TourDetailScreen() {
         >
           <Text style={{ color: "white" }}>Quay lại</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -310,7 +309,7 @@ export default function TourDetailScreen() {
               )
             }
           >
-            <View style={styles.headerControls}>
+            <SafeAreaView style={styles.headerControls} edges={["top"]}>
               <TouchableOpacity
                 onPress={() => router.back()}
                 style={styles.iconBtn}
@@ -325,7 +324,7 @@ export default function TourDetailScreen() {
                   <Ionicons name="heart-outline" size={24} color="black" />
                 </TouchableOpacity>
               </View>
-            </View>
+            </SafeAreaView>
 
             <View style={styles.titleOverlay}>
               <View style={styles.bestsellerBadge}>
@@ -670,7 +669,6 @@ export default function TourDetailScreen() {
               </Text>
             </View>
           )}
-          <Footer />
           <View style={{ height: 120 }} />
         </View>
       </ScrollView>
@@ -719,7 +717,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 50 : 10,
   },
   iconBtn: {
     backgroundColor: "white",
@@ -730,7 +727,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 4,
   },
-  titleOverlay: { padding: 20, paddingTop: 150 },
+  titleOverlay: { padding: 20, paddingTop: 100 },
   bestsellerBadge: {
     backgroundColor: "rgba(245, 245, 245, 0.9)",
     paddingHorizontal: 10,
@@ -891,12 +888,12 @@ const styles = StyleSheet.create({
   },
   closeModalBtn: {
     position: "absolute",
-    top: 50,
+    top: 10,
     right: 20,
     zIndex: 10,
     backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 10,
-    borderRadius: 25,
+    borderRadius: 20,
+    padding: 5,
   },
   navArrow: {
     position: "absolute",

@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import NavigationBar from "@/components/ui/NavigationBar";
 import Footer from "@/components/ui/Footer";
 import { useRouter } from "expo-router";
@@ -72,7 +73,7 @@ export default function TourScreen() {
   };
 
   const renderMobileTourScreen = () => (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
@@ -241,7 +242,7 @@ export default function TourScreen() {
       </Modal>
 
       <NavigationBar />
-    </View>
+    </SafeAreaView>
   );
 
   if (loading) {
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 20,
   },
   headerTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },

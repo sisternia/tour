@@ -245,8 +245,10 @@ exports.login = async (req, res) => {
       success: true,
       message: "Đăng nhập thành công",
       data: {
+        _id: user._id,
         user_id: user.user_id,
         user_name: user.user_name,
+        role: user.role,
       },
     });
   } catch (error) {

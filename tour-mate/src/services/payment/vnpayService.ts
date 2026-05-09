@@ -1,8 +1,6 @@
-import { Platform } from "react-native";
+import { API_URL as BASE_URL } from "../config";
 
-const API_URL = Platform.OS === "web"
-  ? "http://localhost:3000/api/vnpay"
-  : `${process.env.EXPO_PUBLIC_API_URL}/vnpay`;
+const API_URL = `${BASE_URL}/vnpay`;
 
 export const createVnPayPaymentUrl = async (amount: number, orderDescription: string, bookingData: any, userId: string, bookingId?: string) => {
   try {
