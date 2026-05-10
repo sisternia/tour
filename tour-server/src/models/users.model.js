@@ -22,15 +22,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['customer', 'guide', 'admin'],
       default: 'customer'
-    },
-    email: {
-      type: String,
-      unique: true,
-      trim: true
-    },
-    phone_number: {
-      type: String,
-      trim: true
     }
   },
   {

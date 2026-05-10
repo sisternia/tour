@@ -11,6 +11,7 @@ const vnpayRoutes = require("./src/routes/vnpay.route");
 const bookingRoutes = require("./src/routes/bookings.route");
 const messageRoutes = require("./src/routes/messages.route");
 const dashboardRoutes = require("./src/routes/dashboard.route");
+const notificationRoutes = require("./src/routes/notifications.route");
 
 const app = express();
 connectDB().then(() => {
@@ -29,6 +30,7 @@ app.use("/api/vnpay", vnpayRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use(express.static(path.join(__dirname, "admin")));
 
 app.get("/", (req, res) => {

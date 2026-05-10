@@ -7,11 +7,13 @@ import {
   Platform,
   useWindowDimensions,
   Dimensions,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, usePathname } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import NotificationsLayout from "../notification/NotificationsLayout";
 
 const { width: windowWidth } = Dimensions.get("window");
 
@@ -145,24 +147,35 @@ export default function NavigationBar() {
           <View style={styles.webRight}>
             {isLoggedIn ? (
               <View style={styles.webActions}>
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() =>
-                    router.push("/notification/NotificationsScreen")
-                  }>
-                  <Ionicons
-                    name="notifications-outline"
-                    size={24}
-                    color="#333"
-                  />
-                </TouchableOpacity>
+                {width > 1024 ? (
+                  <NotificationsLayout />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() =>
+                      router.push("/notification/NotificationsScreen")
+                    }>
+                    <Ionicons
+                      name="notifications-outline"
+                      size={24}
+                      color="#333"
+                    />
+                  </TouchableOpacity>
+                )}
 
                 <View style={styles.profileContainer}>
                   <TouchableOpacity
                     style={styles.profileBtn}
                     onPress={() => setShowDropdown(!showDropdown)}>
                     <View style={styles.avatarCircle}>
-                      <Ionicons name="person" size={20} color="#fff" />
+                      {user?.avatar ? (
+                        <Image 
+                          source={{ uri: user.avatar }} 
+                          style={styles.avatarImage} 
+                        />
+                      ) : (
+                        <Ionicons name="person" size={20} color="#fff" />
+                      )}
                     </View>
                   </TouchableOpacity>
 
@@ -331,6 +344,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#fff",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   dropdown: {
     position: "absolute",

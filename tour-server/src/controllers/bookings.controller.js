@@ -1,9 +1,11 @@
 const BookingInfo = require("../models/booking_infos.model");
+const User = require("../models/users.model");
 const Tour = require("../models/tours.model");
 const TourTime = require("../models/tour_times.model");
 const UserInfo = require("../models/user_infors.model");
 const TourGuide = require("../models/tour_guides.model");
 const { sendBookingEmail } = require("../services/email");
+const { createNotification } = require("./notifications.controller");
 
 const notifyBookingStatusChange = async (bookingId) => {
     try {
@@ -40,8 +42,49 @@ const notifyBookingStatusChange = async (bookingId) => {
 
         await sendBookingEmail(booking.contact_info.email, emailData);
         console.log(`Email notification sent for booking ${bookingId}`);
+
+        // Also create an in-app notification if user_id exists
+        if (booking.user_id) {
+            const userRecord = await User.findOne({ user_id: booking.user_id });
+            if (!userRecord) {
+                console.log(`User record not found for user_id: ${booking.user_id}`);
+                return;
+            }
+
+            let title = "Cập nhật đơn hàng";
+            let message = `Đơn hàng ${bookingId} của bạn đã thay đổi trạng thái thành ${booking.status}.`;
+            let type = "system";
+
+            switch (booking.status) {
+                case "pending":
+                    title = "Đang chờ thanh toán";
+                    message = `Đơn hàng ${bookingId} cho tour ${tour ? tour.tour_name : ''} đã được khởi tạo thành công.`;
+                    type = "booking_created";
+                    break;
+                case "paid":
+                    title = "Thanh toán thành công";
+                    message = `Chúng tôi đã nhận được thanh toán cho đơn hàng ${bookingId}. Cảm ơn bạn!`;
+                    type = "booking_paid";
+                    break;
+                case "confirmed":
+                    title = "Đơn hàng đã xác nhận";
+                    message = `Đơn hàng ${bookingId} đã được xác nhận. Chúc bạn có một chuyến đi vui vẻ!`;
+                    type = "booking_confirmed";
+                    break;
+                case "cancelled":
+                    title = "Đơn hàng đã hủy";
+                    message = `Đơn hàng ${bookingId} đã được hủy thành công.`;
+                    type = "booking_cancelled";
+                    break;
+            }
+
+            await createNotification(userRecord._id, title, message, type, bookingId);
+            console.log(`Notification created for user ${userRecord._id}`);
+        } else {
+            console.log(`No user_id found for booking ${bookingId}, skipping notification.`);
+        }
     } catch (error) {
-        console.error(`Error sending booking notification for ${bookingId}:`, error);
+        console.error(`Error in notifyBookingStatusChange for ${bookingId}:`, error);
     }
 };
 
@@ -141,6 +184,9 @@ exports.cancelBooking = async (req, res) => {
 
         booking.status = 'cancelled';
         await booking.save();
+
+        // Trigger notification
+        notifyBookingStatusChange(bookingId);
 
         res.status(200).json({
             success: true,
@@ -333,20 +379,86 @@ exports.updateBookingStatus = async (req, res) => {
         const { bookingId } = req.params;
         const { status } = req.body;
 
-        const booking = await BookingInfo.findOneAndUpdate(
+        const updatedBooking = await BookingInfo.findOneAndUpdate(
             { booking_info_id: bookingId },
             { status: status },
             { new: true }
         );
 
-        if (!booking) {
+        if (!updatedBooking) {
             return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
         }
+
+        // Fetch enriched data similar to getBookingById
+        const bookings = await BookingInfo.aggregate([
+            { $match: { booking_info_id: bookingId } },
+            {
+                $lookup: {
+                    from: 'tours',
+                    localField: 'tour_id',
+                    foreignField: 'tour_id',
+                    as: 'tour_details'
+                }
+            },
+            { $unwind: { path: '$tour_details', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'tour_times',
+                    localField: 'tour_id',
+                    foreignField: 'tour_id',
+                    as: 'time_details'
+                }
+            },
+            { $unwind: { path: '$time_details', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'tour_prices',
+                    localField: 'tour_id',
+                    foreignField: 'tour_id',
+                    as: 'price_details'
+                }
+            },
+            { $unwind: { path: '$price_details', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'tour_guides',
+                    localField: 'tour_id',
+                    foreignField: 'tour_id',
+                    as: 'guide_assignments'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'user_infos',
+                    localField: 'guide_assignments.user_id',
+                    foreignField: 'user_id',
+                    as: 'guide_infos'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'tour_imgs',
+                    localField: 'tour_id',
+                    foreignField: 'tour_id',
+                    as: 'tour_images'
+                }
+            }
+        ]);
+
+        const bookingData = bookings[0];
+        const tourId = bookingData.tour_id;
+
+        // Calculate current booked seats
+        const allBookings = await BookingInfo.find({ tour_id: tourId, status: { $ne: 'cancelled' } });
+        const currentBooked = allBookings.reduce((sum, b) => sum + (b.adult_count || 0) + (b.child_count || 0), 0);
+        const capacity = bookingData.price_details ? bookingData.price_details.tour_capacity : 0;
+        
+        bookingData.available_slots = Math.max(0, capacity - currentBooked);
 
         res.status(200).json({
             success: true,
             message: "Cập nhật trạng thái thành công",
-            data: booking
+            data: bookingData
         });
 
         // Trigger email notification

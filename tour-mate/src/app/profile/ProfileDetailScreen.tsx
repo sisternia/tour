@@ -151,12 +151,8 @@ export default function ProfileDetailScreen() {
 
             const res = await updateUserProfile(data);
             if (res.success) {
-                // Update global auth context to reflect changes immediately across the app
-                await updateUser({
-                    full_name: formData.full_name,
-                    avatar: previewImages.avatar,
-                    background: previewImages.background,
-                });
+                // Update global auth context with the actual data returned from server (includes persistent Cloudinary URLs)
+                await updateUser(res.data);
 
                 setNotification({
                     visible: true,

@@ -495,6 +495,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (images.length > 0) document.getElementById('tour-image').src = images[0].tour_img_url;
         document.getElementById('tour-id-badge').textContent = tour.tour_id || '---';
         document.getElementById('tour-name').textContent = tour.tour_name || '---';
+        if (document.getElementById('tour-location')) document.getElementById('tour-location').textContent = tour.tour_add || '---';
 
         const viewTourBtn = document.getElementById('view-tour-btn');
         if (viewTourBtn && tour.tour_id) {
@@ -510,10 +511,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const slots = booking.available_slots || 0;
             availableSlotsElem.textContent = `${slots} chỗ`;
             if (slots <= 5) {
-                availableSlotsElem.parentElement.parentElement.className = 'flex gap-4 p-4 bg-red-50 rounded-xl items-center border border-red-100';
+                availableSlotsElem.parentElement.parentElement.className = 'flex gap-4 p-4 bg-red-50 rounded-lg items-center border border-red-100';
                 availableSlotsElem.className = 'text-sm font-black text-red-600';
             } else {
-                availableSlotsElem.parentElement.parentElement.className = 'flex gap-4 p-4 bg-emerald-50 rounded-xl items-center border border-emerald-100';
+                availableSlotsElem.parentElement.parentElement.className = 'flex gap-4 p-4 bg-emerald-50 rounded-lg items-center border border-emerald-100';
                 availableSlotsElem.className = 'text-sm font-black text-emerald-700';
             }
         }
@@ -528,15 +529,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     const div = document.createElement('div');
                     div.className = 'flex items-center gap-4 p-3 bg-surface-container-low rounded-xl';
                     div.innerHTML = `
-                        <div class="w-10 h-10 rounded-full overflow-hidden border border-primary/10">
+                        <div class="w-12 h-12 rounded-full overflow-hidden border border-primary/10">
                             <img src="${guide.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(guide.full_name) + '&background=random'}" class="w-full h-full object-cover">
                         </div>
                         <div class="flex-grow">
-                            <p class="font-bold text-xs text-on-surface">${guide.full_name}</p>
-                            <p class="text-[9px] text-on-surface-variant uppercase font-bold tracking-tighter">Hướng dẫn viên</p>
+                            <p class="font-bold text-sm text-on-surface">${guide.full_name}</p>
+                            <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Hướng dẫn viên</p>
                         </div>
-                        <button onclick="window.location.href='../tour-guide/guide_detail.html?id=${guide.user_id}'" class="w-7 h-7 flex items-center justify-center bg-blue-600/10 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Xem chi tiết">
-                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                        <button onclick="window.location.href='../tour-guide/guide_detail.html?id=${guide.user_id}'" class="w-8 h-8 flex items-center justify-center bg-blue-600/10 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Xem chi tiết">
+                            <span class="material-symbols-outlined text-[18px]">visibility</span>
                         </button>
                     `;
                     guidesContainer.appendChild(div);

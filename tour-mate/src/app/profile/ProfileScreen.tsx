@@ -23,7 +23,7 @@ export default function ProfileScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web" && width > 1024;
 
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
@@ -35,12 +35,14 @@ export default function ProfileScreen() {
         const res = await getUserProfile(user.user_name);
         if (res.success) {
           setProfile(res.data);
+          // Sync profile data to AuthContext so other components (like NavigationBar) can use it
+          updateUser(res.data);
         }
       }
       setLoading(false);
     };
     loadProfile();
-  }, [user]);
+  }, [user?.user_name]);
 
   const handleLogout = async () => {
     setShowLogoutModal(false);

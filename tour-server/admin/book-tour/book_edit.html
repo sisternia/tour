@@ -116,46 +116,43 @@
             <!-- Right Column: Tour Summary & Financial -->
             <div class="col-span-12 lg:col-span-4 space-y-6">
                 <!-- Tour Information Card -->
-                <div class="bg-surface-container-lowest overflow-hidden rounded-2xl shadow-sm border border-outline-variant/10">
-                    <div class="h-56 w-full relative">
-                        <img id="tour-image" alt="Tour Cover" class="w-full h-full object-cover" src="https://via.placeholder.com/800x600?text=Tour+Cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute bottom-4 left-6">
-                            <span id="tour-id-badge" class="px-3 py-1 bg-white/20 backdrop-blur text-white text-[10px] font-bold uppercase tracking-widest rounded-lg border border-white/30">---</span>
-                            <h3 id="tour-name" class="text-xl font-bold text-white mt-2 leading-tight">---</h3>
+                <div class="bg-surface-container-lowest overflow-hidden rounded-xl shadow-sm flex flex-col border border-outline-variant/10">
+                    <div class="h-48 w-full relative">
+                        <img id="tour-image" alt="Tour Cover" class="w-full h-full object-cover" src="https://via.placeholder.com/800x400?text=Tour+Cover">
+                        <div class="absolute top-4 left-4">
+                            <span id="tour-id-badge" class="px-3 py-1 bg-white/90 backdrop-blur text-primary text-[10px] font-bold uppercase tracking-widest rounded-full">---</span>
                         </div>
-                        <div class="absolute bottom-4 right-6">
-                            <button id="view-tour-btn" class="w-9 h-9 bg-white/20 backdrop-blur text-white rounded-xl flex items-center justify-center border border-white/30 hover:bg-white hover:text-primary transition-all shadow-lg" title="Xem chi tiết Tour">
-                                <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        <div class="absolute top-4 right-4">
+                            <button id="view-tour-btn" class="w-8 h-8 bg-white/90 backdrop-blur text-primary rounded-full flex items-center justify-center shadow-sm hover:bg-primary hover:text-white transition-all" title="Xem chi tiết Tour">
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                         </div>
                     </div>
                     <div class="p-6">
+                        <h3 id="tour-name" class="text-xl font-bold leading-tight mb-2">---</h3>
+                        <div class="flex items-center gap-2 text-on-surface-variant text-sm mb-6">
+                            <span class="material-symbols-outlined text-sm">location_on</span>
+                            <span id="tour-location">---</span>
+                        </div>
                         <div class="space-y-4">
-                            <div class="flex gap-4 p-4 bg-primary/10 rounded-xl items-center">
-                                <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
-                                    <span class="material-symbols-outlined text-[20px]">calendar_today</span>
-                                </div>
+                            <div class="flex gap-4 p-4 bg-surface-container-low rounded-lg items-center">
+                                <span class="material-symbols-outlined text-primary">calendar_today</span>
                                 <div>
-                                    <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Ngày khởi hành</p>
+                                    <p class="text-xs text-on-surface-variant uppercase font-bold tracking-tighter">Ngày khởi hành</p>
                                     <p id="tour-start-date" class="text-sm font-bold">---</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4 p-4 bg-emerald-50 rounded-xl items-center">
-                                <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
-                                    <span class="material-symbols-outlined text-[20px]">event_repeat</span>
-                                </div>
+                            <div class="flex gap-4 p-4 bg-surface-container-low rounded-lg items-center">
+                                <span class="material-symbols-outlined text-primary">event_repeat</span>
                                 <div>
-                                    <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Thời lượng</p>
+                                    <p class="text-xs text-on-surface-variant uppercase font-bold tracking-tighter">Thời lượng</p>
                                     <p id="tour-duration" class="text-sm font-bold">---</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4 p-4 bg-emerald-50 rounded-xl items-center border border-emerald-100">
-                                <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
-                                    <span class="material-symbols-outlined text-[20px]">group_add</span>
-                                </div>
+                            <div class="flex gap-4 p-4 bg-emerald-50 rounded-lg items-center border border-emerald-100">
+                                <span class="material-symbols-outlined text-emerald-600">group_add</span>
                                 <div>
-                                    <p class="text-[10px] text-emerald-700 uppercase font-bold tracking-widest">Chỗ trống hiện tại</p>
+                                    <p class="text-xs text-emerald-700 uppercase font-bold tracking-tighter">Chỗ trống hiện tại</p>
                                     <p id="available-slots" class="text-sm font-black text-emerald-700">---</p>
                                 </div>
                             </div>
