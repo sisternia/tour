@@ -326,11 +326,8 @@
                     <div class="flex-1 min-w-[200px]">
                         <label class="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Ngôn ngữ thông thạo</label>
                         <div class="relative">
-                            <select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 appearance-none font-medium">
-                                <option>Đa ngôn ngữ (Anh, Pháp, Đức)</option>
-                                <option>Tiếng Anh</option>
-                                <option>Tiếng Việt & Tiếng Anh</option>
-                                <option>Tiếng Nhật & Tiếng Hàn</option>
+                            <select id="filter-languages" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 appearance-none font-medium">
+                                <option value="">Tất cả ngôn ngữ</option>
                             </select>
                             <span class="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none">expand_more</span>
                         </div>
@@ -338,11 +335,8 @@
                     <div class="flex-1 min-w-[200px]">
                         <label class="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Lĩnh vực chuyên môn</label>
                         <div class="relative">
-                            <select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 appearance-none font-medium">
-                                <option>Ẩm thực & Rượu vang</option>
-                                <option>Kiến trúc Lịch sử</option>
-                                <option>Thể thao Mạo hiểm</option>
-                                <option>Nghệ thuật & Bảo tàng</option>
+                            <select id="filter-fields" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 appearance-none font-medium">
+                                <option value="">Tất cả lĩnh vực</option>
                             </select>
                             <span class="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant pointer-events-none">expand_more</span>
                         </div>
@@ -640,6 +634,53 @@
     <script src="../container/js/sidebar.js"></script>
     <script src="../container/js/topbar.js"></script>
     <script src="../container/js/tour_standard.js"></script>
+    <script src="../container/js/groq_assistant.js"></script>
+
+    <!-- Groq AI Assistant UI -->
+    <div id="ai-assistant-container" class="fixed bottom-8 right-8 z-[1000]">
+        <!-- Toggle Button -->
+        <button id="ai-toggle-btn" class="w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all group overflow-hidden relative">
+            <span class="material-symbols-outlined text-3xl group-hover:hidden">psychology</span>
+            <span class="hidden group-hover:block text-xs font-bold px-2">AI Assistant</span>
+            <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </button>
+
+        <!-- Assistant Panel -->
+        <div id="ai-panel" class="absolute bottom-20 right-0 w-[400px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col hidden overflow-hidden transition-all transform scale-95 origin-bottom-right">
+            <!-- Header -->
+            <div class="p-4 bg-primary text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <h4 class="font-bold">Groq AI Assistant</h4>
+                </div>
+                <button id="ai-close-btn" class="hover:bg-white/20 rounded-full p-1 transition-all">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Chat Content -->
+            <div id="ai-chat-content" class="flex-1 p-4 overflow-y-auto max-h-[400px] min-h-[300px] space-y-4 bg-slate-50 custom-scrollbar">
+                <div class="ai-message bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm text-sm text-slate-700">
+                    Chào bạn! Tôi là trợ lý AI từ Groq. Tôi có thể giúp bạn tạo nội dung Tour, viết mô tả hoặc lên lịch trình. Bạn cần giúp gì nào?
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t border-slate-100 bg-white">
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <button onclick="aiAssistant.quickAction('intl')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-primary/10 hover:text-primary rounded-full transition-all font-bold text-slate-500 border border-slate-200">Tour Quốc tế</button>
+                    <button onclick="aiAssistant.quickAction('domestic')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-primary/10 hover:text-primary rounded-full transition-all font-bold text-slate-500 border border-slate-200">Tour Nội địa</button>
+                    <button onclick="aiAssistant.quickAction('full')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-primary/10 hover:text-primary rounded-full transition-all font-bold text-slate-500 border border-slate-200">Tạo Tour Tự động</button>
+                </div>
+                <div class="relative">
+                    <textarea id="ai-prompt" rows="2" placeholder="Nhập yêu cầu của bạn..." class="w-full p-3 pr-12 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-sm resize-none"></textarea>
+                    <button id="ai-send-btn" class="absolute right-2 bottom-2 w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary-container transition-all">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Image Modal Overlay -->
     <div id="image-modal" class="fixed inset-0 z-[9999] hidden bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-8" onclick="closeImageModal()">

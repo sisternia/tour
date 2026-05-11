@@ -3,14 +3,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageInput = document.getElementById('tour-images-input');
     const previewGrid = document.getElementById('image-preview-grid');
     const coverIndexInput = document.getElementById('cover-image-index');
-    let selectedFiles = [];
+    window.selectedFiles = [];
+
 
     // --- Schedule Images State ---
     const scheImageInput = document.getElementById('sche-images-input');
     const schePreviewGrid = document.getElementById('sche-image-preview-grid');
     const scheCoverIndexInput = document.getElementById('sche-cover-image-index');
     let scheSelectedFiles = [];
-    let allSchedules = []; // To store all activities for submission
+    window.allSchedules = []; // To store all activities for submission
+
     let allGuides = []; // To store fetched guides
     let isFullGuidesLoaded = false; // Flag to track if full list has been fetched
     let selectedGuideIds = []; // To store selected guide IDs
@@ -23,15 +25,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (files.length === 0) return;
 
             // Add new files to our collection
-            selectedFiles = [...selectedFiles, ...files];
-            renderImagePreviews();
+            window.selectedFiles = [...window.selectedFiles, ...files];
+            window.renderImagePreviews();
+
         });
     }
 
-    function renderImagePreviews() {
+    window.renderImagePreviews = function() {
+
         previewGrid.innerHTML = '';
         
-        selectedFiles.forEach((file, index) => {
+        window.selectedFiles.forEach((file, index) => {
+
             const isCover = parseInt(coverIndexInput.value) === index;
             const renderDiv = (src) => {
                 const div = document.createElement('div');
@@ -62,7 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        if (selectedFiles.length === 0) {
+        if (window.selectedFiles.length === 0) {
+
             previewGrid.innerHTML = `
                 <div class="aspect-square bg-surface-container rounded-lg flex items-center justify-center border border-outline-variant/10">
                     <span class="material-symbols-outlined text-outline-variant">image</span>
@@ -80,13 +86,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.removeImage = function(index) {
-        selectedFiles.splice(index, 1);
+        window.selectedFiles.splice(index, 1);
         if (parseInt(coverIndexInput.value) === index) {
             coverIndexInput.value = 0;
         } else if (parseInt(coverIndexInput.value) > index) {
             coverIndexInput.value = parseInt(coverIndexInput.value) - 1;
         }
-        renderImagePreviews();
+        window.renderImagePreviews();
+
     };
 
     // --- Schedule Image Logic ---
@@ -158,7 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
             price_child: document.getElementById('price-child').value,
             tour_capacity: document.getElementById('tour-capacity').value,
             cover_index: coverIndexInput.value,
-            images: selectedFiles
+            images: window.selectedFiles
+
         };
     };
 
@@ -304,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function setLocation(lat, lng, zoom = 16) {
+    window.setLocation = function(lat, lng, zoom = 16) {
         if (!map || typeof L === 'undefined') return;
         const coords = [lat, lng];
         map.setView(coords, zoom);
@@ -330,7 +338,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    async function searchLocation() {
+    window.searchLocation = async function() {
+
         const query = searchInput.value;
         if (!query) return;
 
@@ -403,7 +412,8 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateEndDate();
     }
 
-    function calculateEndDate() {
+    window.calculateEndDate = function() {
+
         const days = parseInt(durationInput.value) || 0;
         if (!startDateInput.value || days <= 0) return;
         const startDate = new Date(startDateInput.value);
@@ -414,7 +424,8 @@ document.addEventListener('DOMContentLoaded', function() {
         durationInfo.textContent = days === 1 ? '1 ngày (Trong ngày)' : `${days} ngày ${nights} đêm`;
     }
 
-    function generateTimeline() {
+    window.generateTimeline = function() {
+
         const days = parseInt(durationInput.value) || 0;
         if (days <= 0) return;
         
@@ -483,7 +494,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function renderActivityItemHTML(sche, imgUrls = [], readOnly = false) {
+    window.renderActivityItemHTML = function(sche, imgUrls = [], readOnly = false) {
+
         const timeDisplay = `${sche.time_sche_start || '--:--'} ${sche.time_sche_end ? '- ' + sche.time_sche_end : ''}`;
         return `
             <div class="relative bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group mb-4 last:mb-0" data-id="${sche.tempId}">
@@ -568,8 +580,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const contents = ['step-1-content', 'step-2-content', 'step-3-content', 'step-4-content'];
         
         if (step === 2) {
-            calculateEndDate();
-            generateTimeline();
+            window.calculateEndDate();
+            window.generateTimeline();
         }
 
         if (step === 3) {
@@ -939,8 +951,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Guides Assignment Logic ---
     const guidesListContainer = document.getElementById('guides-list-container');
+    const filterLanguages = document.getElementById('filter-languages');
+    const filterFields = document.getElementById('filter-fields');
+
+    async function fetchFilters() {
+        try {
+            const [langRes, fieldRes] = await Promise.all([
+                fetch('/api/guides/get-languages'),
+                fetch('/api/guides/get-fields')
+            ]);
+            const [langData, fieldData] = await Promise.all([langRes.json(), fieldRes.json()]);
+
+            if (langData.success && filterLanguages) {
+                langData.data.forEach(lang => {
+                    const opt = document.createElement('option');
+                    opt.value = lang.guide_lan_name;
+                    opt.textContent = lang.guide_lan_name;
+                    filterLanguages.appendChild(opt);
+                });
+            }
+
+            if (fieldData.success && filterFields) {
+                fieldData.data.forEach(field => {
+                    const opt = document.createElement('option');
+                    opt.value = field.guide_fie_name;
+                    opt.textContent = field.guide_fie_name;
+                    filterFields.appendChild(opt);
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching filters:', error);
+        }
+    }
+
+    if (filterLanguages) filterLanguages.onchange = () => renderGuides();
+    if (filterFields) filterFields.onchange = () => renderGuides();
 
     async function fetchGuides() {
+        if (!isFullGuidesLoaded) {
+            await fetchFilters();
+        }
         if (isFullGuidesLoaded) {
             renderGuides();
             return;
@@ -961,12 +1011,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderGuides() {
         guidesListContainer.innerHTML = '';
-        if (allGuides.length === 0) {
-            guidesListContainer.innerHTML = `<p class="col-span-full text-center text-on-surface-variant italic">Không có hướng dẫn viên nào khả dụng.</p>`;
+        
+        const selectedLang = filterLanguages ? filterLanguages.value : '';
+        const selectedField = filterFields ? filterFields.value : '';
+
+        const filteredGuides = allGuides.filter(guide => {
+            const matchLang = !selectedLang || (guide.languages && guide.languages.includes(selectedLang));
+            const matchField = !selectedField || (guide.fields && guide.fields.includes(selectedField));
+            return matchLang && matchField;
+        });
+
+        if (filteredGuides.length === 0) {
+            guidesListContainer.innerHTML = `<p class="col-span-full text-center text-on-surface-variant italic py-10">Không có hướng dẫn viên nào khớp với bộ lọc.</p>`;
             return;
         }
 
-        allGuides.forEach(guide => {
+        filteredGuides.forEach(guide => {
             const isSelected = selectedGuideIds.includes(guide.user_id);
             const card = document.createElement('div');
             card.className = `group relative bg-surface-container-lowest p-6 rounded-xl transition-all cursor-pointer border-2 ${isSelected ? 'border-primary shadow-xl shadow-primary/10' : 'border-outline-variant/10 hover:border-primary/30'}`;
@@ -1456,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button onclick="window.location.href='tour_detail.html?id=${tour.tour_id}'" class="w-9 h-9 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm" title="Xem">
                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                         </button>
-                        <button onclick="window.location.href='tour_standard_add.html?id=${tour.tour_id}'" class="w-9 h-9 flex items-center justify-center bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm" title="Sửa">
+                        <button onclick="window.location.href='tour_standard_detail.html?id=${tour.tour_id}'" class="w-9 h-9 flex items-center justify-center bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm" title="Sửa">
                             <span class="material-symbols-outlined text-[20px]">edit_square</span>
                         </button>
                         <button onclick="deleteTour('${tour.tour_id}')" title="Xóa" class="w-9 h-9 flex items-center justify-center bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all shadow-sm">
@@ -1489,7 +1549,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    function showNotification(message, type = 'success') {
+    window.showNotification = function(message, type = 'success') {
         let container = document.getElementById('notification-container');
         if (!container) {
             container = document.createElement('div');

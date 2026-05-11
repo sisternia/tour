@@ -11,14 +11,91 @@ const { uploadImage, deleteImage, deleteFolder } = require('../services/cloudina
 
 exports.getGuides = async (req, res) => {
   try {
-    const guides = await User.find({ role: 'guide' });
-    const guideIds = guides.map(g => g._id);
-    
-    const guidesInfo = await UserInfo.find({ user_id: { $in: guideIds } });
-    
+    const guides = await UserInfo.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $match: {
+          'user.role': 'guide'
+        }
+      },
+      {
+        $addFields: {
+          user_id_str: { $toString: '$user_id' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_user_languages',
+          localField: 'user_id_str',
+          foreignField: 'user_id',
+          as: 'userLangs'
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_languages',
+          localField: 'userLangs.guide_lan_id',
+          foreignField: 'guide_lan_id',
+          as: 'languages_detail'
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_user_fields',
+          localField: 'user_id_str',
+          foreignField: 'user_id',
+          as: 'userFields'
+        }
+      },
+      {
+        $lookup: {
+          from: 'guide_fields',
+          localField: 'userFields.guide_fie_id',
+          foreignField: 'guide_fie_id',
+          as: 'fields_detail'
+        }
+      },
+      {
+        $project: {
+          full_name: 1,
+          email: 1,
+          phone: 1,
+          dob: 1,
+          add: 1,
+          bio: 1,
+          avatar: 1,
+          user_id: 1,
+          languages: {
+            $map: {
+              input: '$languages_detail',
+              as: 'lan',
+              in: '$$lan.guide_lan_name'
+            }
+          },
+          fields: {
+            $map: {
+              input: '$fields_detail',
+              as: 'fie',
+              in: '$$fie.guide_fie_name'
+            }
+          }
+        }
+      }
+    ]);
+
     res.status(200).json({
       success: true,
-      data: guidesInfo
+      data: guides
     });
   } catch (error) {
     res.status(500).json({
