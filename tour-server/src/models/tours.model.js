@@ -38,6 +38,10 @@ const tourSchema = new mongoose.Schema(
       type: String,
       enum: ['Đang hoạt động', 'Tạm dừng', 'Bản nháp'],
       default: 'Bản nháp'
+    },
+    embedding: {
+      type: [Number],
+      default: undefined
     }
   },
   {

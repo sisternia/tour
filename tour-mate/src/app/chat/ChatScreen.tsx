@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
-import { sendMessage, getChatHistory, markAsRead, getConversations } from "@/services/chat/chatService";
+import { sendMessage, getChatHistory, markAsRead, getConversations, askBot } from "@/services/chat/chatService";
 import Animated, { FadeInUp, FadeInRight } from "react-native-reanimated";
 
 const { width, height } = Dimensions.get("window");
@@ -35,6 +35,15 @@ export default function ChatScreen() {
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [botChatHistory, setBotChatHistory] = useState<any[]>([
+    {
+      _id: 'bot_init',
+      sender_id: 'chatbot',
+      text: 'Xin chào! Tôi là TourMate AI. Tôi có thể giúp gì cho chuyến đi của bạn?',
+      createdAt: new Date().toISOString(),
+      is_read: true,
+    }
+  ]);
   
   const flatListRef = useRef<FlatList>(null);
 
@@ -60,7 +69,7 @@ export default function ChatScreen() {
   // Fetch chat history and poll
   useEffect(() => {
     let interval: any;
-    if (user?._id && selectedChat?.id) {
+    if (user?._id && selectedChat?.id && selectedChat.id !== 'chatbot') {
       fetchHistory();
       interval = setInterval(fetchHistory, 3000); // Poll every 3s for liveliness
     }
@@ -101,6 +110,49 @@ export default function ChatScreen() {
     if (message.trim() && user?._id && selectedChat?.id) {
       const text = message;
       setMessage("");
+
+      if (selectedChat.id === 'chatbot') {
+        const userMsg = {
+          _id: Date.now().toString(),
+          sender_id: user._id,
+          text: text,
+          createdAt: new Date().toISOString(),
+          is_read: true,
+        };
+        setBotChatHistory(prev => [userMsg, ...prev]);
+        
+        try {
+          // Format chat history (excluding the new userMsg which is already handled by setBotChatHistory)
+          const formattedHistory = [...botChatHistory].reverse().map(msg => ({
+            role: msg.sender_id === user._id ? 'user' : 'assistant',
+            content: msg.text
+          }));
+
+          const res = await askBot(text, formattedHistory);
+          if (res.success) {
+            const botMsg = {
+              _id: Date.now().toString(),
+              sender_id: 'chatbot',
+              text: res.data,
+              createdAt: new Date().toISOString(),
+              is_read: true,
+            };
+            setBotChatHistory(prev => [botMsg, ...prev]);
+          }
+        } catch (error) {
+          console.error("Failed to fetch bot reply:", error);
+          const errorMsg = {
+            _id: Date.now().toString(),
+            sender_id: 'chatbot',
+            text: "Xin lỗi, tôi gặp trục trặc khi kết nối với AI.",
+            createdAt: new Date().toISOString(),
+            is_read: true,
+          };
+          setBotChatHistory(prev => [errorMsg, ...prev]);
+        }
+        return;
+      }
+
       try {
         const res = await sendMessage(user._id, selectedChat.id, text);
         if (res.success) {
@@ -129,8 +181,9 @@ export default function ChatScreen() {
 
   const renderChatItem = ({ item, index }: { item: any, index: number }) => {
     const isOutgoing = item.sender_id === user._id;
-    const nextItem = chatHistory[index - 1];
-    const prevItem = chatHistory[index + 1];
+    const currentData = selectedChat?.id === 'chatbot' ? botChatHistory : [...chatHistory].reverse();
+    const nextItem = currentData[index - 1];
+    const prevItem = currentData[index + 1];
     
     const isLastInGroup = !nextItem || nextItem.sender_id !== item.sender_id;
     const isFirstInGroup = !prevItem || prevItem.sender_id !== item.sender_id;
@@ -154,7 +207,7 @@ export default function ChatScreen() {
             )}
           </View>
         )}
-        <View style={isOutgoing ? { alignItems: "flex-end" } : {}}>
+        <View style={isOutgoing ? { alignItems: "flex-end", flexShrink: 1 } : { flexShrink: 1 }}>
           <View style={[
             styles.bubble, 
             isOutgoing ? styles.outgoingBubble : styles.incomingBubble,
@@ -213,6 +266,24 @@ export default function ChatScreen() {
         <View style={styles.onlineSection}>
           <Text style={styles.sectionTitle}>Đang hoạt động</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.onlineScroll}>
+            <TouchableOpacity 
+              style={styles.onlineItem}
+              onPress={() => setSelectedChat({
+                id: 'chatbot',
+                name: 'TourMate AI',
+                avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png',
+                isBot: true
+              })}
+            >
+              <View>
+                <View style={[styles.onlineAvatar, { backgroundColor: '#e0e7ff', alignItems: 'center', justifyContent: 'center' }]}>
+                   <Ionicons name="hardware-chip" size={30} color="#2563eb" />
+                </View>
+                <View style={styles.onlineDot} />
+              </View>
+              <Text style={styles.onlineName} numberOfLines={1}>AI Bot</Text>
+            </TouchableOpacity>
+            
             {conversations.slice(0, 5).map((conv, i) => (
               <TouchableOpacity 
                 key={`online-${i}`} 
@@ -234,6 +305,39 @@ export default function ChatScreen() {
         </View>
 
         <Text style={styles.sectionTitle}>Gần đây</Text>
+        
+        {!searchQuery && (
+          <Animated.View entering={FadeInRight.delay(0)}>
+            <TouchableOpacity 
+              style={styles.chatItem}
+              onPress={() => setSelectedChat({
+                id: 'chatbot',
+                name: 'TourMate AI',
+                avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png',
+                isBot: true
+              })}
+            >
+              <View>
+                <View style={[styles.listAvatar, { backgroundColor: '#e0e7ff', alignItems: 'center', justifyContent: 'center' }]}>
+                   <Ionicons name="hardware-chip" size={32} color="#2563eb" />
+                </View>
+                <View style={styles.onlineDotLarge} />
+              </View>
+              <View style={styles.chatInfo}>
+                <View style={styles.chatHeaderRow}>
+                  <Text style={styles.chatName}>TourMate AI</Text>
+                  <Text style={styles.chatTime}>Ngay bây giờ</Text>
+                </View>
+                <View style={styles.chatMessageRow}>
+                  <Text style={styles.lastMessage} numberOfLines={1}>
+                    {botChatHistory[0]?.text || "Xin chào! Tôi là TourMate AI..."}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
         {filteredConversations.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
@@ -318,7 +422,7 @@ export default function ChatScreen() {
       >
         <FlatList
           ref={flatListRef}
-          data={[...chatHistory].reverse()}
+          data={selectedChat?.id === 'chatbot' ? botChatHistory : [...chatHistory].reverse()}
           renderItem={renderChatItem}
           keyExtractor={(item) => item._id}
           inverted

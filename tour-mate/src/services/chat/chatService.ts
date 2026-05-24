@@ -40,3 +40,13 @@ export const getConversations = async (userId: string) => {
     throw error;
   }
 };
+
+export const askBot = async (message: string, chatHistory: any[] = []) => {
+  try {
+    const response = await axios.post(`${API_URL}/ai/bot`, { message, chatHistory });
+    return response.data;
+  } catch (error) {
+    console.error('Error asking bot:', error);
+    throw error;
+  }
+};

@@ -12,7 +12,7 @@ const GuideUserLanguage = require('../models/guide_user_languages.model');
 const GuideUserField = require('../models/guide_user_fields.model');
 const BookingInfo = require('../models/booking_infos.model');
 const mongoose = require('mongoose');
-const { uploadImage, deleteFolder, deleteImage } = require('../services/cloudinary');
+const { uploadImage, deleteFolder, deleteImage } = require('../services/cloudinary.service');
 
 exports.deleteTour = async (req, res) => {
   try {
@@ -39,7 +39,7 @@ exports.deleteTour = async (req, res) => {
       TourTime.deleteOne({ tour_id: id }),
       TourImg.deleteMany({ tour_id: id }),
       TourSche.deleteMany({ tour_id: id }),
-      TourScheImg.deleteMany({ tour_sche_id: { $in: [id] } }), // Fixed this to match others if needed, but usually it's tour_id
+      TourScheImg.deleteMany({ tour_id: id }),
       TourGuide.deleteMany({ tour_id: id })
     ]);
 
@@ -67,39 +67,88 @@ exports.updateTour = async (req, res) => {
       guides
     } = req.body;
 
-    const tour = await Tour.findOne({ tour_id: id });
-    if (!tour) {
+    const existingTour = await Tour.findOne({ tour_id: id });
+    if (!existingTour) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
     }
 
-    tour.tour_name = tour_name || tour.tour_name;
-    tour.tour_desc = tour_desc || tour.tour_desc;
-    tour.tour_type = tour_type || tour.tour_type;
-    tour.tour_add = tour_add || tour.tour_add;
-    tour.tour_longit = tour_longit || tour.tour_longit;
-    tour.tour_latit = tour_latit || tour.tour_latit;
-    tour.tour_status = tour_status || tour.tour_status;
-    await tour.save();
+    // Check if dates have changed
+    const existingTime = await TourTime.findOne({ tour_id: id });
+    const isDateChanged = existingTime && (
+      new Date(existingTime.date_start).getTime() !== new Date(date_start).getTime() ||
+      new Date(existingTime.date_end).getTime() !== new Date(date_end).getTime()
+    );
 
-    await TourTime.findOneAndUpdate({ tour_id: id }, {
-      tour_duration: parseInt(tour_duration),
-      date_start: new Date(date_start),
-      date_end: new Date(date_end)
-    });
+    let targetId = id;
+    let tour;
 
-    await TourPrice.findOneAndUpdate({ tour_id: id }, {
-      tour_capacity: parseInt(tour_capacity),
-      price_child: parseFloat(price_child),
-      price_adult: parseFloat(price_adult)
-    });
+    if (isDateChanged) {
+      // Create a brand new tour ID if dates changed
+      targetId = new mongoose.Types.ObjectId().toString();
+      tour = new Tour({
+        tour_id: targetId,
+        tour_name: tour_name || existingTour.tour_name,
+        tour_desc: tour_desc || existingTour.tour_desc,
+        tour_type: tour_type || existingTour.tour_type,
+        tour_add: tour_add || existingTour.tour_add,
+        tour_longit: tour_longit || existingTour.tour_longit,
+        tour_latit: tour_latit || existingTour.tour_latit,
+        tour_status: tour_status || existingTour.tour_status
+      });
+      await tour.save();
 
-    await TourGuide.deleteMany({ tour_id: id });
+      // Create new Time and Price records
+      await new TourTime({
+        tour_times_id: new mongoose.Types.ObjectId().toString(),
+        tour_duration: parseInt(tour_duration),
+        date_start: new Date(date_start),
+        date_end: new Date(date_end),
+        tour_id: targetId
+      }).save();
+
+      await new TourPrice({
+        tour_price_id: new mongoose.Types.ObjectId().toString(),
+        tour_capacity: parseInt(tour_capacity),
+        price_child: parseFloat(price_child),
+        price_adult: parseFloat(price_adult),
+        tour_id: targetId
+      }).save();
+
+    } else {
+      // Normal update for existing tour
+      tour = existingTour;
+      tour.tour_name = tour_name || tour.tour_name;
+      tour.tour_desc = tour_desc || tour.tour_desc;
+      tour.tour_type = tour_type || tour.tour_type;
+      tour.tour_add = tour_add || tour.tour_add;
+      tour.tour_longit = tour_longit || tour.tour_longit;
+      tour.tour_latit = tour_latit || tour.tour_latit;
+      tour.tour_status = tour_status || tour.tour_status;
+      await tour.save();
+
+      await TourTime.findOneAndUpdate({ tour_id: targetId }, {
+        tour_duration: parseInt(tour_duration),
+        date_start: new Date(date_start),
+        date_end: new Date(date_end)
+      });
+
+      await TourPrice.findOneAndUpdate({ tour_id: targetId }, {
+        tour_capacity: parseInt(tour_capacity),
+        price_child: parseFloat(price_child),
+        price_adult: parseFloat(price_adult)
+      });
+
+      // Delete old guides ONLY if we are updating the same tour
+      await TourGuide.deleteMany({ tour_id: targetId });
+    }
+
+    // Common Logic for Guides (New or Updated)
     const parsedGuides = typeof guides === 'string' ? JSON.parse(guides) : guides;
     if (parsedGuides && Array.isArray(parsedGuides)) {
       for (const userId of parsedGuides) {
         await new TourGuide({
           tour_guide_id: new mongoose.Types.ObjectId().toString(),
-          tour_id: id,
+          tour_id: targetId,
           user_id: userId
         }).save();
       }
@@ -109,22 +158,24 @@ exports.updateTour = async (req, res) => {
     const existingTourImages = typeof req.body.existing_tour_images === 'string' ? JSON.parse(req.body.existing_tour_images) : (req.body.existing_tour_images || []);
     
     if (tourImgsFiles.length > 0 || existingTourImages.length > 0) {
-      const oldTourImgs = await TourImg.find({ tour_id: id });
-      const imgsToDelete = oldTourImgs.filter(old => !existingTourImages.includes(old.tour_img_url));
-      
-      for (const img of imgsToDelete) {
-        try {
-          const urlObj = new URL(img.tour_img_url);
-          const publicIdMatch = urlObj.pathname.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
-          if (publicIdMatch) {
-            await deleteImage(decodeURIComponent(publicIdMatch[1]));
+      if (!isDateChanged) {
+        const oldTourImgs = await TourImg.find({ tour_id: targetId });
+        const imgsToDelete = oldTourImgs.filter(old => !existingTourImages.includes(old.tour_img_url));
+        
+        for (const img of imgsToDelete) {
+          try {
+            const urlObj = new URL(img.tour_img_url);
+            const publicIdMatch = urlObj.pathname.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+            if (publicIdMatch) {
+              await deleteImage(decodeURIComponent(publicIdMatch[1]));
+            }
+          } catch (err) {
+            console.error('Lỗi khi xóa ảnh Cloudinary:', err);
           }
-        } catch (err) {
-          console.error('Lỗi khi xóa ảnh Cloudinary:', err);
         }
+        await TourImg.deleteMany({ tour_id: targetId });
       }
 
-      await TourImg.deleteMany({ tour_id: id });
       const coverIdx = parseInt(req.body.cover_index) || 0;
       let currentIdx = 0;
 
@@ -133,18 +184,18 @@ exports.updateTour = async (req, res) => {
           tour_img_id: new mongoose.Types.ObjectId().toString(),
           tour_img_url: imgUrl,
           img_is_cover: currentIdx === coverIdx,
-          tour_id: id
+          tour_id: targetId
         }).save();
         currentIdx++;
       }
 
       for (const file of tourImgsFiles) {
-        const uploadResult = await uploadImage(file.buffer, `tour/${id}/tour_imgs`);
+        const uploadResult = await uploadImage(file.buffer, `tour/${targetId}/tour_imgs`);
         await new TourImg({
           tour_img_id: new mongoose.Types.ObjectId().toString(),
           tour_img_url: uploadResult.secure_url,
           img_is_cover: currentIdx === coverIdx,
-          tour_id: id
+          tour_id: targetId
         }).save();
         currentIdx++;
       }
@@ -152,13 +203,14 @@ exports.updateTour = async (req, res) => {
 
     const parsedSchedules = typeof schedules === 'string' ? JSON.parse(schedules) : schedules;
     if (parsedSchedules && Array.isArray(parsedSchedules)) {
-      const oldSches = await TourSche.find({ tour_id: id });
-      const oldScheIds = oldSches.map(s => s.tour_sche_id);
-      
-      await TourSche.deleteMany({ tour_id: id });
-      await TourScheImg.deleteMany({ tour_sche_id: { $in: oldScheIds } });
+      if (!isDateChanged) {
+        const oldSches = await TourSche.find({ tour_id: targetId });
+        const oldScheIds = oldSches.map(s => s.tour_sche_id);
+        await TourSche.deleteMany({ tour_id: targetId });
+        await TourScheImg.deleteMany({ tour_sche_id: { $in: oldScheIds } });
+      }
 
-      const tourTime = await TourTime.findOne({ tour_id: id });
+      const tourTime = await TourTime.findOne({ tour_id: targetId });
 
       for (let i = 0; i < parsedSchedules.length; i++) {
         const sche = parsedSchedules[i];
@@ -176,7 +228,7 @@ exports.updateTour = async (req, res) => {
           tour_sche_latit: sche.tour_sche_latit || null,
           day_number: dayNum,
           tour_times_id: tourTime.tour_times_id,
-          tour_id: id
+          tour_id: targetId
         }).save();
 
         const fieldName = `sche_imgs_${i}`;
@@ -193,7 +245,7 @@ exports.updateTour = async (req, res) => {
                 tour_sche_img_url: oldImgUrl,
                 img_is_cover: currentScheIdx === scheCoverIdx,
                 tour_sche_id,
-                tour_id: id
+                tour_id: targetId
               }).save();
               currentScheIdx++;
             }
@@ -201,13 +253,13 @@ exports.updateTour = async (req, res) => {
 
           for (let j = 0; j < scheImgFiles.length; j++) {
             const file = scheImgFiles[j];
-            const uploadResult = await uploadImage(file.buffer, `tour/${id}/tour_sche_imgs/Ngay ${dayNum}`);
+            const uploadResult = await uploadImage(file.buffer, `tour/${targetId}/tour_sche_imgs/Ngay ${dayNum}`);
             await new TourScheImg({
               tour_sche_imgs_id: new mongoose.Types.ObjectId().toString(),
               tour_sche_img_url: uploadResult.secure_url,
               img_is_cover: currentScheIdx === scheCoverIdx,
               tour_sche_id,
-              tour_id: id
+              tour_id: targetId
             }).save();
             currentScheIdx++;
           }
@@ -215,7 +267,7 @@ exports.updateTour = async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, message: 'Cập nhật tour thành công' });
+    res.status(200).json({ success: true, message: isDateChanged ? 'Đã tạo tour mới với ngày khởi hành mới' : 'Cập nhật tour thành công' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || 'Lỗi khi cập nhật tour' });
   }

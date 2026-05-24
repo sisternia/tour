@@ -98,9 +98,13 @@ export default function TourScreen() {
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Điểm đến phổ biến</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAll}>Xem tất cả</Text>
+          <View />
+          <TouchableOpacity
+            style={styles.createTourBtnInHeader}
+            onPress={() => router.push("/tour/TourCustomScreen")}
+          >
+            <Ionicons name="add-circle" size={20} color="#005bb2" />
+            <Text style={styles.createTourBtnText}>Tạo Tour</Text>
           </TouchableOpacity>
         </View>
 
@@ -108,7 +112,7 @@ export default function TourScreen() {
         <View style={styles.mobileTourList}>
           {tours.map((tour, i) => (
             <TouchableOpacity
-              key={tour.tour_id || i}
+              key={tour.instance_id || tour.tour_id || i}
               style={styles.premiumCard}
               onPress={() => handlePressTour(tour)}
               activeOpacity={0.9}
@@ -278,6 +282,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
+  createTourBtnInHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e7f1ff",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#c2d9ff",
+  },
+  createTourBtnText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#005bb2",
+  },
   filterBtn: { position: "absolute", right: 0 },
   searchContainer: {
     flexDirection: "row",

@@ -4,7 +4,7 @@ const Tour = require("../models/tours.model");
 const TourTime = require("../models/tour_times.model");
 const UserInfo = require("../models/user_infors.model");
 const TourGuide = require("../models/tour_guides.model");
-const { sendBookingEmail } = require("../services/email");
+const { sendBookingEmail } = require("../services/email.service");
 const { createNotification } = require("./notifications.controller");
 
 const notifyBookingStatusChange = async (bookingId) => {

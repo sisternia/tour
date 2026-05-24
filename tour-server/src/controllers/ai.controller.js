@@ -1,4 +1,5 @@
 const groqService = require('../services/groq.service');
+const ragService = require('../services/rag.service');
 
 const generateResponse = async (req, res) => {
     try {
@@ -28,6 +29,30 @@ const generateResponse = async (req, res) => {
     }
 };
 
+const chatWithBot = async (req, res) => {
+    try {
+        const { message, chatHistory } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ success: false, message: 'Message is required' });
+        }
+
+        const response = await ragService.answerWithRAG(message, chatHistory || []);
+
+        res.status(200).json({
+            success: true,
+            data: response
+        });
+    } catch (error) {
+        console.error('AI Bot Controller Error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to generate AI bot response'
+        });
+    }
+};
+
 module.exports = {
-    generateResponse
+    generateResponse,
+    chatWithBot
 };

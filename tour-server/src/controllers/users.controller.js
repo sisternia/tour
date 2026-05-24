@@ -6,9 +6,9 @@ const Tour = require("../models/tours.model");
 const TourImg = require("../models/tour_imgs.model");
 const TourTime = require("../models/tour_times.model");
 const mongoose = require("mongoose");
-const emailService = require("../services/email");
-const passwordService = require("../services/password");
-const { uploadImage, deleteImage } = require("../services/cloudinary");
+const emailService = require("../services/email.service");
+const passwordService = require("../services/password.service");
+const { uploadImage, deleteImage } = require("../services/cloudinary.service");
 
 exports.register = async (req, res) => {
   try {
