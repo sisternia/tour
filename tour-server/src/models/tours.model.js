@@ -42,6 +42,14 @@ const tourSchema = new mongoose.Schema(
     embedding: {
       type: [Number],
       default: undefined
+    },
+    is_custom: {
+      type: Boolean,
+      default: false
+    },
+    created_by_user: {
+      type: String,
+      default: null
     }
   },
   {

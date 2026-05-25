@@ -14,20 +14,25 @@ import {
   Pressable,
   ActivityIndicator,
   useWindowDimensions,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import Map from "@/components/ui/Map";
 import TourDetailLayout from "@/components/tour/TourDetailLayout";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTourById } from "@/services/tour/tourService";
+import { getTourReviews, getReviewableBookings, createReview } from "@/services/tour/reviewService";
+import { useAuth } from "@/context/AuthContext";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function TourDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user } = useAuth();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web" && width > 1024;
@@ -48,6 +53,15 @@ export default function TourDetailScreen() {
   const [activeImageIndex, setActiveImageIndex] = React.useState(0);
   const [galleryImages, setGalleryImages] = React.useState<string[]>([]);
   const galleryListRef = React.useRef<FlatList>(null);
+
+  // Review State
+  const [reviews, setReviews] = React.useState<any[]>([]);
+  const [reviewableBookings, setReviewableBookings] = React.useState<string[]>([]);
+  const [isReviewModalVisible, setIsReviewModalVisible] = React.useState(false);
+  const [reviewRating, setReviewRating] = React.useState(5);
+  const [reviewComment, setReviewComment] = React.useState("");
+  const [reviewImages, setReviewImages] = React.useState<string[]>([]);
+  const [isSubmittingReview, setIsSubmittingReview] = React.useState(false);
 
   const openGallery = (images: string[], index: number) => {
     setGalleryImages(images);
@@ -84,6 +98,13 @@ export default function TourDetailScreen() {
       const result = await getTourById(id);
       if (result.success && result.data) {
         setTour(result.data);
+        const reviewsRes = await getTourReviews(id);
+        if (reviewsRes.success) setReviews(reviewsRes.data);
+        
+        if (user?.user_id) {
+           const revBookings = await getReviewableBookings(id, user.user_id);
+           if (revBookings.success) setReviewableBookings(revBookings.data);
+        }
       } else {
         setError(result.message || "Không thể tải thông tin tour");
       }
@@ -91,6 +112,63 @@ export default function TourDetailScreen() {
       setError("Lỗi kết nối máy chủ");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTimeAgo = (dateStr: string) => {
+    const diff = new Date().getTime() - new Date(dateStr).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 60) return `${minutes} phút trước`;
+    if (hours < 24) return `${hours} giờ trước`;
+    return `${days} ngày trước`;
+  };
+
+  const pickReviewImages = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      const uris = result.assets.map((a: any) => a.uri);
+      setReviewImages(prev => [...prev, ...uris]);
+    }
+  };
+
+  const submitReview = async () => {
+    if (reviewableBookings.length === 0) return;
+    setIsSubmittingReview(true);
+    try {
+      const bookingId = reviewableBookings[0];
+      const res = await createReview(tour.tour_id, bookingId, user.user_id, reviewRating, reviewComment, reviewImages);
+      if (res.success) {
+        setIsReviewModalVisible(false);
+        setReviewRating(5);
+        setReviewComment("");
+        setReviewImages([]);
+        
+        const reviewsRes = await getTourReviews(tour.tour_id);
+        if (reviewsRes.success) {
+          setReviews(reviewsRes.data);
+          setTour((prev: any) => ({
+            ...prev,
+            averageRating: reviewsRes.averageRating,
+            totalReviews: reviewsRes.totalReviews
+          }));
+        }
+        const revBookings = await getReviewableBookings(tour.tour_id, user.user_id);
+        if (revBookings.success) setReviewableBookings(revBookings.data);
+      } else {
+        alert(res.message);
+      }
+    } catch (e) {
+      alert("Lỗi khi gửi đánh giá");
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -295,6 +373,56 @@ export default function TourDetailScreen() {
   return (
     <View style={styles.container}>
       {renderGalleryModal()}
+      
+      <Modal visible={isReviewModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.reviewModalContent}>
+             <View style={styles.modalHeaderReview}>
+               <Text style={styles.modalTitle}>Viết đánh giá</Text>
+               <TouchableOpacity onPress={() => setIsReviewModalVisible(false)}>
+                 <Ionicons name="close" size={24} color="#333" />
+               </TouchableOpacity>
+             </View>
+             
+             <View style={styles.starSelectRow}>
+               {[1, 2, 3, 4, 5].map(star => (
+                 <TouchableOpacity key={star} onPress={() => setReviewRating(star)}>
+                   <Ionicons name={star <= reviewRating ? "star" : "star-outline"} size={32} color="#FFD700" />
+                 </TouchableOpacity>
+               ))}
+             </View>
+             
+             <TextInput 
+               style={styles.reviewInput} 
+               placeholder="Chia sẻ trải nghiệm của bạn..." 
+               multiline 
+               value={reviewComment} 
+               onChangeText={setReviewComment} 
+             />
+             
+             <TouchableOpacity style={styles.pickImageBtn} onPress={pickReviewImages}>
+               <Ionicons name="image-outline" size={20} color="#007BFF" />
+               <Text style={styles.pickImageText}>Thêm hình ảnh</Text>
+             </TouchableOpacity>
+
+             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectedImagesScroll}>
+                {reviewImages.map((uri, idx) => (
+                  <View key={idx} style={styles.selectedImageWrapper}>
+                     <Image source={{ uri }} style={styles.selectedImage} />
+                     <TouchableOpacity style={styles.removeSelectedImageBtn} onPress={() => setReviewImages(prev => prev.filter((_, i) => i !== idx))}>
+                        <Ionicons name="close-circle" size={20} color="red" />
+                     </TouchableOpacity>
+                  </View>
+                ))}
+             </ScrollView>
+
+             <TouchableOpacity style={styles.submitReviewBtn} onPress={submitReview} disabled={isSubmittingReview}>
+               {isSubmittingReview ? <ActivityIndicator color="white" /> : <Text style={styles.submitReviewText}>Gửi đánh giá</Text>}
+             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <ImageBackground
           source={{ uri: coverImage }}
@@ -332,7 +460,7 @@ export default function TourDetailScreen() {
               </View>
               <View style={styles.ratingBadge}>
                 <Ionicons name="star" size={14} color="#FFD700" />
-                <Text style={styles.ratingTextMobile}> 4.8 (120 đánh giá)</Text>
+                <Text style={styles.ratingTextMobile}> {tour.averageRating || "5.0"} ({tour.totalReviews || 0} đánh giá)</Text>
               </View>
               <Text style={styles.mainTitle}>{tour.tour_name}</Text>
             </View>
@@ -662,11 +790,59 @@ export default function TourDetailScreen() {
           )}
 
           {activeTab === "reviews" && (
-            <View style={styles.reviewsPlaceholder}>
-              <Ionicons name="chatbubbles-outline" size={50} color="#ccc" />
-              <Text style={styles.reviewsPlaceholderText}>
-                Chưa có đánh giá nào cho tour này.
-              </Text>
+            <View>
+              {reviewableBookings.length > 0 && (
+                <TouchableOpacity style={styles.writeReviewBtn} onPress={() => setIsReviewModalVisible(true)}>
+                  <Ionicons name="pencil" size={18} color="white" />
+                  <Text style={styles.writeReviewText}>Viết đánh giá ({reviewableBookings.length} lượt)</Text>
+                </TouchableOpacity>
+              )}
+              {reviews.length > 0 ? (
+                reviews.map((review: any) => (
+                  <View key={review.review_id} style={styles.reviewItem}>
+                    <View style={styles.reviewHeader}>
+                      {review.user?.avatar ? (
+                        <Image source={{ uri: review.user.avatar }} style={styles.reviewerAvatar} />
+                      ) : (
+                        <Ionicons name="person-circle-outline" size={40} color="#ccc" style={{ marginRight: 10 }} />
+                      )}
+                      <View style={styles.reviewerInfo}>
+                        <Text style={styles.reviewerName}>{review.user?.full_name || 'Người dùng'}</Text>
+                        <Text style={styles.reviewTime}>{getTimeAgo(review.createdAt)}</Text>
+                      </View>
+                      <View style={styles.reviewStars}>
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Ionicons key={i} name="star" size={14} color="#FFD700" />
+                        ))}
+                      </View>
+                    </View>
+                    {review.comment ? <Text style={styles.reviewComment}>{review.comment}</Text> : null}
+                    {review.images && review.images.length > 0 && (
+                      <View style={styles.reviewImagesGrid}>
+                        {review.images.slice(0, 3).map((img: string, idx: number) => (
+                          <TouchableOpacity key={idx} onPress={() => openGallery(review.images, idx)}>
+                             <View style={styles.reviewImageWrapper}>
+                               <Image source={{ uri: img }} style={styles.reviewImage} />
+                               {idx === 2 && review.images.length > 3 && (
+                                 <View style={styles.reviewImageOverlay}>
+                                    <Text style={styles.reviewImageOverlayText}>+{review.images.length - 3}</Text>
+                                 </View>
+                               )}
+                             </View>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                ))
+              ) : (
+                <View style={styles.reviewsPlaceholder}>
+                  <Ionicons name="chatbubbles-outline" size={50} color="#ccc" />
+                  <Text style={styles.reviewsPlaceholderText}>
+                    Chưa có đánh giá nào cho tour này.
+                  </Text>
+                </View>
+              )}
             </View>
           )}
           <View style={{ height: 120 }} />
@@ -1088,4 +1264,115 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#f0f0f0",
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  reviewModalContent: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: 400,
+  },
+  modalHeaderReview: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "bold" },
+  starSelectRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
+  reviewInput: {
+    backgroundColor: "#f9f9f9",
+    borderRadius: 10,
+    padding: 15,
+    minHeight: 100,
+    textAlignVertical: "top",
+    marginBottom: 15,
+  },
+  pickImageBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 15,
+  },
+  pickImageText: { color: "#007BFF", fontWeight: "600" },
+  selectedImagesScroll: { marginBottom: 20, maxHeight: 80 },
+  selectedImageWrapper: {
+    width: 80,
+    height: 80,
+    marginRight: 10,
+    borderRadius: 8,
+    position: "relative",
+  },
+  selectedImage: { width: "100%", height: "100%", borderRadius: 8 },
+  removeSelectedImageBtn: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "white",
+    borderRadius: 10,
+  },
+  submitReviewBtn: {
+    backgroundColor: "#007BFF",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  submitReviewText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  writeReviewBtn: {
+    backgroundColor: "#007BFF",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    gap: 8,
+    marginBottom: 20,
+  },
+  writeReviewText: { color: "white", fontWeight: "bold" },
+  reviewItem: {
+    marginBottom: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  reviewerAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+  reviewerInfo: { flex: 1 },
+  reviewerName: { fontWeight: "bold", fontSize: 15 },
+  reviewTime: { color: "#888", fontSize: 12, marginTop: 2 },
+  reviewStars: { flexDirection: "row" },
+  reviewComment: { fontSize: 14, color: "#333", lineHeight: 20, marginBottom: 10 },
+  reviewImagesGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  reviewImageWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    overflow: "hidden",
+    position: "relative",
+  },
+  reviewImage: { width: "100%", height: "100%" },
+  reviewImageOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  reviewImageOverlayText: { color: "white", fontWeight: "bold", fontSize: 18 },
 });

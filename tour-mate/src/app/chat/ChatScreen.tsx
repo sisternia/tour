@@ -164,6 +164,57 @@ export default function ChatScreen() {
     }
   };
 
+  const handleApplySchedule = (text: string) => {
+    try {
+      const days = [];
+      const dayRegex = /━━━━━━━━━━━━━━━━━━━━\s+NGÀY\s+(\d+)\s+━━━━━━━━━━━━━━━━━━━━([\s\S]*?)(?=━━━━━━━━━━━━━━━━━━━━\s+NGÀY|\n\n\n|$)/g;
+      let match;
+      while ((match = dayRegex.exec(text)) !== null) {
+        const dayNumber = match[1];
+        const dayContent = match[2];
+        
+        const activities = [];
+        const activityRegex = /\d+\.\s+([^\n]+)\s+Thời gian\s*:\s*([^\n]+)\s+Địa điểm\s*:\s*([^\n]+)/g;
+        let actMatch;
+        while ((actMatch = activityRegex.exec(dayContent)) !== null) {
+          activities.push({
+            name: actMatch[1].trim(),
+            time: actMatch[2].trim(),
+            location: actMatch[3].trim(),
+          });
+        }
+        days.push({ day: dayNumber, activities });
+      }
+      
+      let title = "Custom Tour";
+      const tourNameMatch = /={40}\s+([^\n]+)\s+={40}/.exec(text);
+      if (tourNameMatch) {
+        title = tourNameMatch[1].trim();
+      } else {
+        const designMatch = /BẢN THIẾT KẾ TOUR:\s*([^\n]+)/i.exec(text);
+        if (designMatch) {
+          title = designMatch[1].trim();
+        }
+      }
+      
+      const priceAdultMatch = /Người lớn\s*:\s*([^\n]+)/.exec(text);
+      const price = priceAdultMatch ? priceAdultMatch[1].trim() : "Chưa xác định";
+
+      const scheduleData = {
+        title,
+        price,
+        days
+      };
+
+      router.push({
+        pathname: "/tour/TourCustomScreen",
+        params: { data: JSON.stringify(scheduleData) }
+      });
+    } catch (e) {
+      console.log("Error parsing schedule:", e);
+    }
+  };
+
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -220,6 +271,20 @@ export default function ChatScreen() {
               {item.text}
             </Text>
           </View>
+          {!isOutgoing && item.text && item.text.includes('━━━━━━━━━━━━━━━━━━━━') && item.text.includes('NGÀY') && item.text.includes('BẢN THIẾT KẾ TOUR') && (
+            <TouchableOpacity 
+              style={{
+                flexDirection: 'row', alignItems: 'center', backgroundColor: '#137fec', 
+                paddingVertical: 8, paddingHorizontal: 12, borderRadius: 16, 
+                marginTop: 8, alignSelf: 'flex-start',
+                shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2
+              }}
+              onPress={() => handleApplySchedule(item.text)}
+            >
+              <Ionicons name="map-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>Áp dụng lịch trình</Text>
+            </TouchableOpacity>
+          )}
           {isLastInGroup && (
             <Text style={[styles.messageTime, isOutgoing ? { marginRight: 4 } : { marginLeft: 4 }]}>
               {formatTime(item.createdAt)}

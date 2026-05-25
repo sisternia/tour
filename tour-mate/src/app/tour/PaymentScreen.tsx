@@ -40,6 +40,13 @@ export default function PaymentScreen() {
     childrenInfo: initialChildrenInfo,
     totalPrice: initialTotalPrice,
     bookingId: existingBookingId,
+    isCustom,
+    customTourTitle,
+    customTourPrice,
+    customTourDays,
+    customTourDateStart,
+    customTourDateEnd,
+    customTourType,
   } = params;
 
   const [tour, setTour] = useState<any>(null);
@@ -60,7 +67,26 @@ export default function PaymentScreen() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      if (existingBookingId) {
+      if (isCustom === "true") {
+        setTour({
+          tour_name: customTourTitle || "Tour tự thiết kế",
+          tour_type: customTourType || "Nội địa",
+          time: {
+            date_start: customTourDateStart,
+            date_end: customTourDateEnd,
+            tour_duration: customTourDays ? JSON.parse(customTourDays as string).length : 1,
+          },
+          price: {
+            price_adult: Number(customTourPrice) || 1200000,
+            price_child: (Number(customTourPrice) || 1200000) * 0.5,
+            tour_capacity: 99,
+          },
+          images: [],
+        });
+        if (initialAdultsInfo) setParsedAdults(JSON.parse(initialAdultsInfo as string));
+        if (initialChildrenInfo) setParsedChildren(JSON.parse(initialChildrenInfo as string));
+        setLoading(false);
+      } else if (existingBookingId) {
         // Fetch existing booking info
         try {
           const res = await getPaymentStatus(existingBookingId as string);
@@ -79,7 +105,7 @@ export default function PaymentScreen() {
             const children = b.passengers.filter((p: any) => p.type === 'child');
             setParsedAdults(adults);
             setParsedChildren(children);
-
+ 
             // Load tour info using the tour_id from booking
             // Note: In our current getPaymentStatus, booking.tour_id might already be populated
             const tId = typeof b.tour_id === 'object' ? b.tour_id.tour_id : b.tour_id;
@@ -88,17 +114,18 @@ export default function PaymentScreen() {
         } catch (error) {
           console.error("Fetch Booking Error:", error);
         }
+        setLoading(false);
       } else {
         // Normal flow from BookTourScreen
         if (initialAdultsInfo) setParsedAdults(JSON.parse(initialAdultsInfo as string));
         if (initialChildrenInfo) setParsedChildren(JSON.parse(initialChildrenInfo as string));
         if (tourId) await loadTour(tourId as string);
+        setLoading(false);
       }
-      setLoading(false);
     };
-
+ 
     fetchData();
-  }, [existingBookingId, tourId]);
+  }, [existingBookingId, tourId, isCustom]);
 
   const loadTour = async (id: string) => {
     try {
@@ -123,7 +150,14 @@ export default function PaymentScreen() {
         phone,
         note,
         parsedAdults,
-        parsedChildren
+        parsedChildren,
+        isCustom: isCustom === "true" ? "true" : "false",
+        customTourTitle,
+        customTourPrice,
+        customTourDays,
+        customTourDateStart,
+        customTourDateEnd,
+        customTourType,
       };
 
       if (paymentMethod === "transfer") {
@@ -196,6 +230,7 @@ export default function PaymentScreen() {
         setPaymentMethod={setPaymentMethod}
         handleFinish={handleFinish}
         isProcessing={isProcessing}
+        isCustom={isCustom === "true"}
       />
     );
   }
@@ -225,14 +260,14 @@ export default function PaymentScreen() {
           <View style={styles.divider} />
 
           <View style={styles.tourCompactInfo}>
-            <Image source={{ uri: coverImage }} style={styles.tourThumb} />
+            {isCustom !== "true" && <Image source={{ uri: coverImage }} style={styles.tourThumb} />}
             <View style={styles.tourTextInfo}>
               <Text style={styles.tourName} numberOfLines={2}>
                 {tour?.tour_name}
               </Text>
               <Text style={styles.tourDate}>
-                {new Date(tour?.time?.date_start).toLocaleDateString("vi-VN")} -{" "}
-                {new Date(tour?.time?.date_end).toLocaleDateString("vi-VN")}
+                {tour?.time?.date_start ? new Date(tour.time.date_start).toLocaleDateString("vi-VN") : ""} -{" "}
+                {tour?.time?.date_end ? new Date(tour.time.date_end).toLocaleDateString("vi-VN") : ""}
               </Text>
             </View>
           </View>
@@ -252,12 +287,14 @@ export default function PaymentScreen() {
                 {tour?.time?.tour_duration} ngày
               </Text>
             </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Tối đa:</Text>
-              <Text style={styles.detailValue}>
-                {tour?.price?.tour_capacity} người
-              </Text>
-            </View>
+            {isCustom !== "true" && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Tối đa:</Text>
+                <Text style={styles.detailValue}>
+                  {tour?.price?.tour_capacity} người
+                </Text>
+              </View>
+            )}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Hành khách:</Text>
               <Text style={styles.detailValue}>

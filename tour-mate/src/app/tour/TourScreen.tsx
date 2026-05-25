@@ -124,7 +124,7 @@ export default function TourScreen() {
                 />
                 <View style={styles.cardRatingBadge}>
                   <Ionicons name="star" size={12} color="#994700" />
-                  <Text style={styles.cardRatingValue}>4.9</Text>
+                  <Text style={styles.cardRatingValue}>{tour.averageRating || '5.0'}</Text>
                 </View>
                 <TouchableOpacity style={styles.cardHeartBtn}>
                   <Ionicons name="heart-outline" size={20} color="white" />

@@ -72,8 +72,10 @@ export default function HistoryBookScreen() {
 
     const filteredTours = myTours.filter((t: any) => {
         if (filter === "Tất cả") return true;
-        if (filter === "Sắp tới") return t.status === "pending";
-        if (filter === "Hoàn thành") return t.status === "paid";
+        if (filter === "Sắp tới") return t.status === "paid" || t.status === "confirmed";
+        if (filter === "Đang thanh toán") return t.status === "pending";
+        if (filter === "Đã thanh toán") return t.status === "paid";
+        if (filter === "Hoàn thành") return t.status === "confirmed";
         if (filter === "Đã hủy") return t.status === "cancelled";
         return true;
     });
@@ -86,22 +88,25 @@ export default function HistoryBookScreen() {
         );
     }
 
-    const categories = ["Tất cả", "Sắp tới", "Hoàn thành", "Đã hủy"];
+    const categories = ["Tất cả", "Sắp tới", "Đang thanh toán", "Đã thanh toán", "Hoàn thành", "Đã hủy"];
 
     const renderTourCard = (booking: any) => {
         const tour = booking.tour_id || {};
-        const statusLabel = booking.status === 'paid' ? 'Đã xác nhận' :
-            booking.status === 'pending' ? 'Chờ thanh toán' : 'Đã hủy';
-        const statusColor = booking.status === 'paid' ? '#22c55e' :
+        const statusLabel = booking.status === 'confirmed' ? 'Đã xác nhận' :
+            booking.status === 'paid' ? 'Đã thanh toán' :
+            booking.status === 'pending' ? 'Đang thanh toán' : 'Đã hủy';
+        const statusColor = booking.status === 'confirmed' ? '#22c55e' :
+            booking.status === 'paid' ? '#3b82f6' :
             booking.status === 'pending' ? '#bc5700' : '#ef4444';
-        const statusBg = booking.status === 'paid' ? '#22c55e' :
+        const statusBg = booking.status === 'confirmed' ? '#22c55e' :
+            booking.status === 'paid' ? '#3b82f6' :
             booking.status === 'pending' ? '#bc5700' : '#ef4444';
 
         return (
             <TouchableOpacity
                 key={booking.booking_info_id}
                 style={[styles.tourCard, isWeb && { width: "32%" }]}
-                onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
+                onPress={() => router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`)}
                 activeOpacity={0.9}
             >
                 <View style={styles.tourImageWrapper}>
@@ -147,7 +152,13 @@ export default function HistoryBookScreen() {
                                     styles.actionBtn,
                                     booking.status === 'pending' && styles.payNowBtn
                                 ]}
-                                onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
+                                onPress={() => {
+                                    if (booking.status === 'pending') {
+                                        router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`);
+                                    } else {
+                                        router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`);
+                                    }
+                                }}
                             >
                                 <Text style={[
                                     styles.actionBtnText,

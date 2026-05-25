@@ -95,12 +95,16 @@ export default function NotificationsScreen() {
   const getIconConfig = (type: string) => {
     switch (type) {
       case "booking_created":
+      case "booking_created_custom":
         return { name: "cart", color: "#4facfe", bgColor: "#E3F2FD" };
       case "booking_paid":
+      case "booking_paid_custom":
         return { name: "wallet", color: "#27ae60", bgColor: "#E8F5E9" };
       case "booking_confirmed":
+      case "booking_confirmed_custom":
         return { name: "checkmark-circle", color: "#f39c12", bgColor: "#FEF9E7" };
       case "booking_cancelled":
+      case "booking_cancelled_custom":
         return { name: "close-circle", color: "#e74c3c", bgColor: "#FDEDEC" };
       default:
         return { name: "notifications", color: "#9b51e0", bgColor: "#F3E5F5" };

@@ -27,7 +27,12 @@ import BookTourLayout from "@/components/tour/BookTourLayout";
 
 export default function BookTourScreen() {
   const router = useRouter();
-  const { id, adults, children } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const { 
+    id, adults, children, 
+    isCustom, title, price, days, date_start, date_end, tour_type 
+  } = params;
+  
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web" && width > 1024;
@@ -104,10 +109,27 @@ export default function BookTourScreen() {
   };
 
   useEffect(() => {
-    if (id) {
+    if (isCustom === "true") {
+      setTour({
+        tour_name: title || "Tour tự thiết kế",
+        tour_type: tour_type || "Nội địa",
+        time: {
+          date_start: date_start,
+          date_end: date_end,
+          tour_duration: days ? JSON.parse(days as string).length : 1,
+        },
+        price: {
+          price_adult: Number(price) || 1200000,
+          price_child: (Number(price) || 1200000) * 0.5,
+          tour_capacity: 99,
+        },
+        images: [],
+      });
+      setLoading(false);
+    } else if (id) {
       loadTour(id as string);
     }
-  }, [id]);
+  }, [id, isCustom, title, price, days, date_start, date_end, tour_type]);
 
   useEffect(() => {
     setAdultsInfo((prev) => {
@@ -177,7 +199,7 @@ export default function BookTourScreen() {
 
     // Prepare data for payment
     const bookingData = {
-      tourId: id,
+      tourId: id || "custom",
       adultCount,
       childCount,
       name,
@@ -187,6 +209,13 @@ export default function BookTourScreen() {
       adultsInfo: JSON.stringify(adultsInfo),
       childrenInfo: JSON.stringify(childrenInfo),
       totalPrice,
+      isCustom: isCustom === "true" ? "true" : "false",
+      customTourTitle: title,
+      customTourPrice: price,
+      customTourDays: days,
+      customTourDateStart: date_start,
+      customTourDateEnd: date_end,
+      customTourType: tour_type,
     };
 
     router.push({
@@ -273,6 +302,7 @@ export default function BookTourScreen() {
         modalVisible={modalVisible}
         modalConfig={modalConfig}
         setModalVisible={setModalVisible}
+        isCustom={isCustom === "true"}
       />
     );
   }
@@ -294,7 +324,7 @@ export default function BookTourScreen() {
       >
         <View style={{ height: 10 }} />
         <View style={styles.card}>
-          <Image source={{ uri: coverImage }} style={styles.tourImage} />
+          {isCustom !== "true" && <Image source={{ uri: coverImage }} style={styles.tourImage} />}
           <View style={styles.tourInfo}>
             <Text style={styles.tourName}>{tour.tour_name}</Text>
             <View style={styles.highlightInfoBox}>
@@ -320,7 +350,7 @@ export default function BookTourScreen() {
                 </View>
               </View>
             </View>
-
+ 
             <View style={styles.tourDetailGrid}>
               <View style={styles.tourDetailItem}>
                 <Ionicons name="time-outline" size={15} color="#666" />
@@ -331,15 +361,17 @@ export default function BookTourScreen() {
                   </Text>
                 </Text>
               </View>
-              <View style={styles.tourDetailItem}>
-                <Ionicons name="people-outline" size={15} color="#666" />
-                <Text style={styles.tourDetailText} numberOfLines={1}>
-                  Tối đa:{" "}
-                  <Text style={styles.tourDetailBold}>
-                    {tour.price?.tour_capacity} người
+              {isCustom !== "true" && (
+                <View style={styles.tourDetailItem}>
+                  <Ionicons name="people-outline" size={15} color="#666" />
+                  <Text style={styles.tourDetailText} numberOfLines={1}>
+                    Tối đa:{" "}
+                    <Text style={styles.tourDetailBold}>
+                      {tour.price?.tour_capacity} người
+                    </Text>
                   </Text>
-                </Text>
-              </View>
+                </View>
+              )}
             </View>
           </View>
         </View>

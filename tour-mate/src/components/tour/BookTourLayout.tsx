@@ -25,6 +25,7 @@ interface BookTourLayoutProps {
   modalVisible: boolean;
   modalConfig: any;
   setModalVisible: (v: boolean) => void;
+  isCustom?: boolean;
 }
 
 export default function BookTourLayout({
@@ -32,7 +33,7 @@ export default function BookTourLayout({
   name, setName, email, setEmail, phone, setPhone, note, setNote,
   adultsInfo, childrenInfo, totalPrice,
   updateAdultInfo, updateChildInfo, handleConfirm, handleCancel,
-  modalVisible, modalConfig, setModalVisible
+  modalVisible, modalConfig, setModalVisible, isCustom
 }: BookTourLayoutProps) {
   const router = useRouter();
   const adultPrice = tour.price?.price_adult || 0;
@@ -258,7 +259,7 @@ export default function BookTourLayout({
             <View style={styles.rightColumn}>
               <View style={[styles.card, styles.stickyCard]}>
                 <Text style={[styles.cardTitle, { textAlign: 'center' }]}>Tóm tắt đơn hàng</Text>
-                <Image source={{ uri: coverImage }} style={styles.tourImage} />
+                {!isCustom && <Image source={{ uri: coverImage }} style={styles.tourImage} />}
                 <Text style={styles.tourName}>{tour.tour_name}</Text>
 
                 <View style={styles.highlightInfoBox}>
@@ -286,12 +287,14 @@ export default function BookTourLayout({
                       Thời lượng: <Text style={styles.summaryBoldText}>{tour.time?.tour_duration} ngày</Text>
                     </Text>
                   </View>
-                  <View style={styles.summaryItemHalf}>
-                    <Ionicons name="people-outline" size={16} color="#666" />
-                    <Text style={styles.summaryText} numberOfLines={1}>
-                      Tối đa: <Text style={styles.summaryBoldText}>{tour.price?.tour_capacity} người</Text>
-                    </Text>
-                  </View>
+                  {!isCustom && (
+                    <View style={styles.summaryItemHalf}>
+                      <Ionicons name="people-outline" size={16} color="#666" />
+                      <Text style={styles.summaryText} numberOfLines={1}>
+                        Tối đa: <Text style={styles.summaryBoldText}>{tour.price?.tour_capacity} người</Text>
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 <View style={[styles.divider, { marginVertical: 20 }]} />

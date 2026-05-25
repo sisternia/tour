@@ -7,6 +7,7 @@ const TourTime = require("../models/tour_times.model");
 const TourPrice = require("../models/tour_prices.model");
 const TourGuide = require("../models/tour_guides.model");
 const UserInfor = require("../models/user_infors.model");
+const TourSche = require("../models/tour_sches.model");
 const { notifyBookingStatusChange } = require("./bookings.controller");
 
 function sortObject(obj) {
@@ -24,6 +25,192 @@ function sortObject(obj) {
     }
     return sorted;
 }
+
+const axios = require("axios");
+
+async function geocode(locationName) {
+    try {
+        if (!locationName) return null;
+        const normalized = locationName.toLowerCase();
+        if (normalized.includes("địa điểm") || normalized.includes("chưa cập nhật")) {
+            return null;
+        }
+        const response = await axios.get("https://nominatim.openstreetmap.org/search", {
+            params: {
+                format: "json",
+                q: locationName,
+                limit: 1
+            },
+            headers: {
+                "User-Agent": "TourMate/1.0"
+            },
+            timeout: 2000
+        });
+        if (response.data && response.data.length > 0) {
+            return {
+                lat: parseFloat(response.data[0].lat),
+                lng: parseFloat(response.data[0].lon)
+            };
+        }
+    } catch (e) {
+        console.error("Geocoding failed for location:", locationName, e.message);
+    }
+    return null;
+}
+
+const getBaseCoords = (title) => {
+    const t = (title || "").toLowerCase();
+    if (t.includes("hồ chí minh") || t.includes("sài gòn") || t.includes("saigon") || t.includes("hcm")) {
+        return { lat: 10.7769, lng: 106.7009 };
+    }
+    if (t.includes("đà nẵng") || t.includes("da nang")) {
+        return { lat: 16.0544, lng: 108.2022 };
+    }
+    if (t.includes("nha trang")) {
+        return { lat: 12.2388, lng: 109.1967 };
+    }
+    if (t.includes("phú quốc") || t.includes("phu quoc")) {
+        return { lat: 10.2181, lng: 103.9608 };
+    }
+    if (t.includes("hạ long") || t.includes("ha long")) {
+        return { lat: 20.9501, lng: 107.0733 };
+    }
+    if (t.includes("quốc tế") || t.includes("singapore") || t.includes("thái lan") || t.includes("tokyo") || t.includes("nhật bản")) {
+        return { lat: 13.7563, lng: 100.5018 };
+    }
+    return { lat: 21.0285, lng: 105.8542 }; // Hanoi default
+};
+
+const saveCustomTour = async (bookingData, userId) => {
+    try {
+        const timestamp = Date.now();
+        const tourId = `tour_custom_${timestamp}`;
+        const tourTimesId = `times_custom_${timestamp}`;
+        const tourPriceId = `price_custom_${timestamp}`;
+
+        // 1. Parse days
+        let daysArray = [];
+        try {
+            if (bookingData.customTourDays) {
+                daysArray = JSON.parse(bookingData.customTourDays);
+            }
+        } catch (e) {
+            console.error("Error parsing customTourDays:", e);
+        }
+
+        const duration = daysArray.length || 1;
+        const dateStart = bookingData.customTourDateStart ? new Date(bookingData.customTourDateStart) : new Date();
+        const dateEnd = bookingData.customTourDateEnd ? new Date(bookingData.customTourDateEnd) : new Date();
+
+        // 2. Determine base coords
+        const tourTitle = bookingData.customTourTitle || "Tour tự thiết kế";
+        const baseCoords = getBaseCoords(tourTitle);
+        let startLat = baseCoords.lat;
+        let startLng = baseCoords.lng;
+
+        // Try to geocode the first activity as a starting point
+        if (daysArray[0] && daysArray[0].activities && daysArray[0].activities[0]) {
+            const firstLoc = daysArray[0].activities[0].location;
+            if (firstLoc) {
+                const geo = await geocode(firstLoc);
+                if (geo) {
+                    startLat = geo.lat;
+                    startLng = geo.lng;
+                }
+            }
+        }
+
+        // Save Tour
+        const newTour = new Tour({
+            tour_id: tourId,
+            tour_name: tourTitle,
+            tour_desc: "Lịch trình tự thiết kế bởi người dùng",
+            tour_type: bookingData.customTourType || "Nội địa",
+            tour_add: bookingData.customTourType === "Quốc tế" ? "Nước ngoài" : "Việt Nam",
+            tour_latit: startLat,
+            tour_longit: startLng,
+            tour_status: "Đang hoạt động",
+            is_custom: true,
+            created_by_user: userId || null
+        });
+        await newTour.save();
+
+        // Save TourTime
+        const newTime = new TourTime({
+            tour_times_id: tourTimesId,
+            tour_duration: duration,
+            date_start: dateStart,
+            date_end: dateEnd,
+            tour_id: tourId
+        });
+        await newTime.save();
+
+        // Save TourPrice
+        const adultPrice = Number(bookingData.customTourPrice) || 1200000;
+        const childPrice = adultPrice * 0.5;
+
+        const newPrice = new TourPrice({
+            tour_price_id: tourPriceId,
+            tour_capacity: 99,
+            price_adult: adultPrice,
+            price_child: childPrice,
+            tour_id: tourId
+        });
+        await newPrice.save();
+
+        // Save TourSches
+        let seq = 0;
+        for (const dayObj of daysArray) {
+            const dayNum = Number(dayObj.day) || 1;
+            if (dayObj.activities && Array.isArray(dayObj.activities)) {
+                for (let idx = 0; idx < dayObj.activities.length; idx++) {
+                    const act = dayObj.activities[idx];
+                    const scheId = `sche_custom_${timestamp}_${dayNum}_${idx}`;
+                    
+                    let actLat = null;
+                    let actLng = null;
+                    
+                    if (act.location) {
+                        const geo = await geocode(act.location);
+                        if (geo) {
+                            actLat = geo.lat;
+                            actLng = geo.lng;
+                        }
+                    }
+
+                    if (actLat === null || actLng === null) {
+                        // Incremental offset for visual routing machine mapping
+                        const offset = (seq + 1) * 0.008;
+                        const angle = (seq * 45) * (Math.PI / 180);
+                        actLat = startLat + offset * Math.sin(angle);
+                        actLng = startLng + offset * Math.cos(angle);
+                    }
+
+                    const newSche = new TourSche({
+                        tour_sche_id: scheId,
+                        tour_sche_name: act.name || "Hoạt động",
+                        tour_sche_desc: "",
+                        time_sche_start: act.time || "09:00",
+                        time_sche_end: "",
+                        tour_sche_add: act.location || "",
+                        tour_sche_longit: actLng,
+                        tour_sche_latit: actLat,
+                        day_number: dayNum,
+                        tour_times_id: tourTimesId,
+                        tour_id: tourId
+                    });
+                    await newSche.save();
+                    seq++;
+                }
+            }
+        }
+
+        return tourId;
+    } catch (err) {
+        console.error("saveCustomTour Error:", err);
+        throw err;
+    }
+};
 
 exports.createPaymentUrl = async (req, res) => {
     try {
@@ -45,7 +232,12 @@ exports.createPaymentUrl = async (req, res) => {
         // Save pending booking ONLY IF it's a new booking (bookingId not provided)
         if (bookingData && !bookingId) {
             try {
-                const tourId = bookingData.tourId || "unknown";
+                let tourId = bookingData.tourId || "unknown";
+                if (bookingData.isCustom === "true" || bookingData.isCustom === true) {
+                    tourId = await saveCustomTour(bookingData, userId);
+                    bookingData.tourId = tourId;
+                }
+
                 const requestedSeats = (parseInt(bookingData.adultCount) || 0) + (parseInt(bookingData.childCount) || 0);
 
                 // Check capacity
@@ -55,7 +247,7 @@ exports.createPaymentUrl = async (req, res) => {
                 ]);
 
                 const currentBooked = existingBookings.reduce((sum, b) => sum + (b.adult_count || 0) + (b.child_count || 0), 0);
-                const capacity = tourPrice ? tourPrice.tour_capacity : 0;
+                const capacity = tourPrice ? tourPrice.tour_capacity : 99;
 
                 if (currentBooked + requestedSeats > capacity) {
                     return res.status(400).json({ 
@@ -92,7 +284,7 @@ exports.createPaymentUrl = async (req, res) => {
                 const newBooking = new BookingInfo({
                     booking_info_id: txnRef,
                     user_id: userId || null,
-                    tour_id: bookingData.tourId || "unknown",
+                    tour_id: tourId,
                     date_start: tourTime ? tourTime.date_start : null,
                     date_end: tourTime ? tourTime.date_end : null,
                     contact_info: {
@@ -384,6 +576,12 @@ exports.createOfflineBooking = async (req, res) => {
             return res.status(400).json({ success: false, message: "Thiếu thông tin đặt tour" });
         }
 
+        let tourId = bookingData.tourId || "unknown";
+        if (bookingData.isCustom === "true" || bookingData.isCustom === true) {
+            tourId = await saveCustomTour(bookingData, userId);
+            bookingData.tourId = tourId;
+        }
+
         let date = new Date();
         let txnRef = moment(date).format('YYYYMMDDHHmmss');
 
@@ -409,12 +607,12 @@ exports.createOfflineBooking = async (req, res) => {
             });
         }
 
-        const tourTime = await TourTime.findOne({ tour_id: bookingData.tourId });
+        const tourTime = await TourTime.findOne({ tour_id: tourId });
 
         const newBooking = new BookingInfo({
             booking_info_id: txnRef,
             user_id: userId || null,
-            tour_id: bookingData.tourId || "unknown",
+            tour_id: tourId,
             date_start: tourTime ? tourTime.date_start : null,
             date_end: tourTime ? tourTime.date_end : null,
             contact_info: {

@@ -55,29 +55,29 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
                     <span class="text-on-surface-variant text-sm font-medium">Tổng số yêu cầu</span>
-                    <span class="text-4xl font-extrabold font-headline text-primary">124</span>
+                    <span id="stat-total" class="text-4xl font-extrabold font-headline text-primary">0</span>
                     <div class="flex items-center gap-1 text-green-600 text-xs font-bold mt-2">
                         <span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
-                        <span>+12% tháng này</span>
+                        <span>Mới thiết kế</span>
                     </div>
                 </div>
                 <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
                     <span class="text-on-surface-variant text-sm font-medium">Đang chờ xử lý</span>
-                    <span class="text-4xl font-extrabold font-headline text-tertiary">18</span>
+                    <span id="stat-pending" class="text-4xl font-extrabold font-headline text-tertiary">0</span>
                     <p class="text-on-surface-variant text-xs mt-2 italic">Cần phê duyệt sớm</p>
                 </div>
                 <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
-                    <span class="text-on-surface-variant text-sm font-medium">Đã phê duyệt</span>
-                    <span class="text-4xl font-extrabold font-headline text-green-700">92</span>
+                    <span class="text-on-surface-variant text-sm font-medium">Đã thanh toán</span>
+                    <span id="stat-approved" class="text-4xl font-extrabold font-headline text-green-700">0</span>
                     <div class="flex items-center gap-1 text-green-600 text-xs font-bold mt-2">
                         <span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
-                        <span>Tỉ lệ 74%</span>
+                        <span>Giao dịch thành công</span>
                     </div>
                 </div>
                 <div class="bg-surface-container-lowest p-6 rounded-lg flex flex-col gap-1 border border-outline-variant/10 shadow-sm">
                     <span class="text-on-surface-variant text-sm font-medium">Doanh thu dự kiến</span>
-                    <span class="text-3xl font-extrabold font-headline text-primary">₫1.2B</span>
-                    <p class="text-on-surface-variant text-xs mt-2">Từ các tour tiềm năng</p>
+                    <span id="stat-revenue" class="text-3xl font-extrabold font-headline text-primary">₫0</span>
+                    <p class="text-on-surface-variant text-xs mt-2">Từ các tour tự thiết kế</p>
                 </div>
             </div>
 
@@ -89,22 +89,17 @@
                             <tr class="bg-surface-container-low border-b-0">
                                 <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider">Tên Tour</th>
                                 <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider">Khách hàng</th>
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider text-center">Ngày đi - Ngày về</th>
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider text-center">Số người</th>
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider text-center">Giá Tour</th>
+                                <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider text-center">Tình trạng</th>
                                 <th class="px-6 py-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider text-center">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-surface-container">
-                            <tr class="hover:bg-surface-container-high transition-colors group">
-                                <td class="px-6 py-6">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-primary">Khám phá Tây Bắc 7 ngày</span>
-                                        <span class="text-xs text-on-surface-variant mt-1 line-clamp-1">Hà Giang - Đồng Văn - Lũng Cú...</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-6 text-sm">Nguyễn Lan</td>
-                                <td class="px-6 py-6 text-center">
-                                    <button class="p-2 hover:bg-primary/10 text-primary rounded-full transition-all">
-                                        <span class="material-symbols-outlined">visibility</span>
-                                    </button>
+                        <tbody id="custom-tour-table-body" class="divide-y divide-surface-container">
+                            <tr>
+                                <td colspan="7" class="px-6 py-10 text-center text-on-surface-variant italic">
+                                    Đang tải dữ liệu tour tự túc...
                                 </td>
                             </tr>
                         </tbody>
@@ -115,14 +110,14 @@
             <!-- Highlights and Activity Log -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-surface-container-low p-8 rounded-lg flex flex-col gap-6 relative overflow-hidden">
-                    <h3 class="text-2xl font-bold">Tour Di Sản Miền Trung</h3>
-                    <button class="py-3 bg-primary text-on-primary font-bold rounded-lg">Phê duyệt nhanh</button>
+                    <h3 class="text-2xl font-bold">Quản lý nhanh Tour</h3>
+                    <p class="text-sm text-on-surface-variant">Phê duyệt hoặc hỗ trợ cập nhật lịch trình của khách hàng nhanh chóng ngay khi có yêu cầu mới.</p>
+                    <button onclick="alert('Tính năng phê duyệt nhanh sẽ được phát triển trong phiên bản tiếp theo.')" class="py-3 bg-primary text-on-primary font-bold rounded-lg hover:scale-95 transition-all">Hỗ trợ khách hàng</button>
                 </div>
                 <div class="bg-surface-container-lowest p-8 rounded-lg flex flex-col gap-6 border border-outline-variant/10">
-                    <h3 class="text-xl font-bold">Hoạt động gần đây</h3>
-                    <div class="space-y-4 text-sm">
-                        <p><strong>Phê duyệt Tour "Khám phá Tây Bắc"</strong> - 10 phút trước</p>
-                        <p><strong>Yêu cầu mới: "Tour Trăng Mật Phú Quốc"</strong> - 45 phút trước</p>
+                    <h3 class="text-xl font-bold">Yêu cầu thiết kế tour gần đây</h3>
+                    <div id="recent-custom-activities" class="space-y-4 text-sm">
+                        <p class="text-on-surface-variant italic">Đang tải các hoạt động gần đây...</p>
                     </div>
                 </div>
             </div>
@@ -132,5 +127,6 @@
     <!-- Scripts -->
     <script src="../container/js/sidebar.js"></script>
     <script src="../container/js/topbar.js"></script>
+    <script src="../container/js/tour_custom.js"></script>
 </body>
 </html>

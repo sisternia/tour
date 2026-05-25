@@ -13,6 +13,7 @@ const messageRoutes = require("./src/routes/messages.route");
 const dashboardRoutes = require("./src/routes/dashboard.route");
 const notificationRoutes = require("./src/routes/notifications.route");
 const aiRoutes = require("./src/routes/ai.route");
+const reviewRoutes = require("./src/routes/reviews.route");
 
 
 const app = express();
@@ -34,6 +35,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.use(express.static(path.join(__dirname, "admin")));
 

@@ -11,6 +11,7 @@ const GuideField = require('../models/guide_fields.model');
 const GuideUserLanguage = require('../models/guide_user_languages.model');
 const GuideUserField = require('../models/guide_user_fields.model');
 const BookingInfo = require('../models/booking_infos.model');
+const Review = require('../models/reviews.model');
 const mongoose = require('mongoose');
 const { uploadImage, deleteFolder, deleteImage } = require('../services/cloudinary.service');
 
@@ -279,12 +280,13 @@ exports.get_tour_by_id = async (req, res) => {
     const tour = await Tour.findOne({ tour_id: id });
     if (!tour) return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
 
-    const [price, time, images, tourGuides, schedules] = await Promise.all([
+    const [price, time, images, tourGuides, schedules, reviews] = await Promise.all([
       TourPrice.findOne({ tour_id: id }),
       TourTime.findOne({ tour_id: id }),
       TourImg.find({ tour_id: id }),
       TourGuide.find({ tour_id: id }),
-      TourSche.find({ tour_id: id }).sort({ day_number: 1, time_sche_start: 1 })
+      TourSche.find({ tour_id: id }).sort({ day_number: 1, time_sche_start: 1 }),
+      Review.find({ tour_id: id })
     ]);
 
     const guideIds = tourGuides.map(tg => tg.user_id);
@@ -313,6 +315,11 @@ exports.get_tour_by_id = async (req, res) => {
     const tour_capacity = price ? price.tour_capacity : 0;
     const available_slots = Math.max(0, tour_capacity - current_passengers);
 
+    const totalReviews = reviews.length;
+    const averageRating = totalReviews > 0
+      ? parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1))
+      : 0;
+
     res.status(200).json({
       success: true,
       data: {
@@ -323,7 +330,9 @@ exports.get_tour_by_id = async (req, res) => {
         guides: guides || [],
         schedules: detailedSchedules || [],
         current_passengers,
-        available_slots
+        available_slots,
+        averageRating,
+        totalReviews
       }
     });
   } catch (error) {
@@ -334,27 +343,33 @@ exports.get_tour_by_id = async (req, res) => {
 exports.view_tour = async (req, res) => {
   try {
     const { guide_id } = req.query;
-    let query = {};
+    let query = { is_custom: { $ne: true } };
 
     if (guide_id) {
       const tourGuides = await TourGuide.find({ user_id: guide_id });
       const tourIds = tourGuides.map(tg => tg.tour_id);
-      query = { tour_id: { $in: tourIds } };
+      query.tour_id = { $in: tourIds };
     }
 
     const tours = await Tour.find(query).sort({ createdAt: -1 });
     const detailedTours = [];
 
     for (const tour of tours) {
-      const [price, currentTime, coverImg, tourGuides] = await Promise.all([
+      const [price, currentTime, coverImg, tourGuides, reviews] = await Promise.all([
         TourPrice.findOne({ tour_id: tour.tour_id }),
         TourTime.findOne({ tour_id: tour.tour_id }),
         TourImg.findOne({ tour_id: tour.tour_id, img_is_cover: true }),
-        TourGuide.find({ tour_id: tour.tour_id })
+        TourGuide.find({ tour_id: tour.tour_id }),
+        Review.find({ tour_id: tour.tour_id })
       ]);
 
       const guideIds = tourGuides.map(tg => tg.user_id);
       const guides = await UserInfo.find({ user_id: { $in: guideIds } });
+
+      const totalReviews = reviews.length;
+      const averageRating = totalReviews > 0
+        ? parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1))
+        : 0;
 
       const bookingsWithDates = await BookingInfo.aggregate([
         { $match: { tour_id: tour.tour_id, status: { $ne: 'cancelled' } } },
@@ -387,7 +402,9 @@ exports.view_tour = async (req, res) => {
           guides: guides || [],
           cover_img: coverImg ? coverImg.tour_img_url : null,
           current_passengers: instance.passengers,
-          available_slots: price ? Math.max(0, price.tour_capacity - instance.passengers) : 0
+          available_slots: price ? Math.max(0, price.tour_capacity - instance.passengers) : 0,
+          averageRating,
+          totalReviews
         });
       }
 
@@ -406,7 +423,9 @@ exports.view_tour = async (req, res) => {
             guides: guides || [],
             cover_img: coverImg ? coverImg.tour_img_url : null,
             current_passengers: 0,
-            available_slots: price ? price.tour_capacity : 0
+            available_slots: price ? price.tour_capacity : 0,
+            averageRating,
+            totalReviews
           });
         }
       }

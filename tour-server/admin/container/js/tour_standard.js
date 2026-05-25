@@ -1139,6 +1139,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Guides Assignment Logic ---
   const guidesListContainer = document.getElementById("guides-list-container");
+  let guideConflicts = {}; // { user_id: [{ tour_name, date_start, date_end }] }
 
   async function fetchGuides() {
     if (isFullGuidesLoaded) {
@@ -1146,11 +1147,66 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     try {
-      const response = await fetch("/api/guides/view-guide");
-      const result = await response.json();
-      if (result.success) {
-        allGuides = result.data;
+      const [guidesRes, toursRes] = await Promise.all([
+        fetch("/api/guides/view-guide"),
+        fetch("/api/tours/view-tour"),
+      ]);
+      const guidesResult = await guidesRes.json();
+      const toursResult = await toursRes.json();
+
+      if (guidesResult.success) {
+        allGuides = guidesResult.data;
         isFullGuidesLoaded = true;
+
+        // Build conflict map
+        guideConflicts = {};
+        if (toursResult.success) {
+          const currentStartDate = startDateInput.value
+            ? new Date(startDateInput.value)
+            : null;
+          const currentEndDate = endDateInput.value
+            ? new Date(endDateInput.value)
+            : null;
+
+          if (currentStartDate && currentEndDate) {
+            // Normalize to start of day
+            currentStartDate.setHours(0, 0, 0, 0);
+            currentEndDate.setHours(23, 59, 59, 999);
+
+            for (const tour of toursResult.data) {
+              // Skip the tour being edited
+              if (editingTourId && tour.tour_id === editingTourId) continue;
+
+              const tourStart = tour.time?.date_start
+                ? new Date(tour.time.date_start)
+                : null;
+              const tourEnd = tour.time?.date_end
+                ? new Date(tour.time.date_end)
+                : null;
+
+              if (!tourStart || !tourEnd) continue;
+              tourStart.setHours(0, 0, 0, 0);
+              tourEnd.setHours(23, 59, 59, 999);
+
+              // Check date overlap: two ranges overlap if start1 <= end2 AND start2 <= end1
+              const hasOverlap =
+                currentStartDate <= tourEnd && tourStart <= currentEndDate;
+
+              if (hasOverlap && tour.guides && tour.guides.length > 0) {
+                for (const guide of tour.guides) {
+                  const gId = guide.user_id?.toString() || guide.user_id;
+                  if (!guideConflicts[gId]) guideConflicts[gId] = [];
+                  guideConflicts[gId].push({
+                    tour_name: tour.tour_name,
+                    date_start: tourStart,
+                    date_end: tourEnd,
+                  });
+                }
+              }
+            }
+          }
+        }
+
         renderGuides();
       }
     } catch (error) {
@@ -1167,9 +1223,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     allGuides.forEach((guide) => {
-      const isSelected = selectedGuideIds.some((id) => id == guide.user_id);
+      const guideId = guide.user_id?.toString() || guide.user_id;
+      const isSelected = selectedGuideIds.some((id) => id == guideId);
+      const conflicts = guideConflicts[guideId] || [];
+      const hasConflict = conflicts.length > 0;
+
       const card = document.createElement("div");
-      card.className = `group relative bg-surface-container-lowest p-6 rounded-xl transition-all cursor-pointer border-2 ${isSelected ? "border-primary shadow-xl shadow-primary/10" : "border-outline-variant/10 hover:border-primary/30"}`;
+
+      if (hasConflict) {
+        card.className = `group relative bg-red-50/50 p-6 rounded-xl transition-all border-2 border-red-300 opacity-80 cursor-not-allowed`;
+      } else {
+        card.className = `group relative bg-surface-container-lowest p-6 rounded-xl transition-all cursor-pointer border-2 ${isSelected ? "border-primary shadow-xl shadow-primary/10" : "border-outline-variant/10 hover:border-primary/30"}`;
+      }
 
       const dobStr = guide.dob
         ? new Date(guide.dob).toLocaleDateString("vi-VN")
@@ -1179,14 +1244,39 @@ document.addEventListener("DOMContentLoaded", function () {
       const fields =
         guide.fields && guide.fields.length > 0 ? guide.fields : [];
 
+      // Build conflict warning HTML
+      let conflictHtml = "";
+      if (hasConflict) {
+        const conflictList = conflicts
+          .map((c) => {
+            const ds = c.date_start.toLocaleDateString("vi-VN");
+            const de = c.date_end.toLocaleDateString("vi-VN");
+            return `<span class="block text-[10px] text-red-600 font-medium">• ${c.tour_name} (${ds} - ${de})</span>`;
+          })
+          .join("");
+
+        conflictHtml = `
+                <div class="mb-4 p-3 bg-red-100 border border-red-200 rounded-lg">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-red-600 text-[16px]">warning</span>
+                        <span class="text-[11px] font-black text-red-700 uppercase tracking-wide">Hướng dẫn viên đang tiếp nhận tour khác</span>
+                    </div>
+                    ${conflictList}
+                </div>
+        `;
+      }
+
       card.innerHTML = `
+                <!-- Conflict Badge (top-right) -->
+                ${hasConflict ? `<div class="absolute top-3 right-3 z-10"><span class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 text-white text-[9px] font-black rounded-full uppercase tracking-wider shadow-sm"><span class="material-symbols-outlined text-[12px]">block</span>Không khả dụng</span></div>` : ""}
+
                 <!-- Top Info: Avatar, Name, DOB -->
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-4">
-                        <img alt="${guide.full_name}" class="w-16 h-16 rounded-full object-cover shadow-sm ring-2 ring-primary/10" src="${guide.avatar || "https://via.placeholder.com/200?text=HDV"}"/>
+                        <img alt="${guide.full_name}" class="w-16 h-16 rounded-full object-cover shadow-sm ring-2 ${hasConflict ? "ring-red-200 grayscale-[30%]" : "ring-primary/10"}" src="${guide.avatar || "https://via.placeholder.com/200?text=HDV"}"/>
                         <div class="flex-1 min-w-0">
-                            <span class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5 block">Hướng dẫn viên</span>
-                            <h3 class="text-lg font-extrabold text-on-surface mb-0.5 truncate">${guide.full_name}</h3>
+                            <span class="text-[10px] font-black ${hasConflict ? "text-red-500" : "text-primary"} uppercase tracking-[0.2em] mb-0.5 block">Hướng dẫn viên</span>
+                            <h3 class="text-lg font-extrabold ${hasConflict ? "text-red-800" : "text-on-surface"} mb-0.5 truncate">${guide.full_name}</h3>
                             <div class="flex items-center gap-1.5 text-on-surface-variant">
                                 <span class="material-symbols-outlined text-[14px] text-amber-500">cake</span>
                                 <span class="text-[11px] font-bold">${dobStr}</span>
@@ -1194,6 +1284,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     </div>
                 </div>
+
+                ${conflictHtml}
 
                 <!-- Details Grid -->
                 <div class="space-y-4 mb-6">
@@ -1237,39 +1329,47 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                 </div>
 
-                <label class="flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all mt-auto ${isSelected ? "border-primary bg-primary/5" : "border-outline-variant/20 group-hover:border-primary/40"}">
-                    <span class="text-xs font-bold ${isSelected ? "text-primary" : "text-on-surface group-hover:text-primary"}">${isSelected ? "Đã chọn" : "Chọn làm dẫn đoàn"}</span>
-                    <input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="guide_select" type="checkbox" value="${guide.user_id}" ${isSelected ? "checked" : ""}/>
-                </label>
+                ${hasConflict
+                  ? `<div class="flex items-center justify-between p-3 rounded-lg border-2 border-red-200 bg-red-50 mt-auto">
+                        <span class="text-xs font-bold text-red-500 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">event_busy</span>Không thể chọn</span>
+                        <input class="w-4 h-4 text-red-400 border-red-300 cursor-not-allowed" name="guide_select" type="checkbox" value="${guideId}" disabled/>
+                    </div>`
+                  : `<label class="flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all mt-auto ${isSelected ? "border-primary bg-primary/5" : "border-outline-variant/20 group-hover:border-primary/40"}">
+                        <span class="text-xs font-bold ${isSelected ? "text-primary" : "text-on-surface group-hover:text-primary"}">${isSelected ? "Đã chọn" : "Chọn làm dẫn đoàn"}</span>
+                        <input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="guide_select" type="checkbox" value="${guideId}" ${isSelected ? "checked" : ""}/>
+                    </label>`
+                }
             `;
 
-      // Handle visual state of selection
-      const checkbox = card.querySelector("input");
-      const label = card.querySelector("label");
-      const labelText = card.querySelector("label span");
+      // Handle visual state of selection (only if no conflict)
+      if (!hasConflict) {
+        const checkbox = card.querySelector("input");
+        const label = card.querySelector("label");
+        const labelText = card.querySelector("label span");
 
-      checkbox.onchange = () => {
-        const isChecked = checkbox.checked;
-        if (isChecked) {
-          if (!selectedGuideIds.includes(guide.user_id))
-            selectedGuideIds.push(guide.user_id);
-        } else {
-          selectedGuideIds = selectedGuideIds.filter(
-            (id) => id !== guide.user_id,
-          );
-        }
+        checkbox.onchange = () => {
+          const isChecked = checkbox.checked;
+          if (isChecked) {
+            if (!selectedGuideIds.includes(guide.user_id))
+              selectedGuideIds.push(guide.user_id);
+          } else {
+            selectedGuideIds = selectedGuideIds.filter(
+              (id) => id !== guide.user_id,
+            );
+          }
 
-        card.classList.toggle("border-primary", isChecked);
-        card.classList.toggle("border-outline-variant/10", !isChecked);
-        card.classList.toggle("shadow-xl", isChecked);
-        card.classList.toggle("shadow-primary/10", isChecked);
-        label.classList.toggle("border-primary", isChecked);
-        label.classList.toggle("border-outline-variant/20", !isChecked);
-        label.classList.toggle("bg-primary/5", isChecked);
-        labelText.classList.toggle("text-primary", isChecked);
-        labelText.classList.toggle("text-on-surface", !isChecked);
-        labelText.textContent = isChecked ? "Đã chọn" : "Chọn làm dẫn đoàn";
-      };
+          card.classList.toggle("border-primary", isChecked);
+          card.classList.toggle("border-outline-variant/10", !isChecked);
+          card.classList.toggle("shadow-xl", isChecked);
+          card.classList.toggle("shadow-primary/10", isChecked);
+          label.classList.toggle("border-primary", isChecked);
+          label.classList.toggle("border-outline-variant/20", !isChecked);
+          label.classList.toggle("bg-primary/5", isChecked);
+          labelText.classList.toggle("text-primary", isChecked);
+          labelText.classList.toggle("text-on-surface", !isChecked);
+          labelText.textContent = isChecked ? "Đã chọn" : "Chọn làm dẫn đoàn";
+        };
+      }
 
       guidesListContainer.appendChild(card);
     });

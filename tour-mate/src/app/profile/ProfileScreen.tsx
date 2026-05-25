@@ -17,6 +17,7 @@ import ProfileLayout from "@/components/profile/ProfileLayout";
 import NotificationModal from "@/components/ui/NotificationModal";
 import { useAuth } from "@/context/AuthContext";
 import { getUserProfile } from "@/services/auth/userService";
+import { getUserReviewImages } from "@/services/tour/reviewService";
 import { router } from "expo-router";
 
 export default function ProfileScreen() {
@@ -28,6 +29,8 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("Bài viết");
+  const [reviewImages, setReviewImages] = useState<string[]>([]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -43,6 +46,14 @@ export default function ProfileScreen() {
     };
     loadProfile();
   }, [user?.user_name]);
+
+  useEffect(() => {
+    if (activeTab === "Đánh giá" && user?.user_id) {
+       getUserReviewImages(user.user_id).then(res => {
+         if (res.success) setReviewImages(res.data);
+       });
+    }
+  }, [activeTab, user?.user_id]);
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
@@ -137,21 +148,36 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.tabContainer}>
-          <TouchableOpacity style={styles.activeTab}>
-            <Text style={styles.activeTabText}>Bài viết</Text>
+          <TouchableOpacity style={activeTab === "Bài viết" ? styles.activeTab : styles.inactiveTab} onPress={() => setActiveTab("Bài viết")}>
+            <Text style={activeTab === "Bài viết" ? styles.activeTabText : styles.inactiveTabText}>Bài viết</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.inactiveTabText}>Đã lưu</Text>
+          <TouchableOpacity style={activeTab === "Đã lưu" ? styles.activeTab : styles.inactiveTab} onPress={() => setActiveTab("Đã lưu")}>
+            <Text style={activeTab === "Đã lưu" ? styles.activeTabText : styles.inactiveTabText}>Đã lưu</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.inactiveTabText}>Đánh giá</Text>
+          <TouchableOpacity style={activeTab === "Đánh giá" ? styles.activeTab : styles.inactiveTab} onPress={() => setActiveTab("Đánh giá")}>
+            <Text style={activeTab === "Đánh giá" ? styles.activeTabText : styles.inactiveTabText}>Đánh giá</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.emptyGrid}>
-          <Ionicons name="images-outline" size={50} color="#E5E5E5" />
-          <Text style={styles.emptyText}>Chưa có bài viết nào</Text>
-        </View>
+        {activeTab === "Đánh giá" ? (
+           reviewImages.length > 0 ? (
+             <View style={styles.reviewImageGrid}>
+               {reviewImages.map((uri, idx) => (
+                 <Image key={idx} source={{ uri }} style={styles.reviewGridImage} />
+               ))}
+             </View>
+           ) : (
+             <View style={styles.emptyGrid}>
+               <Ionicons name="images-outline" size={50} color="#E5E5E5" />
+               <Text style={styles.emptyText}>Chưa có ảnh đánh giá nào</Text>
+             </View>
+           )
+        ) : (
+          <View style={styles.emptyGrid}>
+            <Ionicons name="images-outline" size={50} color="#E5E5E5" />
+            <Text style={styles.emptyText}>Chưa có {activeTab.toLowerCase()} nào</Text>
+          </View>
+        )}
         <View style={{ height: 100 }} />
       </ScrollView>
       <NotificationModal
@@ -314,5 +340,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#EF4444",
     fontWeight: "600",
+  },
+  reviewImageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    padding: 2,
+  },
+  reviewGridImage: {
+    width: "33%",
+    aspectRatio: 1,
+    margin: "0.16%",
   },
 });
