@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -31,6 +31,11 @@ export default function TourLayout({
   formatDuration,
   handlePressTour,
 }: TourLayoutProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(tours.length / itemsPerPage);
+  const currentTours = tours.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const renderFilterSection = (title: string, icon: any, children: React.ReactNode) => (
     <View style={styles.webFilterGroup}>
       <View style={styles.webFilterHeader}>
@@ -126,7 +131,7 @@ export default function TourLayout({
           <View style={styles.webListArea}>
             <View style={styles.webToolbar}>
               <Text style={styles.webResultsInfo}>
-                Hiển thị <Text style={styles.webBold}>{tours.length}</Text> trong số <Text style={styles.webBold}>148</Text> tour
+                Tổng tour hiện đang hoạt động: <Text style={styles.webBold}>{tours.length}</Text>
               </Text>
               <View style={styles.webSortWrapper}>
                 <Text style={styles.webSortLabel}>Sắp xếp:</Text>
@@ -138,14 +143,14 @@ export default function TourLayout({
             </View>
 
             <View style={styles.webTourGrid}>
-              {tours.map((tour, i) => (
+              {currentTours.map((tour, i) => (
                 <TouchableOpacity key={i} style={styles.webTourCard} onPress={() => handlePressTour(tour)}>
                   <View style={styles.webTourImageWrapper}>
                     <Image source={{ uri: tour.cover_img || "https://via.placeholder.com/400x250" }} style={styles.webTourImage} />
                     {i === 0 && <View style={styles.webHotTag}><Text style={styles.webHotTagText}>-20% Hot Deal</Text></View>}
                     <View style={styles.webRatingBadge}>
                       <Ionicons name="star" size={12} color="#994700" />
-                      <Text style={styles.webRatingValue}>4.9</Text>
+                      <Text style={styles.webRatingValue}>{tour.averageRating || "5.0"}</Text>
                     </View>
                   </View>
                   <View style={styles.webTourInfo}>
@@ -187,15 +192,40 @@ export default function TourLayout({
             </View>
 
             {/* Pagination */}
-            <View style={styles.webPagination}>
-              <TouchableOpacity style={styles.webPageBtn}><Ionicons name="chevron-back" size={20} color="#666" /></TouchableOpacity>
-              <TouchableOpacity style={[styles.webPageBtn, styles.webPageBtnActive]}><Text style={styles.webPageTextActive}>1</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.webPageBtn}><Text style={styles.webPageText}>2</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.webPageBtn}><Text style={styles.webPageText}>3</Text></TouchableOpacity>
-              <Text style={styles.webPageDots}>...</Text>
-              <TouchableOpacity style={styles.webPageBtn}><Text style={styles.webPageText}>12</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.webPageBtn}><Ionicons name="chevron-forward" size={20} color="#666" /></TouchableOpacity>
-            </View>
+            {totalPages > 1 && (
+              <View style={styles.webPagination}>
+                <TouchableOpacity 
+                  style={styles.webPageBtn}
+                  onPress={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <Ionicons name="chevron-back" size={20} color={currentPage === 1 ? "#ccc" : "#666"} />
+                </TouchableOpacity>
+                
+                {[...Array(totalPages)].map((_, idx) => {
+                  const page = idx + 1;
+                  return (
+                    <TouchableOpacity 
+                      key={page}
+                      style={[styles.webPageBtn, currentPage === page && styles.webPageBtnActive]}
+                      onPress={() => setCurrentPage(page)}
+                    >
+                      <Text style={currentPage === page ? styles.webPageTextActive : styles.webPageText}>
+                        {page}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                <TouchableOpacity 
+                  style={styles.webPageBtn}
+                  onPress={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <Ionicons name="chevron-forward" size={20} color={currentPage === totalPages ? "#ccc" : "#666"} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </View>

@@ -257,7 +257,7 @@ export default function TourDetailLayout({
                   </View>
                   <View style={[{ flexDirection: 'row', alignItems: 'center' }, { marginLeft: 15 }]}>
                     <Ionicons name="star" size={16} color="#fb7800" />
-                    <Text style={styles.webRatingText}>4.9 (128 đánh giá)</Text>
+                    <Text style={styles.webRatingText}>{tour.averageRating || "5.0"} ({tour.totalReviews || 0} đánh giá)</Text>
                   </View>
                 </View>
                 <Text style={styles.webMainTitle}>{tour.tour_name}</Text>

@@ -5,9 +5,10 @@ import { WebView } from 'react-native-webview';
 interface MapProps {
   tour: any;
   height?: number | `${number}%` | 'auto';
+  onMapTouch?: (isTouching: boolean) => void;
 }
 
-const Map = forwardRef<any, MapProps>(({ tour, height = 300 }, ref) => {
+const Map = forwardRef<any, MapProps>(({ tour, height = 300, onMapTouch }, ref) => {
 
   const getScheduleDate = (startDateStr: string, dayNumber: number) => {
     if (!startDateStr) return "";
@@ -263,6 +264,10 @@ const Map = forwardRef<any, MapProps>(({ tour, height = 300 }, ref) => {
           source={{ html: getLeafletHTML(tour) }} 
           style={{ flex: 1 }} 
           scrollEnabled={false} 
+          nestedScrollEnabled={true}
+          onTouchStart={() => onMapTouch?.(true)}
+          onTouchEnd={() => onMapTouch?.(false)}
+          onTouchCancel={() => onMapTouch?.(false)}
         />
       )}
     </View>

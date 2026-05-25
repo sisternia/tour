@@ -58,6 +58,7 @@ export default function TourDetailScreen() {
   const [reviews, setReviews] = React.useState<any[]>([]);
   const [reviewableBookings, setReviewableBookings] = React.useState<string[]>([]);
   const [isReviewModalVisible, setIsReviewModalVisible] = React.useState(false);
+  const [isScrollEnabled, setIsScrollEnabled] = React.useState(true);
   const [reviewRating, setReviewRating] = React.useState(5);
   const [reviewComment, setReviewComment] = React.useState("");
   const [reviewImages, setReviewImages] = React.useState<string[]>([]);
@@ -423,7 +424,7 @@ export default function TourDetailScreen() {
         </View>
       </Modal>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} scrollEnabled={isScrollEnabled}>
         <ImageBackground
           source={{ uri: coverImage }}
           style={styles.headerImage}
@@ -785,7 +786,7 @@ export default function TourDetailScreen() {
               })()}
 
               <Text style={styles.sectionTitle}>Địa điểm tham quan</Text>
-              <Map ref={webViewRef} tour={tour} height={300} />
+              <Map ref={webViewRef} tour={tour} height={300} onMapTouch={(touching) => setIsScrollEnabled(!touching)} />
             </View>
           )}
 
