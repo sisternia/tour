@@ -4,16 +4,34 @@ const connectDB = require('../config/db');
 const Tour = require('../models/tours.model');
 const { GoogleGenerativeAIEmbeddings } = require('@langchain/google-genai');
 
+const embeddings = new GoogleGenerativeAIEmbeddings({
+  apiKey: process.env.GEMINI_API_KEY,
+  modelName: "gemini-embedding-2",
+});
+
+const buildTourEmbeddingContent = (tour) => `Tên tour: ${tour.tour_name}
+Địa điểm: ${tour.tour_add}
+Mô tả: ${tour.tour_desc || 'Chưa có mô tả'}
+Phân loại: ${tour.tour_type}
+Trạng thái: ${tour.tour_status}`;
+
+const embedTourById = async (tourId) => {
+  const tour = await Tour.findOne({ tour_id: tourId });
+  if (!tour) {
+    throw new Error(`Không tìm thấy tour để embedding: ${tourId}`);
+  }
+
+  const content = buildTourEmbeddingContent(tour);
+  const vector = await embeddings.embedQuery(content);
+  tour.embedding = vector;
+  await tour.save();
+  return vector.length;
+};
+
 const embedAllTours = async () => {
   try {
     // 1. Connect to Database
     await connectDB();
-
-    // 2. Initialize Gemini Embeddings
-    const embeddings = new GoogleGenerativeAIEmbeddings({
-      apiKey: process.env.GEMINI_API_KEY,
-      modelName: "gemini-embedding-2", // Generates embeddings
-    });
 
     console.log("Fetching tours...");
     const tours = await Tour.find({});
@@ -23,12 +41,7 @@ const embedAllTours = async () => {
       const tour = tours[i];
       console.log(`[${i + 1}/${tours.length}] Processing: ${tour.tour_name}`);
 
-      // Compile detailed content to vectorize
-      const content = `Tên tour: ${tour.tour_name}
-Địa điểm: ${tour.tour_add}
-Mô tả: ${tour.tour_desc || 'Chưa có mô tả'}
-Phân loại: ${tour.tour_type}
-Trạng thái: ${tour.tour_status}`;
+      const content = buildTourEmbeddingContent(tour);
 
       try {
         const vector = await embeddings.embedQuery(content);
@@ -50,4 +63,12 @@ Trạng thái: ${tour.tour_status}`;
   }
 };
 
-embedAllTours();
+if (require.main === module) {
+  embedAllTours();
+}
+
+module.exports = {
+  buildTourEmbeddingContent,
+  embedTourById,
+  embedAllTours
+};
