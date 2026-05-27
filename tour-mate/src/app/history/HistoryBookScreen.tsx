@@ -184,21 +184,21 @@ export default function HistoryBookScreen() {
                                     {tour.tour_status === 'Đã xác nhận' && booking.status === 'pending' ? (
                                         <TouchableOpacity
                                             style={[styles.actionBtn, styles.payNowBtn]}
-                                            onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
+                                            onPress={() => router.push(`/tour/PaymentScreen?bookingId=${booking.booking_info_id}`)}
                                         >
                                             <Text style={[styles.actionBtnText, styles.payNowBtnText]}>Thanh toán</Text>
                                         </TouchableOpacity>
                                     ) : booking.status !== 'cancelled' && booking.status !== 'paid' && booking.status !== 'confirmed' ? (
                                         <TouchableOpacity
                                             style={styles.actionBtn}
-                                            onPress={() => router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`)}
+                                            onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
                                         >
                                             <Text style={styles.actionBtnText}>Chi tiết</Text>
                                         </TouchableOpacity>
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.actionBtn}
-                                            onPress={() => router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`)}
+                                            onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
                                         >
                                             <Text style={styles.actionBtnText}>Chi tiết</Text>
                                         </TouchableOpacity>
@@ -225,9 +225,9 @@ export default function HistoryBookScreen() {
                                         ]}
                                         onPress={() => {
                                             if (booking.status === 'pending') {
-                                                router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`);
+                                                router.push(`/tour/PaymentScreen?bookingId=${booking.booking_info_id}`);
                                             } else {
-                                                router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`);
+                                                router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`);
                                             }
                                         }}
                                     >
