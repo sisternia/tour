@@ -58,27 +58,27 @@
             <!-- Dynamic Stepper -->
             <div id="stepper" class="flex items-center justify-between mb-12 px-12">
                 <!-- Step 1 Indicator -->
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="1">
-                    <div class="step-icon w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg shadow-primary/20">1</div>
-                    <span class="step-label text-xs font-bold text-primary">Thông tin cơ bản</span>
+                <div class="step-indicator flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105" onclick="goToStep(1)" data-step="1">
+                    <div class="step-icon w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg shadow-primary/20 transition-colors">1</div>
+                    <span class="step-label text-xs font-bold text-primary transition-colors">Thông tin cơ bản</span>
                 </div>
                 <div class="stepper-line mx-4 bg-surface-container-highest transition-colors duration-500" data-line="1"></div>
                 <!-- Step 2 Indicator -->
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="2">
-                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">2</div>
-                    <span class="step-label text-xs font-medium text-on-surface-variant">Lịch trình</span>
+                <div class="step-indicator flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105" onclick="goToStep(2)" data-step="2">
+                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold transition-colors">2</div>
+                    <span class="step-label text-xs font-medium text-on-surface-variant transition-colors">Lịch trình</span>
                 </div>
                 <div class="stepper-line mx-4 bg-surface-container-highest" data-line="2"></div>
                 <!-- Step 3 Indicator -->
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="3">
-                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">3</div>
-                    <span class="step-label text-xs font-medium text-on-surface-variant">Hướng dẫn viên</span>
+                <div class="step-indicator flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105" onclick="goToStep(3)" data-step="3">
+                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold transition-colors">3</div>
+                    <span class="step-label text-xs font-medium text-on-surface-variant transition-colors">Hướng dẫn viên</span>
                 </div>
                 <div class="stepper-line mx-4 bg-surface-container-highest" data-line="3"></div>
                 <!-- Step 4 Indicator -->
-                <div class="step-indicator flex flex-col items-center gap-2" data-step="4">
-                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">4</div>
-                    <span class="step-label text-xs font-medium text-on-surface-variant">Xác nhận</span>
+                <div class="step-indicator flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105" onclick="goToStep(4)" data-step="4">
+                    <div class="step-icon w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold transition-colors">4</div>
+                    <span class="step-label text-xs font-medium text-on-surface-variant transition-colors">Xác nhận</span>
                 </div>
             </div>
 

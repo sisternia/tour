@@ -35,9 +35,10 @@ export default function NotificationsScreen() {
     try {
       const res = await getNotifications(user._id);
       if (res.success) {
-        const newDataStr = JSON.stringify(res.data);
+        let fetchedData = res.data;
+        const newDataStr = JSON.stringify(fetchedData);
         if (newDataStr !== lastUpdateRef.current) {
-          setNotifications(res.data);
+          setNotifications(fetchedData);
           lastUpdateRef.current = newDataStr;
         }
       }

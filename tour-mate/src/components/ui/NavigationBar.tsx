@@ -14,6 +14,7 @@ import { useRouter, usePathname } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import NotificationsLayout from "../notification/NotificationsLayout";
+import WebChatWidget from "../chat/WebChatWidget";
 
 const { width: windowWidth } = Dimensions.get("window");
 
@@ -148,7 +149,10 @@ export default function NavigationBar() {
             {isLoggedIn ? (
               <View style={styles.webActions}>
                 {width > 1024 ? (
-                  <NotificationsLayout />
+                  <>
+                    <WebChatWidget />
+                    <NotificationsLayout />
+                  </>
                 ) : (
                   <TouchableOpacity
                     style={styles.actionBtn}

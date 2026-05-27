@@ -14,7 +14,8 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import NavigationBar from "@/components/ui/NavigationBar";
-import { getTravelersByTour } from "@/services/guide/bookingService";
+import NotificationModal from "@/components/ui/NotificationModal";
+import { getTravelersByTour, confirmBooking } from "@/services/guide/bookingService";
 import { getTourById } from "@/services/tour/tourService";
 
 const { width } = Dimensions.get("window");
@@ -33,6 +34,11 @@ export default function ManageCustomerScreen() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Modal States
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<{ id: string; name: string } | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,6 +75,34 @@ export default function ManageCustomerScreen() {
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const handleOpenConfirm = (bookingId: string, customerName: string) => {
+    setSelectedBooking({ id: bookingId, name: customerName });
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmCheckIn = async () => {
+    if (!selectedBooking) return;
+    
+    try {
+      setIsConfirming(true);
+      const res = await confirmBooking(selectedBooking.id);
+      
+      if (res.success) {
+        setBookings(prev => prev.map(b => 
+          b.id === selectedBooking.id 
+            ? { ...b, checkedIn: true, noShow: false, status: 'confirmed' } 
+            : b
+        ));
+      }
+    } catch (error) {
+      console.error("Confirm error:", error);
+    } finally {
+      setIsConfirming(false);
+      setShowConfirmModal(false);
+      setSelectedBooking(null);
+    }
   };
 
   return (
@@ -155,10 +189,24 @@ export default function ManageCustomerScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.travelerName}>{booking.contactName}</Text>
                     <View style={styles.statusRow}>
-                      <View style={[styles.statusDot, { backgroundColor: booking.status === "Đã thanh toán" ? "#22c55e" : "#fbbf24" }]} />
-                      <Text style={[styles.statusText, { color: booking.status === "Đã thanh toán" ? "#22c55e" : "#fbbf24" }]}>
-                        {booking.status.toUpperCase()}
-                      </Text>
+                      {(() => {
+                        const statusRaw = booking.status;
+                        const statusLabel = statusRaw === 'confirmed' || statusRaw === 'Đã xác nhận' ? 'Đã xác nhận' :
+                                            statusRaw === 'paid' || statusRaw === 'Đã thanh toán' ? 'Đã thanh toán' :
+                                            statusRaw === 'pending' || statusRaw === 'Đang thanh toán' ? 'Đang thanh toán' : 'Đã hủy';
+                        const statusColor = statusLabel === 'Đã xác nhận' ? '#22c55e' :
+                                            statusLabel === 'Đã thanh toán' ? '#3b82f6' :
+                                            statusLabel === 'Đang thanh toán' ? '#bc5700' : '#ef4444';
+                        
+                        return (
+                          <>
+                            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+                            <Text style={[styles.statusText, { color: statusColor }]}>
+                              {statusLabel.toUpperCase()}
+                            </Text>
+                          </>
+                        );
+                      })()}
                       <Text style={styles.travelerType}> • {booking.totalPeople} người</Text>
                     </View>
                     <Text style={styles.contactInfo}>{booking.contactPhone} | ID: {booking.id}</Text>
@@ -213,10 +261,16 @@ export default function ManageCustomerScreen() {
 
                   <View style={styles.cardActions}>
                     <TouchableOpacity 
-                      style={[styles.checkInBtn, booking.checkedIn && { backgroundColor: "#166534" }]}
-                      onPress={() => setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, checkedIn: !b.checkedIn, noShow: false } : b))}
+                      style={[
+                        styles.checkInBtn, 
+                        (booking.status === 'confirmed' || booking.status === 'Đã xác nhận' || booking.checkedIn) && { backgroundColor: "#94a3b8" }
+                      ]}
+                      disabled={booking.status === 'confirmed' || booking.status === 'Đã xác nhận' || booking.checkedIn || isConfirming}
+                      onPress={() => handleOpenConfirm(booking.id, booking.contactName)}
                     >
-                      <Text style={styles.checkInBtnText}>{booking.checkedIn ? "Đã Check-in Đoàn" : "Check-in Đoàn"}</Text>
+                      <Text style={styles.checkInBtnText}>
+                        {booking.status === 'confirmed' || booking.status === 'Đã xác nhận' || booking.checkedIn ? "Đã Check-in Đoàn" : "Check-in Đoàn"}
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
                       style={[styles.noShowBtn, booking.noShow && { backgroundColor: "#b91c1c", borderColor: "#b91c1c" }]}
@@ -233,6 +287,17 @@ export default function ManageCustomerScreen() {
       </ScrollView>
 
       <NavigationBar />
+      
+      <NotificationModal
+        visible={showConfirmModal}
+        type="info"
+        title="Xác nhận điểm danh"
+        message={`Khách hàng "${selectedBooking?.name}" có mặt đầy đủ tại địa điểm?`}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmCheckIn}
+        confirmText="Xác nhận"
+        cancelText="Hủy"
+      />
     </SafeAreaView>
   );
 }

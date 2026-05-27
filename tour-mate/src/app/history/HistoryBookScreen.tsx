@@ -94,13 +94,13 @@ export default function HistoryBookScreen() {
         const tour = booking.tour_id || {};
         const statusLabel = booking.status === 'confirmed' ? 'Đã xác nhận' :
             booking.status === 'paid' ? 'Đã thanh toán' :
-            booking.status === 'pending' ? 'Đang thanh toán' : 'Đã hủy';
+                booking.status === 'pending' ? 'Đang thanh toán' : 'Đã hủy';
         const statusColor = booking.status === 'confirmed' ? '#22c55e' :
             booking.status === 'paid' ? '#3b82f6' :
-            booking.status === 'pending' ? '#bc5700' : '#ef4444';
+                booking.status === 'pending' ? '#bc5700' : '#ef4444';
         const statusBg = booking.status === 'confirmed' ? '#22c55e' :
             booking.status === 'paid' ? '#3b82f6' :
-            booking.status === 'pending' ? '#bc5700' : '#ef4444';
+                booking.status === 'pending' ? '#bc5700' : '#ef4444';
 
         return (
             <TouchableOpacity
@@ -124,11 +124,11 @@ export default function HistoryBookScreen() {
                         <View style={styles.dateRow}>
                             <Ionicons name="calendar-outline" size={16} color="#64748b" />
                             <Text style={styles.dateText}>
-                                {tour.time?.date_start ? 
+                                {tour.time?.date_start ?
                                     (() => {
                                         const d1 = new Date(tour.time.date_start);
                                         const start = `${String(d1.getDate()).padStart(2, '0')}/${String(d1.getMonth() + 1).padStart(2, '0')}/${d1.getFullYear()}`;
-                                        
+
                                         if (tour.time?.date_end) {
                                             const d2 = new Date(tour.time.date_end);
                                             const end = `${String(d2.getDate()).padStart(2, '0')}/${String(d2.getMonth() + 1).padStart(2, '0')}/${d2.getFullYear()}`;
@@ -169,7 +169,7 @@ export default function HistoryBookScreen() {
                             </TouchableOpacity>
 
                             {booking.status === 'pending' && (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.cancelTourBtn}
                                     onPress={() => {
                                         setSelectedBookingId(booking.booking_info_id);

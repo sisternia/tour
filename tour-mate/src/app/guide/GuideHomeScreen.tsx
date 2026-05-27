@@ -15,6 +15,8 @@ import * as Location from "expo-location";
 import HomeHeader from "@/components/ui/HomeHeader";
 import NavigationBar from "@/components/ui/NavigationBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/context/AuthContext";
+import { getToursByGuide } from "@/services/guide/guideTourService";
 
 const { width } = Dimensions.get("window");
 
@@ -25,6 +27,16 @@ export default function GuideHomeScreen() {
   const [weather, setWeather] = useState<{ temp: number; code: number } | null>(null);
   const [address, setAddress] = useState("Đang xác định...");
   const [loadingWeather, setLoadingWeather] = useState(true);
+  const { user } = useAuth();
+  
+  const [stats, setStats] = useState({
+    totalGuests: 0,
+    totalIncome: 0,
+    averageRating: 0,
+    totalTours: 0
+  });
+
+  const [chartData, setChartData] = useState<{ m: string; vTours: number; vGuests: number; month: number; year: number }[]>([]);
 
   const filters = ["All", "Upcoming", "Ongoing", "Completed"];
 
@@ -59,6 +71,57 @@ export default function GuideHomeScreen() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (user?._id) {
+      getToursByGuide(user._id).then(res => {
+        if (res?.data) {
+          const tours = res.data;
+          let guests = 0;
+          let income = 0;
+          let ratingSum = 0;
+          
+          // Generate last 6 months structure
+          const monthsData: { m: string; vTours: number; vGuests: number; month: number; year: number }[] = [];
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            monthsData.push({
+              m: `Th${d.getMonth() + 1}`,
+              vTours: 0,
+              vGuests: 0,
+              month: d.getMonth(),
+              year: d.getFullYear()
+            });
+          }
+          
+          tours.forEach((t: any) => {
+            // Rough estimation for stats if backend doesn't provide it
+            const capacity = t.price?.tour_capacity || 0;
+            guests += capacity; 
+            income += (t.price?.price_adult || 0) * 0.1; // 10% commission mock
+            ratingSum += 4.5; // Mock rating per tour
+            
+            const tDate = new Date(t.time?.date_start || t.createdAt || new Date());
+            const match = monthsData.find(m => m.month === tDate.getMonth() && m.year === tDate.getFullYear());
+            if (match) {
+              match.vTours += 1;
+              match.vGuests += capacity;
+            }
+          });
+          
+          setChartData(monthsData);
+          
+          setStats({
+            totalGuests: guests,
+            totalIncome: income,
+            averageRating: tours.length > 0 ? (ratingSum / tours.length).toFixed(1) as any : 0,
+            totalTours: tours.length
+          });
+        }
+      }).catch(err => console.log(err));
+    }
+  }, [user]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -139,16 +202,16 @@ export default function GuideHomeScreen() {
             <Text style={styles.perfTitle}>Hiệu suất hàng tuần</Text>
             <Ionicons name="trending-up" size={24} color="rgba(255,255,255,0.6)" />
           </View>
-          <Text style={styles.perfSubtitle}>Bạn đã hướng dẫn 124 người tuần này!</Text>
+          <Text style={styles.perfSubtitle}>Bạn đã hướng dẫn {stats.totalGuests} người cho {stats.totalTours} tour!</Text>
 
           <View style={styles.perfStats}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>1,240đ</Text>
-              <Text style={styles.statLabel}>THU NHẬP</Text>
+              <Text style={styles.statValue}>{stats.totalIncome.toLocaleString()}đ</Text>
+              <Text style={styles.statLabel}>THU NHẬP ƯỚC TÍNH</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>4.8</Text>
+              <Text style={styles.statValue}>{stats.averageRating}</Text>
               <Text style={styles.statLabel}>ĐÁNH GIÁ TB</Text>
             </View>
           </View>
@@ -171,20 +234,13 @@ export default function GuideHomeScreen() {
           </View>
 
           <View style={styles.barChartContainer}>
-            {[
-              { m: "Th4", v: 12 },
-              { m: "Th5", v: 18 },
-              { m: "Th6", v: 15 },
-              { m: "Th7", v: 22 },
-              { m: "Th8", v: 28 },
-              { m: "Th9", v: 20 },
-            ].map((item, idx) => (
+            {chartData.map((item, idx) => (
               <View key={idx} style={styles.barWrapper}>
                 <View style={styles.barTrack}>
                   <View
                     style={[
                       styles.barFill,
-                      { height: `${(item.v / 30) * 100}%` }
+                      { height: `${Math.min((item.vTours / (Math.max(...chartData.map(d => d.vTours)) || 1)) * 100, 100)}%` }
                     ]}
                   />
                 </View>
@@ -208,21 +264,14 @@ export default function GuideHomeScreen() {
           </View>
 
           <View style={styles.barChartContainer}>
-            {[
-              { m: "Th4", v: 120 },
-              { m: "Th5", v: 185 },
-              { m: "Th6", v: 140 },
-              { m: "Th7", v: 210 },
-              { m: "Th8", v: 310 },
-              { m: "Th9", v: 240 },
-            ].map((item, idx) => (
+            {chartData.map((item, idx) => (
               <View key={idx} style={styles.barWrapper}>
                 <View style={styles.barTrack}>
                   <View
                     style={[
                       styles.barFill,
                       {
-                        height: `${(item.v / 350) * 100}%`,
+                        height: `${Math.min((item.vGuests / (Math.max(...chartData.map(d => d.vGuests)) || 1)) * 100, 100)}%`,
                         backgroundColor: "#964400"
                       }
                     ]}

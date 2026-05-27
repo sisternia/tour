@@ -83,6 +83,44 @@ const notifyBookingStatusChange = async (bookingId) => {
         } else {
             console.log(`No user_id found for booking ${bookingId}, skipping notification.`);
         }
+
+        // --- Create notifications for guides assigned to this tour ---
+        for (const guide of guides) {
+            const guideUser = await User.findById(guide.user_id);
+            if (!guideUser) continue;
+
+            let guideTitle = "Cập nhật đơn hàng";
+            let guideMessage = "";
+            let guideType = "system";
+            const customerName = booking.contact_info.full_name;
+            const tourName = tour ? tour.tour_name : '';
+
+            switch (booking.status) {
+                case "pending":
+                    guideTitle = "Đơn hàng mới";
+                    guideMessage = `Khách hàng "${customerName}" đang thanh toán đơn hàng tour "${tourName}".`;
+                    guideType = "booking_created";
+                    break;
+                case "paid":
+                    guideTitle = "Khách hàng đã thanh toán";
+                    guideMessage = `Khách hàng "${customerName}" đã thanh toán đơn hàng tour "${tourName}".`;
+                    guideType = "booking_paid";
+                    break;
+                case "confirmed":
+                    guideTitle = "Xác nhận điểm danh";
+                    guideMessage = `Đã xác nhận khách hàng "${customerName}" có mặt đầy đủ tại địa điểm của tour "${tourName}".`;
+                    guideType = "booking_confirmed";
+                    break;
+                case "cancelled":
+                    guideTitle = "Khách hàng hủy đơn";
+                    guideMessage = `Khách hàng "${customerName}" đã hủy đơn hàng tour "${tourName}".`;
+                    guideType = "booking_cancelled";
+                    break;
+            }
+
+            await createNotification(guideUser._id, guideTitle, guideMessage, guideType, bookingId);
+            console.log(`Guide notification created for guide ${guideUser._id}`);
+        }
     } catch (error) {
         console.error(`Error in notifyBookingStatusChange for ${bookingId}:`, error);
     }
@@ -139,7 +177,7 @@ exports.getBookingsByTour = async (req, res) => {
                 contactEmail: booking.contact_info.email,
                 contactPhone: booking.contact_info.phone,
                 note: booking.contact_info.note,
-                status: booking.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán',
+                status: booking.status,
                 adultCount: booking.adult_count,
                 childCount: booking.child_count,
                 totalPeople: bookingTotal,

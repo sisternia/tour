@@ -22,3 +22,15 @@ export const cancelBooking = async (bookingId: string) => {
     throw error;
   }
 };
+
+export const confirmBooking = async (bookingId: string) => {
+  try {
+    const response = await axios.patch(`${API_URL}/bookings/${bookingId}/status`, {
+      status: 'confirmed'
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error confirming booking:', error);
+    throw error;
+  }
+};

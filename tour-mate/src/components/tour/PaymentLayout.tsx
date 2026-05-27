@@ -63,7 +63,7 @@ export default function PaymentLayout({
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Thông tin hành khách</Text>
 
-                {parsedAdults.length > 0 && (
+                {parsedAdults && parsedAdults.length > 0 && (
                   <View style={{ marginBottom: 20 }}>
                     <View style={styles.passengerSectionHeader}>
                       <Ionicons name="people-outline" size={26} color="#333" />
@@ -88,7 +88,7 @@ export default function PaymentLayout({
                   </View>
                 )}
 
-                {parsedChildren.length > 0 && (
+                {parsedChildren && parsedChildren.length > 0 && (
                   <View>
                     <View style={styles.passengerSectionHeader}>
                       <Ionicons name="people-outline" size={26} color="#333" />

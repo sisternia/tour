@@ -101,8 +101,8 @@ export default function PaymentScreen() {
             setTotalPrice(b.total_price);
             
             // Reconstruct parsedAdults and parsedChildren
-            const adults = b.passengers.filter((p: any) => p.type === 'adult');
-            const children = b.passengers.filter((p: any) => p.type === 'child');
+            const adults = (b.passengers || []).filter((p: any) => p.type === 'adult');
+            const children = (b.passengers || []).filter((p: any) => p.type === 'child');
             setParsedAdults(adults);
             setParsedChildren(children);
  

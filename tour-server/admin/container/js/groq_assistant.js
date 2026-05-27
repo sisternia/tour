@@ -224,16 +224,30 @@ AI phải:
 - Mỗi ngày phải đủ hoạt động từ sáng tới tối.
 - Nội dung phù hợp với địa điểm tour.
 
-QUY TẮC THỜI GIAN:
+QUY TẮC THỜI GIAN (BẮT BUỘC TUYỆT ĐỐI):
 - Bắt đầu: 09:00
 - Kết thúc tối đa: 21:00
-- Mỗi hoạt động kéo dài 2 giờ
-- Sau mỗi hoạt động có 30 phút di chuyển
-- Phải có:
-  + ăn trưa
-  + ăn tối
-- Không được để trống timeline.
-- Không được lặp hoạt động.
+- Mỗi hoạt động kéo dài ĐÚNG 2 giờ.
+- Sau mỗi hoạt động có ĐÚNG 30 phút di chuyển trước hoạt động tiếp theo.
+- Mỗi slot chiếm 2.5 giờ (2h hoạt động + 0.5h di chuyển).
+
+KHUNG THỜI GIAN MẪU MỖI NGÀY (PHẢI TUÂN THỦ):
+  Hoạt động 1: 09:00 – 11:00
+  Di chuyển:   11:00 – 11:30
+  Hoạt động 2: 11:30 – 13:30  ← Bữa trưa (phải có, phải ghi tên nhà hàng/quán ăn thật)
+  Di chuyển:   13:30 – 14:00
+  Hoạt động 3: 14:00 – 16:00
+  Di chuyển:   16:00 – 16:30
+  Hoạt động 4: 16:30 – 18:30
+  Di chuyển:   18:30 – 19:00
+  Hoạt động 5: 19:00 – 21:00  ← Bữa tối (phải có, phải ghi tên nhà hàng/quán ăn thật)
+
+QUAN TRỌNG:
+- Phải có ĐÚNG ăn trưa vào slot 11:30–13:30 và ăn tối vào slot 19:00–21:00.
+- Không được để trống bất kỳ slot nào.
+- Không được lặp hoạt động trong cùng 1 ngày hoặc giữa các ngày.
+- Mỗi ngày phải có ĐÚNG 5 hoạt động.
+- itinerary phải chứa ĐÚNG (số_ngày × 5) phần tử.
 
 ==================================================
 CẤU TRÚC itinerary
@@ -247,21 +261,23 @@ Mỗi phần tử:
   "day": 1,
   "start_time": "09:00",
   "end_time": "11:00",
-  "title": "",
+  "title": "", // Tên phải thật hay, hấp dẫn và BẮT BUỘC chứa tên địa danh cụ thể (VD: "Khám phá Tháp Eiffel kỳ vĩ", "Thưởng thức đặc sản tại Chợ Bến Thành")
   "description": "",
-  "tour_sche_add": "",
-  "tour_sche_longit": "",
-  "tour_sche_latit": ""
+  "tour_sche_add": "", // Tên địa điểm, địa chỉ cụ thể có thật
+  "tour_sche_longit": 0, // BẮT BUỘC LÀ SỐ. Phải là kinh độ CHÍNH XÁC của địa điểm (VD: 106.6978)
+  "tour_sche_latit": 0 // BẮT BUỘC LÀ SỐ. Phải là vĩ độ CHÍNH XÁC của địa điểm (VD: 10.7725)
 }
 
 ==================================================
-QUY TẮC ĐỊA ĐIỂM LỊCH TRÌNH
+QUY TẮC ĐỊA ĐIỂM LỊCH TRÌNH VÀ TỌA ĐỘ (CỰC KỲ QUAN TRỌNG)
 ==================================================
 
 Mỗi activity:
-- tour_sche_add phải là địa điểm có thật.
+- "title": Tuyệt đối KHÔNG đặt chung chung như "Ăn trưa", "Tham quan". Phải sáng tạo, gắn liền với tên địa điểm thực tế đến thăm.
+- "tour_sche_add": Phải là địa điểm có thật, cụ thể.
+- "tour_sche_longit" và "tour_sche_latit": BẠN PHẢI CUNG CẤP TỌA ĐỘ THẬT của địa danh đó. KHÔNG được fake tọa độ. Phải tính toán hoặc lấy tọa độ thực tế của nơi đó (kiểu số float).
 - Phải đọc được bằng LeafletJS/OpenStreetMap.
-- tour_sche_longit và tour_sche_latit phải đúng.
+- Các địa điểm trong cùng 1 ngày phải gần nhau, hợp lý về mặt di chuyển.
 - Địa điểm phải phù hợp với:
   + quốc gia
   + thành phố
