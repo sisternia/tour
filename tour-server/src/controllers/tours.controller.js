@@ -94,7 +94,9 @@ exports.updateTour = async (req, res) => {
         tour_add: tour_add || existingTour.tour_add,
         tour_longit: tour_longit || existingTour.tour_longit,
         tour_latit: tour_latit || existingTour.tour_latit,
-        tour_status: tour_status || existingTour.tour_status
+        tour_status: tour_status || existingTour.tour_status,
+        is_custom: existingTour.is_custom,
+        created_by_user: existingTour.created_by_user
       });
       await tour.save();
 
@@ -114,6 +116,16 @@ exports.updateTour = async (req, res) => {
         price_adult: parseFloat(price_adult),
         tour_id: targetId
       }).save();
+
+      // Update all bookings referencing the old tour_id to the new one
+      await BookingInfo.updateMany({ tour_id: id }, { tour_id: targetId });
+
+      // Clean up old tour data
+      await Promise.all([
+        Tour.deleteOne({ tour_id: id }),
+        TourTime.deleteMany({ tour_id: id }),
+        TourPrice.deleteMany({ tour_id: id })
+      ]);
 
     } else {
       // Normal update for existing tour

@@ -92,15 +92,46 @@ export default function HistoryBookScreen() {
 
     const renderTourCard = (booking: any) => {
         const tour = booking.tour_id || {};
-        const statusLabel = booking.status === 'confirmed' ? 'Đã xác nhận' :
-            booking.status === 'paid' ? 'Đã thanh toán' :
-                booking.status === 'pending' ? 'Đang thanh toán' : 'Đã hủy';
-        const statusColor = booking.status === 'confirmed' ? '#22c55e' :
-            booking.status === 'paid' ? '#3b82f6' :
-                booking.status === 'pending' ? '#bc5700' : '#ef4444';
-        const statusBg = booking.status === 'confirmed' ? '#22c55e' :
-            booking.status === 'paid' ? '#3b82f6' :
-                booking.status === 'pending' ? '#bc5700' : '#ef4444';
+
+        let statusLabel = '';
+        let statusBg = '';
+
+        if (tour.is_custom) {
+            // Custom tour: use tour_status
+            const ts = tour.tour_status;
+            if (ts === 'Chờ xác nhận') {
+                statusLabel = 'Chờ xác nhận';
+                statusBg = '#f59e0b';
+            } else if (ts === 'Đã xác nhận') {
+                if (booking.status === 'paid') {
+                    statusLabel = 'Đã thanh toán';
+                    statusBg = '#3b82f6';
+                } else if (booking.status === 'confirmed') {
+                    statusLabel = 'Đã xác nhận';
+                    statusBg = '#22c55e';
+                } else if (booking.status === 'cancelled') {
+                    statusLabel = 'Đã hủy';
+                    statusBg = '#ef4444';
+                } else {
+                    statusLabel = 'Đã xác nhận';
+                    statusBg = '#22c55e';
+                }
+            } else if (ts === 'Đã hủy') {
+                statusLabel = 'Đã hủy';
+                statusBg = '#ef4444';
+            } else {
+                statusLabel = ts || 'Chờ xử lý';
+                statusBg = '#6b7280';
+            }
+        } else {
+            // Standard tour: use booking.status
+            statusLabel = booking.status === 'confirmed' ? 'Đã xác nhận' :
+                booking.status === 'paid' ? 'Đã thanh toán' :
+                    booking.status === 'pending' ? 'Đang thanh toán' : 'Đã hủy';
+            statusBg = booking.status === 'confirmed' ? '#22c55e' :
+                booking.status === 'paid' ? '#3b82f6' :
+                    booking.status === 'pending' ? '#bc5700' : '#ef4444';
+        }
 
         return (
             <TouchableOpacity
@@ -147,37 +178,78 @@ export default function HistoryBookScreen() {
                             <Text style={styles.priceValue}>{Number(booking.total_price || 0).toLocaleString()}đ</Text>
                         </View>
                         <View style={styles.actionButtons}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.actionBtn,
-                                    booking.status === 'pending' && styles.payNowBtn
-                                ]}
-                                onPress={() => {
-                                    if (booking.status === 'pending') {
-                                        router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`);
-                                    } else {
-                                        router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`);
-                                    }
-                                }}
-                            >
-                                <Text style={[
-                                    styles.actionBtnText,
-                                    booking.status === 'pending' && styles.payNowBtnText
-                                ]}>
-                                    {booking.status === 'pending' ? 'Thanh toán' : 'Chi tiết'}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {booking.status === 'pending' && (
-                                <TouchableOpacity
-                                    style={styles.cancelTourBtn}
-                                    onPress={() => {
-                                        setSelectedBookingId(booking.booking_info_id);
-                                        setShowCancelModal(true);
-                                    }}
-                                >
-                                    <Text style={styles.cancelTourBtnText}>Hủy tour</Text>
-                                </TouchableOpacity>
+                            {tour.is_custom ? (
+                                // Custom tour: show payment only when tour_status is "Đã xác nhận"
+                                <>
+                                    {tour.tour_status === 'Đã xác nhận' && booking.status === 'pending' ? (
+                                        <TouchableOpacity
+                                            style={[styles.actionBtn, styles.payNowBtn]}
+                                            onPress={() => router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`)}
+                                        >
+                                            <Text style={[styles.actionBtnText, styles.payNowBtnText]}>Thanh toán</Text>
+                                        </TouchableOpacity>
+                                    ) : booking.status !== 'cancelled' && booking.status !== 'paid' && booking.status !== 'confirmed' ? (
+                                        <TouchableOpacity
+                                            style={styles.actionBtn}
+                                            onPress={() => router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`)}
+                                        >
+                                            <Text style={styles.actionBtnText}>Chi tiết</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity
+                                            style={styles.actionBtn}
+                                            onPress={() => router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`)}
+                                        >
+                                            <Text style={styles.actionBtnText}>Chi tiết</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    {booking.status !== 'cancelled' && booking.status !== 'paid' && booking.status !== 'confirmed' && (
+                                        <TouchableOpacity
+                                            style={styles.cancelTourBtn}
+                                            onPress={() => {
+                                                setSelectedBookingId(booking.booking_info_id);
+                                                setShowCancelModal(true);
+                                            }}
+                                        >
+                                            <Text style={styles.cancelTourBtnText}>Hủy tour</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </>
+                            ) : (
+                                // Standard tour: existing behavior
+                                <>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.actionBtn,
+                                            booking.status === 'pending' && styles.payNowBtn
+                                        ]}
+                                        onPress={() => {
+                                            if (booking.status === 'pending') {
+                                                router.push(`/tour/StatusScreen?bookingId=${booking.booking_info_id}`);
+                                            } else {
+                                                router.push(`/tour/TourDetailScreen?id=${tour.tour_id}`);
+                                            }
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.actionBtnText,
+                                            booking.status === 'pending' && styles.payNowBtnText
+                                        ]}>
+                                            {booking.status === 'pending' ? 'Thanh toán' : 'Chi tiết'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {booking.status === 'pending' && (
+                                        <TouchableOpacity
+                                            style={styles.cancelTourBtn}
+                                            onPress={() => {
+                                                setSelectedBookingId(booking.booking_info_id);
+                                                setShowCancelModal(true);
+                                            }}
+                                        >
+                                            <Text style={styles.cancelTourBtnText}>Hủy tour</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </>
                             )}
                         </View>
                     </View>

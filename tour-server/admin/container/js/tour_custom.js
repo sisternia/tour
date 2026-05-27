@@ -47,13 +47,13 @@ function formatPrice(amount) {
 
 function renderStats(bookings) {
   const totalRequests = bookings.length;
-  const pendingCount = bookings.filter((b) => b.status === "pending").length;
+  const pendingCount = bookings.filter((b) => b.tour_details && b.tour_details.tour_status === "Chờ xác nhận").length;
   const approvedCount = bookings.filter(
-    (b) => b.status === "paid" || b.status === "confirmed",
+    (b) => b.tour_details && b.tour_details.tour_status === "Đã xác nhận"
   ).length;
 
   const projectedRevenue = bookings
-    .filter((b) => b.status === "paid" || b.status === "confirmed")
+    .filter((b) => (b.tour_details && b.tour_details.tour_status === "Đã xác nhận") || b.status === "paid" || b.status === "confirmed")
     .reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
 
   document.getElementById("stat-total").textContent = totalRequests;
@@ -103,22 +103,24 @@ function renderTable(bookings) {
     let statusClass = "bg-gray-50 text-gray-700 ring-gray-200";
     let dotClass = "bg-gray-400";
 
-    if (booking.status === "pending") {
-      statusText = "Chờ thanh toán";
+    const currentTourStatus = tour.tour_status;
+
+    if (currentTourStatus === "Chờ xác nhận") {
+      statusText = "Chờ xác nhận";
       statusClass = "bg-amber-50 text-amber-700 ring-amber-200";
       dotClass = "bg-amber-400";
-    } else if (booking.status === "paid") {
-      statusText = "Đã thanh toán";
-      statusClass = "bg-blue-50 text-blue-700 ring-blue-200";
-      dotClass = "bg-blue-400";
-    } else if (booking.status === "confirmed") {
+    } else if (currentTourStatus === "Đã xác nhận") {
       statusText = "Đã xác nhận";
       statusClass = "bg-emerald-50 text-emerald-700 ring-emerald-200";
       dotClass = "bg-emerald-400";
-    } else if (booking.status === "cancelled") {
+    } else if (currentTourStatus === "Đã hủy") {
       statusText = "Đã hủy";
       statusClass = "bg-red-50 text-red-700 ring-red-200";
       dotClass = "bg-red-400";
+    } else {
+      statusText = currentTourStatus || "Chờ xử lý";
+      statusClass = "bg-blue-50 text-blue-700 ring-blue-200";
+      dotClass = "bg-blue-400";
     }
 
     const row = document.createElement("tr");
@@ -173,7 +175,7 @@ function renderTable(bookings) {
                     <button onclick="window.location.href='../book-tour/book_detail.html?id=${booking.booking_info_id}'" class="w-9 h-9 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm" title="Xem chi tiết đơn">
                         <span class="material-symbols-outlined text-[20px]">visibility</span>
                     </button>
-                    <button onclick="window.location.href='../book-tour/book_edit.html?id=${booking.booking_info_id}'" class="w-9 h-9 flex items-center justify-center bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm" title="Chỉnh sửa trạng thái">
+                    <button onclick="window.location.href='../tour/tour_standard_detail.html?id=${tour.tour_id}&is_custom=true'" class="w-9 h-9 flex items-center justify-center bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm" title="Xét duyệt">
                         <span class="material-symbols-outlined text-[20px]">edit_square</span>
                     </button>
                     <button onclick="deleteCustomBooking('${booking.booking_info_id}')" title="Xóa" class="w-9 h-9 flex items-center justify-center bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all shadow-sm">

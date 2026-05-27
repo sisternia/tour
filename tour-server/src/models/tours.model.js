@@ -36,7 +36,7 @@ const tourSchema = new mongoose.Schema(
     },
     tour_status: {
       type: String,
-      enum: ['Đang hoạt động', 'Tạm dừng', 'Bản nháp'],
+      enum: ['Đang hoạt động', 'Tạm dừng', 'Bản nháp', 'Chờ xác nhận', 'Đã xác nhận', 'Đã hủy'],
       default: 'Bản nháp'
     },
     embedding: {

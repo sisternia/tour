@@ -413,8 +413,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     statusSelect.addEventListener('change', () => {
-        // Visual feedback when status changed but not saved
+        const newStatus = statusSelect.value;
         const statusBadge = document.getElementById('booking-status-badge');
+        const statusText = document.getElementById('booking-status-text');
+        
+        if (newStatus === 'paid') {
+            statusBadge.className = 'px-5 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl flex items-center gap-3 font-bold text-sm cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-sm ring-2 ring-emerald-500/20';
+            statusText.textContent = 'Đã thanh toán';
+        } else if (newStatus === 'pending') {
+            statusBadge.className = 'px-5 py-2.5 bg-orange-100 text-orange-700 rounded-xl flex items-center gap-3 font-bold text-sm cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-sm ring-2 ring-orange-500/20';
+            statusText.textContent = 'Đang thanh toán';
+        } else if (newStatus === 'confirmed') {
+            statusBadge.className = 'px-5 py-2.5 bg-blue-100 text-blue-700 rounded-xl flex items-center gap-3 font-bold text-sm cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-sm ring-2 ring-blue-500/20';
+            statusText.textContent = 'Đã xác nhận';
+        } else {
+            statusBadge.className = 'px-5 py-2.5 bg-red-100 text-red-700 rounded-xl flex items-center gap-3 font-bold text-sm cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-sm ring-2 ring-red-500/20';
+            statusText.textContent = 'Đã hủy';
+        }
+        
+        // Visual feedback when status changed but not saved
         statusBadge.classList.add('ring-offset-4', 'ring-primary');
     });
   }

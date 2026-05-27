@@ -17,6 +17,18 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedGuideIds = []; // To store selected guide IDs
   let editingActivityId = null; // Track which activity is being edited
   let editingTourId = new URLSearchParams(window.location.search).get("id");
+  let isCustom = new URLSearchParams(window.location.search).get("is_custom") === "true";
+
+  if (isCustom) {
+    const selectElem = document.getElementById("tour-status-select");
+    if (selectElem) {
+      selectElem.innerHTML = `
+        <option value="Chờ xác nhận" class="bg-white text-slate-800 font-medium">Chờ xác nhận</option>
+        <option value="Đã xác nhận" class="bg-white text-slate-800 font-medium">Đã xác nhận</option>
+        <option value="Đã hủy" class="bg-white text-slate-800 font-medium">Đã hủy</option>
+      `;
+    }
+  }
 
   if (imageInput) {
     imageInput.addEventListener("change", function (e) {
@@ -356,7 +368,11 @@ document.addEventListener("DOMContentLoaded", function () {
           : "Thêm thành công!";
         showNotification(successMsg);
         setTimeout(() => {
-          window.location.href = "tour_standard.html";
+          if (typeof isCustom !== "undefined" && isCustom) {
+            window.location.href = "tour_custom.html";
+          } else {
+            window.location.href = "tour_standard.html";
+          }
         }, 1000);
       } else {
         showNotification("Lỗi: " + result.message, "error");
@@ -688,17 +704,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const baseClasses =
       "inline-flex items-center gap-2 pl-7 pr-8 py-2 rounded-full text-xs font-bold border shadow-sm appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 transition-colors z-10 relative ";
 
-    if (val === "Bản nháp") {
+    if (val === "Bản nháp" || val === "Chờ xác nhận") {
       selectElem.className =
         baseClasses + "bg-amber-50 text-amber-700 border-amber-100";
       dotElem.className =
         "absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-amber-500 animate-pulse pointer-events-none z-20";
-    } else if (val === "Đang hoạt động") {
+    } else if (val === "Đang hoạt động" || val === "Đã xác nhận") {
       selectElem.className =
         baseClasses + "bg-emerald-50 text-emerald-700 border-emerald-100";
       dotElem.className =
         "absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse pointer-events-none z-20";
-    } else if (val === "Tạm dừng") {
+    } else if (val === "Tạm dừng" || val === "Đã hủy") {
       selectElem.className =
         baseClasses + "bg-rose-50 text-rose-700 border-rose-100";
       dotElem.className =

@@ -129,7 +129,7 @@ const saveCustomTour = async (bookingData, userId) => {
             tour_add: bookingData.customTourType === "Quốc tế" ? "Nước ngoài" : "Việt Nam",
             tour_latit: startLat,
             tour_longit: startLng,
-            tour_status: "Đang hoạt động",
+            tour_status: "Chờ xác nhận",
             is_custom: true,
             created_by_user: userId || null
         });
