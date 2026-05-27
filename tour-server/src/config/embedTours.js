@@ -28,6 +28,30 @@ const embedTourById = async (tourId) => {
   return vector.length;
 };
 
+const embeddings = new GoogleGenerativeAIEmbeddings({
+  apiKey: process.env.GEMINI_API_KEY,
+  modelName: "gemini-embedding-2",
+});
+
+const buildTourEmbeddingContent = (tour) => `Tên tour: ${tour.tour_name}
+Địa điểm: ${tour.tour_add}
+Mô tả: ${tour.tour_desc || 'Chưa có mô tả'}
+Phân loại: ${tour.tour_type}
+Trạng thái: ${tour.tour_status}`;
+
+const embedTourById = async (tourId) => {
+  const tour = await Tour.findOne({ tour_id: tourId });
+  if (!tour) {
+    throw new Error(`Không tìm thấy tour để embedding: ${tourId}`);
+  }
+
+  const content = buildTourEmbeddingContent(tour);
+  const vector = await embeddings.embedQuery(content);
+  tour.embedding = vector;
+  await tour.save();
+  return vector.length;
+};
+
 const embedAllTours = async () => {
   try {
     // 1. Connect to Database

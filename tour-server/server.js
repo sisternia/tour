@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const dns = require("dns");
 const path = require("path");
 const cors = require("cors");
 const connectDB = require("./src/config/db");
@@ -15,6 +16,8 @@ const notificationRoutes = require("./src/routes/notifications.route");
 const aiRoutes = require("./src/routes/ai.route");
 const reviewRoutes = require("./src/routes/reviews.route");
 
+// Force stable DNS resolvers for MongoDB SRV lookup on some Windows setups.
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = express();
 connectDB().then(() => {

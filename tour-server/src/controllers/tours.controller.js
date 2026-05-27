@@ -14,6 +14,7 @@ const BookingInfo = require('../models/booking_infos.model');
 const Review = require('../models/reviews.model');
 const mongoose = require('mongoose');
 const { uploadImage, deleteFolder, deleteImage } = require('../services/cloudinary.service');
+const { embedTourById } = require('../config/embedTours');
 
 exports.deleteTour = async (req, res) => {
   try {
@@ -280,6 +281,8 @@ exports.updateTour = async (req, res) => {
       }
     }
 
+    await embedTourById(targetId);
+
     res.status(200).json({ success: true, message: isDateChanged ? 'Đã tạo tour mới với ngày khởi hành mới' : 'Cập nhật tour thành công' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || 'Lỗi khi cập nhật tour' });
@@ -536,6 +539,8 @@ exports.create_tour = async (req, res) => {
         }).save();
       }
     }
+
+    await embedTourById(tour_id);
 
     res.status(201).json({ success: true, message: 'Tạo tour thành công' });
   } catch (error) {
